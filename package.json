@@ -4,10 +4,10 @@
   "description": "The god of EC2 instance creation and destruction",
   "main": "index.js",
   "scripts": {
-    "test": "lab -v -c -a code test",
     "lint": "jshint index.js lib/",
-    "unit": "lab -v -c -a code test/unit",
-    "functional": "lab -v -a code test/functional"
+    "test": "NODE_PATH=./lib NODE_ENV=test lab -v -c -a code test",
+    "unit": "NODE_PATH=./lib NODE_ENV=test lab -v -c -a code test/unit",
+    "functional": "NODE_PATH=./lib NODE_ENV=test lab -v -a code test/functional"
   },
   "repository": {
     "type": "git",
@@ -18,10 +18,15 @@
   "bugs": {
     "url": "https://github.com/CodeNow/shiva/issues"
   },
+  "jshintConfig": {
+    "node": true,
+    "curly": true
+  },
   "homepage": "https://github.com/CodeNow/shiva",
   "devDependencies": {
     "code": "^1.4.1",
     "jshint": "^2.8.0",
-    "lab": "^5.14.0"
+    "lab": "^5.14.0",
+    "sinon": "^1.15.4"
   }
 }
