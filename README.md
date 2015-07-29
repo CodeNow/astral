@@ -9,5 +9,5 @@ Shiva is responsible for managing EC2 instances for Runnable's single-tenant bui
 1. To create build and run cluster instances on EC2 via [Amazon Machine Images](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html)
 2. To destroy unused build and run cluster images when instructed to do so.
 
-
+While she currently hold dominon over EC2, ultimately she will transcend and become provider independent. Her internal workings reflect this.
 
