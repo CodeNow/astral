@@ -25,7 +25,6 @@ describe('models', function () {
     var columnNames = ['id', 'name', 'quantity'];
 
     before(function (done) {
-      // Need this in case tests were not allowd to clean up
       db.schema.dropTableIfExists(table).asCallback(done);
     });
 
@@ -35,10 +34,6 @@ describe('models', function () {
         table.string('name');
         table.integer('quantity');
       }).asCallback(done);
-    });
-
-    after(function (done) {
-      db.schema.dropTable(table).asCallback(done);
     });
 
     beforeEach(function (done) {
