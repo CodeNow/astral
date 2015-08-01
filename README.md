@@ -25,7 +25,7 @@ the following:
 2. `initdb /usr/local/var/postgres -E utf8` - Initializes a postgres cluster
 3. `ln -sfv /usr/local/opt/postgresql/*.plist ~/Library/LaunchAgents` -
    instruct OSX to automatically launch postgres on login.
-4. `launchctl load ~/Library/LaunchAgents/homebrew.mxcl.postgresql`  -
+4. `launchctl load ~/Library/LaunchAgents/homebrew.mxcl.postgresql.plist`  -
    start postgres on your computer.
 
 Once you have installed postgres you'll need to run the following from the
