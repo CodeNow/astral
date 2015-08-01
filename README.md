@@ -31,7 +31,7 @@ the following:
 Once you have installed postgres you'll need to run the following from the
 shiva project repository directory:
 
-1. `npm run db`
+1. `npm run init-db`
 
 This script initializes two users and databases on your machine: `shiva` (used
 for local development) and `shiva-test` (used by the test suite).
