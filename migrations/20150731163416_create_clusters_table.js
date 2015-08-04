@@ -20,8 +20,9 @@ exports.up = function(knex, Promise) {
     table.string('ssh_key_name', 40)
       .notNullable();
     table.timestamp('created_at')
-      .index();
-    table.timestamp('updated_at');
+      .index().defaultTo(knex.raw('now()'));
+    table.timestamp('updated_at')
+      .defaultTo(knex.raw('now()'));
   });
 };
 

@@ -10,7 +10,7 @@ exports.up = function(knex, Promise) {
     table.string('id', 36)
       .primary();
     table.string('cluster_id', 36)
-      .notNullable().index().references('clusters.id');
+      .notNullable().index();
     table.specificType('type', 'instance_type')
       .notNullable().defaultsTo('build').index();
     table.string('ami_id', 36)
@@ -24,8 +24,9 @@ exports.up = function(knex, Promise) {
     table.integer('cpu')
       .notNullable();
     table.timestamp('created_at')
-      .index();
-    table.timestamp('updated_at');
+      .index().defaultTo(knex.raw('now()'));
+    table.timestamp('updated_at')
+      .defaultTo(knex.raw('now()'));
   });
 };
 

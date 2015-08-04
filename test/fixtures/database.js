@@ -27,13 +27,21 @@ module.exports = {
  */
 function truncate(cb) {
   foreignKeys.remove().then(function () {
-    return db('clusters').truncate();
+    var truncateClusters = db('clusters').truncate();
+    debug(truncateClusters.toString());
+    return truncateClusters;
   }).then(function () {
-    return db('instances').truncate();
+    var truncateInstances = db('instances').truncate();
+    debug(truncateInstances.toString());
+    return truncateInstances;
   }).then(function () {
-    return db('volumes').truncate();
+    var truncateVolumes =  db('volumes').truncate();
+    debug(truncateVolumes.toString());
+    return truncateVolumes;
   }).then(function () {
-    return db('instance_volumes').truncate();
+    var truncateInstanceVolumes = db('instance_volumes').truncate();
+    debug(truncateInstanceVolumes.toString());
+    return truncateInstanceVolumes;
   }).then(function () {
     return foreignKeys.add();
   }).asCallback(cb);
@@ -58,7 +66,10 @@ function createCluster(cluster_id, fields) {
     defaults(row, fields);
   }
   defaults(row, defaultValues);
-  return db('clusters').insert(row);
+
+  var clusterInsert = db('clusters').insert(row);
+  debug(clusterInsert.toString());
+  return clusterInsert;
 }
 
 /**
@@ -82,7 +93,10 @@ function createInstance(instance_id, cluster_id, fields) {
     defaults(row, fields);
   }
   defaults(row, defaultValues);
-  return db('instances').insert(row);
+
+  var instanceInsert = db('instances').insert(row);
+  debug(instanceInsert.toString());
+  return instanceInsert;
 }
 
 /**
@@ -100,11 +114,14 @@ function createInstances(instance_ids, cluster_id) {
     ram: '1024',
     cpu: '1'
   };
-  return db('instances').insert(instance_ids.map(function (id) {
+
+  var instancesInsert = db('instances').insert(instance_ids.map(function (id) {
     var row = { id: id, cluster_id: cluster_id };
     defaults(row, defaultValues);
     return row;
   }));
+  debug(instancesInsert.toString());
+  return instancesInsert;
 }
 
 /**
@@ -126,7 +143,10 @@ function createVolume(volume_id, cluster_id, fields) {
     defaults(row, fields);
   }
   defaults(row, defaultValues);
-  return db('volumes').insert(row);
+
+  var volumeInsert = db('volumes').insert(row);
+  debug(volumeInsert.toString());
+  return volumeInsert;
 }
 
 /**
@@ -142,11 +162,14 @@ function createVolumes(volume_ids, cluster_id) {
     volume_type: 'awesome',
     size: '1024'
   };
-  return db('volumes').insert(volume_ids.map(function (id) {
+
+  var volumesInsert = db('volumes').insert(volume_ids.map(function (id) {
     var row = { id: id, cluster_id: cluster_id };
     defaults(row, defaultValues);
     return row;
   }));
+  debug(volumesInsert.toString());
+  return volumesInsert;
 }
 
 /**
@@ -156,7 +179,9 @@ function createVolumes(volume_ids, cluster_id) {
  * @return {knex~promise} A promise for the query.
  */
 function setInstanceVolumes(instance_id, volume_ids) {
-  return db('instance_volumes').insert(volume_ids.map(function (volume_id) {
+  var setVolume = db('instance_volumes').insert(volume_ids.map(function (volume_id) {
     return { instance_id: instance_id, volume_id: volume_id }
   }));
+  debug(setVolume.toString());
+  return setVolume;
 }

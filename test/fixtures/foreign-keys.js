@@ -5,12 +5,14 @@ var db = require('database');
 
 /**
  * Helpers for managing foreign keys when performing test databases batch
- * queries (wipes, seed data, etc).
+ * queries (migrations, wipes, seed data, etc).
  * @author Ryan Sandor Richards
  * @module shiva:test:fixtures
  */
 module.exports = {
+  removeKey: removeKey,
   remove: remove,
+  addKey: addKey,
   add: add
 };
 
@@ -21,48 +23,72 @@ module.exports = {
  * when you are done.
  * @type Array
  */
-var foreignKeys = [
-  {
-    name: 'instance_volumes_instance_id_foreign',
+var foreignKeys = {
+  'instances_to_clusters': {
     table: 'instances',
     column: 'cluster_id',
     foreignTable: 'clusters',
     foreignColumn: 'id'
   },
-  {
-    name: 'volumes_cluster_id_foreign',
+  'volumes_to_clusters': {
     table: 'volumes',
     column: 'cluster_id',
     foreignTable: 'clusters',
     foreignColumn: 'id'
   },
-  {
-    name: 'instance_volumes_instance_id_foreign',
+  'instance_volumes_to_instances': {
     table: 'instance_volumes',
     column: 'instance_id',
     foreignTable: 'instances',
     foreignColumn: 'id'
   },
-  {
-    name: 'instance_volumes_volume_id_foreign',
+  'instance_volumes_to_volumes': {
     table: 'instance_volumes',
     column: 'volume_id',
     foreignTable: 'volumes',
     foreignColumn: 'id'
   }
-];
+};
+
+/**
+ * Constructs a query to remove a foreign key with the given name.
+ * @param {string} name Name of the key to remove.
+ * @return {string} The SQL query to remove the key, or null of a key with the
+ *   given name does not exist.
+ */
+function removeKey(name) {
+  var key = foreignKeys[name];
+  if (!key) { return null; }
+  return [
+    'ALTER TABLE', key.table, 'DROP CONSTRAINT', name, ';'
+  ].join(' ');
+}
 
 /**
  * Removes all foreign keys constraints from the database.
  * @return {knex~promise} A promise for the constraint drop query.
  */
 function remove() {
-  var sql = foreignKeys.map(function (key) {
-    return 'ALTER TABLE ' + key.table + ' DROP CONSTRAINT IF EXISTS ' + 
-      key.name + ';';
+  var sql = Object.keys(foreignKeys).map(function (name) {
+    return removeKey(name);
   }).join('\n');
   debug(sql);
   return db.schema.raw(sql);
+}
+
+/**
+ * Constructs a query to add a foreign key with the given name.
+ * @param {string} name Name of the key to add.
+ * @return {string} The SQL query to add the key, of null if no such key exists.
+ */
+function addKey(name) {
+  var key = foreignKeys[name];
+  if (!key) { return null; }
+  return [
+    'ALTER TABLE', key.table, 'ADD CONSTRAINT', name,
+    'FOREIGN KEY (' + key.column + ') REFERENCES',
+    key.foreignTable, '(' + key.foreignColumn + ');'
+  ].join(' ');
 }
 
 /**
@@ -70,10 +96,8 @@ function remove() {
  * @return {knex~promise} A promise for the query.
  */
 function add() {
-  var sql = foreignKeys.map(function (key) {
-    return 'ALTER TABLE ' + key.table + ' ADD CONSTRAINT ' + key.name +
-      ' FOREIGN KEY (' + key.column + ') REFERENCES ' + key.foreignTable +
-      '(' + key.foreignColumn + ');';
+  var sql = Object.keys(foreignKeys).map(function (name) {
+    return addKey(name);
   }).join('\n');
   debug(sql);
   return db.schema.raw(sql);
