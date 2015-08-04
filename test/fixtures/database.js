@@ -114,7 +114,7 @@ function createInstances(instance_ids, cluster_id) {
  * @param {object} [fields] Overrides the default columns for a volume.
  * @return {knex~promise} A promise for the query.
  */
-function createVolume(volume_id, cluster_id) {
+function createVolume(volume_id, cluster_id, fields) {
   var defaultValues = {
     id: '1',
     cluster_id: '1',
