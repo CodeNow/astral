@@ -124,6 +124,22 @@ describe('models', function () {
         expect(model.update('1', { name: 'woo'}).then).to.be.a.function();
         done();
       });
+
+      it('should set the `updated_at` field', function(done) {
+        sinon.stub(model, 'db').returns({
+          where: function () {
+            return {
+              update: function (data) {
+                expect(data.updated_at).to.exist();
+                expect(data.updated_at.sql).to.equal('now()');
+                model.db.restore();
+                done();
+              }
+            };
+          }
+        });
+        model.update('1', { name: 'wow' });
+      });
     }); // end 'update'
   }); // end 'Model'
 }); // end 'models'

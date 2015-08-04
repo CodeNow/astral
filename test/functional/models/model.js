@@ -33,6 +33,8 @@ describe('models (functional)', function() {
         table.string('id').primary();
         table.string('name');
         table.integer('quantity');
+        table.timestamp('created_at').index().defaultTo(db.raw('now()'));
+        table.timestamp('updated_at').defaultTo(db.raw('now()'));
       }).asCallback(done);
     });
 
