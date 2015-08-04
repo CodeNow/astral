@@ -19,39 +19,17 @@ var db = require('database');
 var dbFixture = require('../../fixtures/database.js');
 
 describe('models (functional)', function() {
-  var clusterRow = {
-    id: '1',
-    org: '1',
-    state: 'down',
-    security_group_id: 'security-group',
-    ssh_key_name: 'some-key-name',
-    subnet: '1.2.3.4/22'
-  };
-
-  var instanceRow = {
-    id: '1',
-    cluster_id: '1',
-    type: 'build',
-    ami_id: '1234',
-    ami_version: '1.0.0',
-    aws_type: 't2.micro',
-    ram: '1024',
-    cpu: '1'
-  };
-
-  var volumeRows = [
-    { id: '1', cluster_id: '1', volume_type: 'awesome', size: '1024' },
-    { id: '2', cluster_id: '1', volume_type: 'neat', size: '2048' },
-    { id: '3', cluster_id: '1', volume_type: 'sweet', size: '4096' }
-  ];
-
   describe('Instance', function() {
     beforeEach(dbFixture.truncate);
     beforeEach(function (done) {
-      db('clusters').insert(clusterRow).then(function () {
-        return db('instances').insert(instanceRow);
+      dbFixture.createCluster('1').then(function () {
+        return dbFixture.createInstance('1', '1');
       }).then(function () {
-        return db('volumes').insert(volumeRows);
+        return db('volumes').insert([
+          { id: '1', cluster_id: '1', volume_type: 'awesome', size: '1024' },
+          { id: '2', cluster_id: '1', volume_type: 'neat', size: '2048' },
+          { id: '3', cluster_id: '1', volume_type: 'sweet', size: '4096' }
+        ]);
       }).asCallback(done);
     });
 
