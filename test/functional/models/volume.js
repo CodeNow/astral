@@ -18,28 +18,30 @@ var volume = require('models/volume');
 var db = require('database');
 var dbFixture = require('../../fixtures/database.js');
 
-describe('models (functional)', function() {
-  var instanceIds = ['1', '2'];
+describe('functional', function() {
+  describe('models', function() {
+    var instanceIds = ['1', '2'];
 
-  describe('Volume', function() {
-    beforeEach(dbFixture.truncate);
-    beforeEach(function (done) {
-      dbFixture.createCluster('1').then(function () {
-        return dbFixture.createInstances(instanceIds, '1');
-      }).then(function () {
-        return dbFixture.createVolume('1', '1');
-      }).then(function () {
-        return dbFixture.setInstanceVolumes(instanceIds[0], ['1']);
-      }).then(function () {
-        return dbFixture.setInstanceVolumes(instanceIds[1], ['1']);
-      }).asCallback(done);
-    });
+    describe('Volume', function() {
+      beforeEach(dbFixture.truncate);
+      beforeEach(function (done) {
+        dbFixture.createCluster('1').then(function () {
+          return dbFixture.createInstances(instanceIds, '1');
+        }).then(function () {
+          return dbFixture.createVolume('1', '1');
+        }).then(function () {
+          return dbFixture.setInstanceVolumes(instanceIds[0], ['1']);
+        }).then(function () {
+          return dbFixture.setInstanceVolumes(instanceIds[1], ['1']);
+        }).asCallback(done);
+      });
 
-    it('should find all associated instances', function(done) {
-      volume.getInstances('1').then(function (rows) {
-        expect(rows.length).to.equal(2);
-        done();
-      }).catch(done);
-    });
-  }); // end 'Volume'
-}); // end 'models (functional)'
+      it('should find all associated instances', function(done) {
+        volume.getInstances('1').then(function (rows) {
+          expect(rows.length).to.equal(2);
+          done();
+        }).catch(done);
+      });
+    }); // end 'Volume'
+  }); // end 'models'
+}); // end 'functional'
