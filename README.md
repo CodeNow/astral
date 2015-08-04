@@ -9,7 +9,7 @@ Shiva is responsible for managing instances for Runnable's single-tenant build a
 1. To create build and run cluster instances on EC2 via [Amazon Machine Images](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html)
 2. To destroy unused build and run cluster images when instructed to do so.
 
-While she currently only holds dominon over EC2, shiva will ultimately transcend AWS and become provider independent. 
+While she currently only holds dominon over EC2, shiva will ultimately transcend AWS and become provider independent.
 
 ## Development
 
@@ -36,7 +36,7 @@ shiva project repository directory:
 This script a super user named `shiva` and two databases on your machine:
 `shiva` (used for local development) and `shiva-test` (used by the test suite).
 
-#### Setup: Run Migrations
+#### Setup: Running Migrations
 
 Shiva uses [knex](https://www.npmjs.com/package/knex) to access the postgres
 database. The first thing you'll need to do after installing postgres is to
@@ -46,9 +46,8 @@ repository directory run the following:
 1. `npm install` - Install required libraries (including `knex`)
 2. `knex migrate:latest` - Update your development database schema to the latest
    version.
+3. `NODE_ENV=test knex migrate:latest` - Update the test database schema.
 
-Note: as a first step the test database (`shiva-test`) is automatically migrated
-to the latest schema.
 
 #### Creating Migrations
 
@@ -77,8 +76,3 @@ Note that the `production` environment is not available when developing.
 For more information on how to build migrations, take a look at the source code
 for the existing migrations in the `migrations/` directory and read the
 [knex schema documentation](http://knexjs.org/#Schema).
-
-
-##### Run migrations
-
-`knex migrate:latest`
