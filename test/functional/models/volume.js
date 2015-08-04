@@ -41,5 +41,5 @@ describe('models (functional)', function() {
         done();
       }).catch(done);
     });
-  });
+  }); // end 'Volume'
 }); // end 'models (functional)'
