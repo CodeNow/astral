@@ -59,7 +59,7 @@ function createCluster(cluster_id, fields) {
     state: 'down',
     security_group_id: 'security-group-id',
     ssh_key_name: 'ssh-key-name',
-    subnet: '10.0.0.0/24'
+    subnet_id: 'subnet-id'
   };
   var row = { id: cluster_id };
   if (isObject(fields)) {

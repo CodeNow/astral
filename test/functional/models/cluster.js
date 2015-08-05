@@ -54,7 +54,7 @@ describe('functional', function() {
           org: 'some-org',
           state: 'down',
           security_group_id: 'some-security-group',
-          subnet: '0.0.0.0/24',
+          subnet_id: 'some-subnet-id',
           ssh_key_name: 'an-ssh-key-name'
         };
         cluster.insert(record).then(function (result) {
