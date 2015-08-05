@@ -33,6 +33,13 @@ describe('models', function () {
       });
     }); // end 'Cluster'
 
+    describe('getByOrg', function() {
+      it('should return a promise', function(done) {
+        expect(cluster.getByOrg('some-org').then).to.be.a.function();
+        done();
+      });
+    }); // end 'getByOrg'
+
     describe('getInstances', function() {
       it('should return a promise', function(done) {
         expect(cluster.getInstances('some-id').then).to.be.a.function();

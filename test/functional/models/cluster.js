@@ -76,6 +76,13 @@ describe('functional', function() {
           done();
         }).catch(done);
       });
+
+      it('should correctly fetch a cluster by organization', function(done) {
+        cluster.getByOrg(orgId).then(function (cluster) {
+          expect(cluster.org).to.equal(orgId);
+          done();
+        }).catch(done);
+      });
     }); // end 'Cluster'
   }); // end 'models'
 }); // end 'functional'
