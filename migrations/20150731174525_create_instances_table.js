@@ -15,14 +15,8 @@ exports.up = function(knex, Promise) {
       .notNullable().defaultsTo('build').index();
     table.string('ami_id', 36)
       .notNullable();
-    table.string('ami_version', 15)
-      .notNullable();
     table.string('aws_type', 36)
       .notNullable().index();
-    table.integer('ram')
-      .notNullable();
-    table.integer('cpu')
-      .notNullable();
     table.timestamp('created_at')
       .index().defaultTo(knex.raw('now()'));
     table.timestamp('updated_at')

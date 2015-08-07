@@ -9,10 +9,6 @@ exports.up = function(knex, Promise) {
   return knex.schema.createTable('clusters', function (table) {
     table.string('id', 36)
       .primary();
-    table.string('org', 36)
-      .notNullable().unique().index();
-    table.specificType('state', 'cluster_state')
-      .defaultTo('down').notNullable();
     table.string('security_group_id', 36)
       .notNullable();
     table.string('subnet', 20)

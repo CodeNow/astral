@@ -10,7 +10,7 @@ exports.up = function(knex, Promise) {
     "CREATE TYPE instance_type AS ENUM (",
       "'build',",
       "'run',",
-      "'services'",
+      "'service'",
     ")"
   ].join('');
   return knex.schema.raw(sql);

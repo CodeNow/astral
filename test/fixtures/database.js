@@ -55,8 +55,6 @@ function truncate(cb) {
  */
 function createCluster(cluster_id, fields) {
   var defaultValues = {
-    org: '1',
-    state: 'down',
     security_group_id: 'security-group-id',
     ssh_key_name: 'ssh-key-name',
     subnet_id: 'subnet-id'
