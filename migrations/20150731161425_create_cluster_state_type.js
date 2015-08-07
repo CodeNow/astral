@@ -6,15 +6,9 @@
  */
 
 exports.up = function(knex, Promise) {
-  var sql = [
-    "CREATE TYPE cluster_state AS ENUM (",
-      "'down',",
-      "'provisioning',",
-      "'running',",
-      "'removing'",
-    ")"
-  ].join('');
-  return knex.schema.raw(sql);
+  return knex.schema.raw(
+    "CREATE TYPE cluster_state AS ENUM ('down', 'provisioning', 'up');"
+  );
 };
 
 exports.down = function(knex, Promise) {

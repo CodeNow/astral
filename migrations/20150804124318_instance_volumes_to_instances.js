@@ -15,5 +15,5 @@ exports.up = function(knex, Promise) {
 };
 
 exports.down = function(knex, Promise) {
-  return knex.schema.raw('ALTER TABLE instances DROP CONSTRAINT instance_volumes_to_instances;');
+  return knex.schema.raw('ALTER TABLE instance_volumes DROP CONSTRAINT instance_volumes_to_instances;');
 };

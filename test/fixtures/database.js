@@ -83,10 +83,7 @@ function createInstance(instance_id, cluster_id, fields) {
   var defaultValues = {
     type: 'build',
     ami_id: '1234',
-    ami_version: '1.0.0',
-    aws_type: 't2.micro',
-    ram: '1024',
-    cpu: '1'
+    aws_type: 't2.micro'
   };
   var row = { id: instance_id, cluster_id: cluster_id };
   if (isObject(fields)) {
@@ -109,10 +106,7 @@ function createInstances(instance_ids, cluster_id) {
   var defaultValues = {
     type: 'build',
     ami_id: '1234',
-    ami_version: '1.0.0',
-    aws_type: 't2.micro',
-    ram: '1024',
-    cpu: '1'
+    aws_type: 't2.micro'
   };
 
   var instancesInsert = db('instances').insert(instance_ids.map(function (id) {
