@@ -29,35 +29,35 @@ describe('Error', function() {
     it('should use the internal logger when logging errors', function(done) {
       var err = new Error('this is error!!! (like sparta)');
       error.log(err);
-      expect(logger.error.calledWith(err)).to.be.true();
+      expect(logger.error.calledOnce).to.be.true();
+      expect(logger.error.firstCall.args[1]).to.equal(err.message);
       done();
     });
   }); // end 'log'
 
   describe('reject', function() {
     beforeEach(function (done) {
-      sinon.spy(error, 'create');
+      sinon.spy(error, 'log');
       done();
     });
 
     afterEach(function (done) {
-      error.create.restore();
+      error.log.restore();
       done();
     });
 
     it('should return a rejection promise', function (done) {
-      error.reject(500, 'server error').catch(function (err) {
-        expect(err).to.exist();
+      var testError = new Error('some error');
+      error.reject(testError).catch(function (err) {
+        expect(err).to.equal(testError);
         done();
       });
     });
 
-    it('should use `.create` to create the error', function(done) {
-      var code = 500;
-      var message = 'this is errorlandwow';
-      var data = { a: 20 };
-      error.reject(code, message, data).catch(function (err) {
-        expect(error.create.calledWith(code, message, data)).to.be.true();
+    it('should log the error', function(done) {
+      var testError = new Error('another error');
+      error.reject(testError).catch(function (err) {
+        expect(error.log.calledWith(testError)).to.be.true();
         done();
       });
     });
@@ -65,29 +65,37 @@ describe('Error', function() {
 
   describe('rejectAndReport', function() {
     beforeEach(function (done) {
-      sinon.spy(error, 'createAndReport');
+      sinon.spy(error, 'log');
+      sinon.spy(error, 'report');
       done();
     });
 
     afterEach(function (done) {
-      error.createAndReport.restore();
+      error.log.restore();
+      error.report.restore();
       done();
     });
 
     it('should return a rejection promise', function (done) {
-      error.rejectAndReport(500, 'server error').catch(function (err) {
-        expect(err).to.exist();
+      var testError = new Error('report me');
+      error.rejectAndReport(testError).catch(function (err) {
+        expect(err).to.equal(testError);
         done();
       });
     });
 
-    it('should use `.createAndReport` to create the error', function(done) {
-      var code = 400;
-      var message = 'this is errorlandwow';
-      var data = { b: 40 };
-      error.rejectAndReport(code, message, data).catch(function (err) {
-        expect(error.createAndReport.calledWith(code, message, data))
-          .to.be.true();
+    it('should log the error', function(done) {
+      var testError = new Error('so reported error');
+      error.rejectAndReport(testError).catch(function (err) {
+        expect(error.log.calledWith(testError)).to.be.true();
+        done();
+      });
+    });
+
+    it('should report the error', function(done) {
+      var testError = new Error('also, report me');
+      error.rejectAndReport(testError).catch(function (err) {
+        expect(error.report.calledWith(testError)).to.be.true();
         done();
       });
     });
