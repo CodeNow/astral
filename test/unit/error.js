@@ -32,7 +32,7 @@ describe('Error', function() {
       expect(logger.error.calledWith(err)).to.be.true();
       done();
     });
-  });
+  }); // end 'log'
 
   describe('reject', function() {
     beforeEach(function (done) {
@@ -61,5 +61,35 @@ describe('Error', function() {
         done();
       });
     });
-  });
-});
+  }); // end 'reject'
+
+  describe('rejectAndReport', function() {
+    beforeEach(function (done) {
+      sinon.spy(error, 'createAndReport');
+      done();
+    });
+
+    afterEach(function (done) {
+      error.createAndReport.restore();
+      done();
+    });
+
+    it('should return a rejection promise', function (done) {
+      error.rejectAndReport(500, 'server error').catch(function (err) {
+        expect(err).to.exist();
+        done();
+      });
+    });
+
+    it('should use `.createAndReport` to create the error', function(done) {
+      var code = 400;
+      var message = 'this is errorlandwow';
+      var data = { b: 40 };
+      error.rejectAndReport(code, message, data).catch(function (err) {
+        expect(error.createAndReport.calledWith(code, message, data))
+          .to.be.true();
+        done();
+      });
+    });
+  }); // end 'rejectAndReport'
+}); // end 'Error'
