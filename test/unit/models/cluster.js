@@ -33,6 +33,35 @@ describe('models', function () {
       });
     }); // end 'Cluster'
 
+    describe('countInstances', function() {
+      it('should return a promise', function(done) {
+        expect(cluster.countInstances().then).to.be.a.function();
+        done();
+      });
+
+      it('should use the correct count query', function(done) {
+        var cluster_id = '123454';
+        var type = 'some-type';
+        var queryBuilder = {
+          where: function (opts) {
+            expect(opts).to.deep.equal({
+              cluster_id: cluster_id,
+              type: type
+            });
+            return queryBuilder;
+          },
+          map: function () {
+            return queryBuilder;
+          },
+          reduce: function () {
+            done();
+          }
+        }
+        sinon.stub(instance, 'count').returns(queryBuilder);
+        cluster.countInstances(cluster_id, type);
+      });
+    }); // end 'countInstances'
+
     describe('getInstances', function() {
       it('should return a promise', function(done) {
         expect(cluster.getInstances('some-id').then).to.be.a.function();

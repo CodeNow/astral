@@ -23,15 +23,17 @@ describe('functional', function() {
     var clusterId = '1';
     var instanceIds = ['1', '2', '3'];
     var volumeIds = ['4', '5', '6'];
-    
+
     describe('Cluster', function() {
       beforeEach(dbFixture.truncate);
       beforeEach(function (done) {
-        dbFixture.createCluster(clusterId).then(function () {
-          return dbFixture.createInstances(instanceIds, clusterId);
-        }).then(function () {
-          return dbFixture.createVolumes(volumeIds, clusterId);
-        }).asCallback(done);
+        dbFixture.createCluster(clusterId)
+          .then(function () {
+            return dbFixture.createInstances(instanceIds, clusterId);
+          })
+          .then(function () {
+            return dbFixture.createVolumes(volumeIds, clusterId);
+          }).asCallback(done);
       });
 
       it('should find all instances for a cluster', function(done) {
@@ -46,6 +48,25 @@ describe('functional', function() {
           expect(rows.length).to.equal(volumeIds.length);
           done();
         }).catch(done);
+      });
+
+      it('should correctly count build instances', function(done) {
+        cluster.countInstances(clusterId, 'build')
+          .then(function (count) {
+            expect(count).to.equal(instanceIds.length);
+            done();
+          });
+      });
+
+      it('should correctly cound run instances', function(done) {
+        cluster.countInstances(clusterId, 'run')
+          .then(function (count) {
+            expect(count).to.equal(0);
+            done();
+          })
+          .catch(function (err) {
+            done(err);
+          });
       });
     }); // end 'Cluster'
   }); // end 'models'
