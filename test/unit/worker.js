@@ -16,6 +16,7 @@ var Promise = require('bluebird');
 var logger = require('logger');
 var Worker = require('worker');
 var error = require('error');
+var TaskFatalError = require('errors/task-fatal-error');
 
 describe('Worker', function() {
   describe('constructor', function() {
@@ -133,6 +134,9 @@ describe('Worker', function() {
     var job = { foo: 'bar' };
     var resolve = function () { return Promise.resolve(); };
     var reject = function () { return Promise.reject(); };
+    var rejectFatal = function () {
+      return Promise.reject(new TaskFatalError('', ''));
+    };
     var doneCallback = function () {};
 
     beforeEach(function (done) {
@@ -195,6 +199,16 @@ describe('Worker', function() {
     it('should not exceed the maximum nuber of retries', function(done) {
       worker.attempt = process.env.WORKER_MAX_RETRIES + 1;
       worker.task = reject;
+      worker.run().then(function () {
+        sinon.stub(worker, 'run');
+        clock.tick(process.env.WORKER_MAX_RETRY_DELAY);
+        expect(worker.run.callCount).to.equal(0);
+        done();
+      });
+    });
+
+    it('should stop upon encountering a TaskFatalError', function(done) {
+      worker.task = rejectFatal;
       worker.run().then(function () {
         sinon.stub(worker, 'run');
         clock.tick(process.env.WORKER_MAX_RETRY_DELAY);
