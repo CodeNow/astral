@@ -14,52 +14,54 @@ require('loadenv')('shiva:test');
 
 var Provider = require('providers/provider');
 
-describe('Provider', function() {
-  var provider
+describe('providers', function() {
+  describe('Provider', function() {
+    var provider
 
-  beforeEach(function (done) {
-    provider = new Provider();
-    done();
-  });
-
-  describe('isValidInstanceType', function() {
-    it('should accept the `build` type', function(done) {
-      expect(provider.isValidInstanceType('build')).to.be.true();
+    beforeEach(function (done) {
+      provider = new Provider();
       done();
     });
 
-    it('should accept the `run` type', function(done) {
-      expect(provider.isValidInstanceType('run')).to.be.true();
-      done();
-    });
+    describe('isValidInstanceType', function() {
+      it('should accept the `build` type', function(done) {
+        expect(provider.isValidInstanceType('build')).to.be.true();
+        done();
+      });
 
-    it('should not accept an invalid type', function(done) {
-      expect(provider.isValidInstanceType('stfu')).to.be.false();
-      done();
-    });
-  }); // end 'isValidInstanceType'
+      it('should accept the `run` type', function(done) {
+        expect(provider.isValidInstanceType('run')).to.be.true();
+        done();
+      });
 
-  describe('getTypeEnvironmentPrefix', function() {
-    it('should return `BUILD_` when given "build"', function(done) {
-      expect(provider.getTypeEnvironmentPrefix('build')).to.equal('BUILD_');
-      done();
-    });
+      it('should not accept an invalid type', function(done) {
+        expect(provider.isValidInstanceType('stfu')).to.be.false();
+        done();
+      });
+    }); // end 'isValidInstanceType'
 
-    it('should return `RUN_` when given "run"', function(done) {
-      expect(provider.getTypeEnvironmentPrefix('run')).to.equal('RUN_');
-      done();
-    });
+    describe('getTypeEnvironmentPrefix', function() {
+      it('should return `BUILD_` when given "build"', function(done) {
+        expect(provider.getTypeEnvironmentPrefix('build')).to.equal('BUILD_');
+        done();
+      });
 
-    it('should be null for any other type', function(done) {
-      expect(provider.getTypeEnvironmentPrefix('neat')).to.be.null();
-      done();
-    });
-  }); // end 'getTypeEnvironmentPrefix'
+      it('should return `RUN_` when given "run"', function(done) {
+        expect(provider.getTypeEnvironmentPrefix('run')).to.equal('RUN_');
+        done();
+      });
 
-  describe('createInstances', function() {
-    it('should be abstract and throw an error', function(done) {
-      expect(provider.createInstances).to.throw();
-      done();
-    });
-  }); // end 'createInstances'
-}); // end 'Provider'
+      it('should be null for any other type', function(done) {
+        expect(provider.getTypeEnvironmentPrefix('neat')).to.be.null();
+        done();
+      });
+    }); // end 'getTypeEnvironmentPrefix'
+
+    describe('createInstances', function() {
+      it('should be abstract and throw an error', function(done) {
+        expect(provider.createInstances).to.throw();
+        done();
+      });
+    }); // end 'createInstances'
+  }); // end 'Provider'
+}); // end 'providers'
