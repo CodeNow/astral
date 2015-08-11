@@ -42,6 +42,18 @@ describe('functional', function() {
           done();
         }).catch(done);
       });
+
+      it('should require a valid cluster_id', function(done) {
+        var invalidRow = {
+          cluster_id: 'not-valid',
+          volume_type: 'some-type',
+          size: 2300
+        };
+        volume.create(invalidRow).asCallback(function (err) {
+          expect(err).to.exist();
+          done();
+        });
+      });
     }); // end 'Volume'
   }); // end 'models'
 }); // end 'functional'
