@@ -16,6 +16,7 @@ require('loadenv')('shiva:test');
 
 var noop = require('101/noop');
 var instance = require('models/instance');
+var volume = require('models/volume');
 
 describe('models', function() {
   describe('Instance', function() {
@@ -76,7 +77,40 @@ describe('models', function() {
     }); // end 'removeVolume'
 
     describe('getVolumes', function() {
-      // body...
+      var queryObject = {
+        innerJoin: function () { return queryObject; },
+        where: function () { return queryObject; }
+      };
+
+      it('should return a promise', function(done) {
+        expect(instance.getVolumes('a').then).to.be.a.function();
+        done();
+      });
+
+      it('should construct the correct query', function(done) {
+        sinon.stub(volume, 'select').returns(queryObject);
+        sinon.spy(queryObject, 'innerJoin');
+        sinon.spy(queryObject, 'where');
+
+        var instance_id = '1234';
+        instance.getVolumes(instance_id);
+        expect(volume.select.calledOnce).to.be.true();
+        expect(queryObject.innerJoin.calledWith(
+          'instance_volumes',
+          'instance_volumes.volume_id',
+          'volumes.id'
+        )).to.be.true();
+        expect(queryObject.where.calledOnce).to.be.true();
+        expect(queryObject.where.firstCall.args[0]).to.deep.equal({
+          'instance_volumes.instance_id': instance_id
+        });
+
+        volume.select.restore();
+        queryObject.innerJoin.restore();
+        queryObject.where.restore();
+
+        done();
+      });
     }); // end 'getVolumes'
 
   }); // end 'Instance'
