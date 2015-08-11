@@ -79,7 +79,7 @@ describe('tasks', function() {
           id: org_id,
           security_group_id: process.env.AWS_CLUSTER_SECURITY_GROUP_ID,
           subnet_id: process.env.AWS_CLUSTER_SUBNET,
-          ssh_key_name: process.env.SSH_KEY_NAME
+          ssh_key_name: process.env.AWS_SSH_KEY_NAME
         });
         done();
       });
@@ -128,7 +128,7 @@ describe('tasks', function() {
           id: org_id,
           security_group_id: process.env.AWS_CLUSTER_SECURITY_GROUP_ID,
           subnet_id: process.env.AWS_CLUSTER_SUBNET,
-          ssh_key_name: process.env.SSH_KEY_NAME
+          ssh_key_name: process.env.AWS_SSH_KEY_NAME
         });
         done();
       });
