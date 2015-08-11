@@ -48,7 +48,6 @@ repository directory run the following:
    version.
 3. `NODE_ENV=test knex migrate:latest` - Update the test database schema.
 
-
 #### Creating Migrations
 
 The infrastructure data model may change over time due to new constraints. When
@@ -76,3 +75,22 @@ Note that the `production` environment is not available when developing.
 For more information on how to build migrations, take a look at the source code
 for the existing migrations in the `migrations/` directory and read the
 [knex schema documentation](http://knexjs.org/#Schema).
+
+#### Pull Requests
+Shiva is a foundational piece of our overall architecture. If we are unable to
+provision clusters for our customers, they will not be able to use our service.
+Since it is so important there are a few hard rules on what can and cannot be
+merged into master.
+
+Before a pull request can be merged the following conditions must be met (so as
+to mitigate problems in production):
+
+1. All new code should follow the task/worker architecture
+2. All functions should be 100% unit tested (including all execution paths)
+3. The project should maintain 100% test coverage
+4. Functional tests should be written for cross-module compatibility
+5. Project should be integration tested independent of other systems
+6. Project should be perf and integration tested on production-beta
+
+Once these steps have been followed, the PR should be merged and master should
+be deployed on production ASAP.
