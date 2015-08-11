@@ -77,7 +77,7 @@ describe('tasks', function() {
         expect(Cluster.insert.calledOnce).to.be.true();
         expect(Cluster.insert.firstCall.args[0]).to.deep.equal({
           id: org_id,
-          security_group_id: process.env.CLUSTER_SECURITY_GROUP_ID,
+          security_group_id: process.env.AWS_CLUSTER_SECURITY_GROUP_ID,
           subnet_id: process.env.CLUSTER_SUBNET,
           ssh_key_name: process.env.SSH_KEY_NAME
         });
@@ -126,7 +126,7 @@ describe('tasks', function() {
       createCluster({ org_id: org_id }).then(function (cluster) {
         expect(cluster).to.deep.equal({
           id: org_id,
-          security_group_id: process.env.CLUSTER_SECURITY_GROUP_ID,
+          security_group_id: process.env.AWS_CLUSTER_SECURITY_GROUP_ID,
           subnet_id: process.env.CLUSTER_SUBNET,
           ssh_key_name: process.env.SSH_KEY_NAME
         });
