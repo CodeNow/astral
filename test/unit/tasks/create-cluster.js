@@ -78,7 +78,7 @@ describe('tasks', function() {
         expect(Cluster.insert.firstCall.args[0]).to.deep.equal({
           id: org_id,
           security_group_id: process.env.AWS_CLUSTER_SECURITY_GROUP_ID,
-          subnet_id: process.env.CLUSTER_SUBNET,
+          subnet_id: process.env.AWS_CLUSTER_SUBNET,
           ssh_key_name: process.env.SSH_KEY_NAME
         });
         done();
@@ -127,7 +127,7 @@ describe('tasks', function() {
         expect(cluster).to.deep.equal({
           id: org_id,
           security_group_id: process.env.AWS_CLUSTER_SECURITY_GROUP_ID,
-          subnet_id: process.env.CLUSTER_SUBNET,
+          subnet_id: process.env.AWS_CLUSTER_SUBNET,
           ssh_key_name: process.env.SSH_KEY_NAME
         });
         done();
