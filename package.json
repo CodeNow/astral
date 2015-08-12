@@ -5,10 +5,10 @@
   "main": "index.js",
   "scripts": {
     "lint": "jshint index.js lib/",
-    "test": "NODE_PATH=./lib NODE_ENV=test lab -v -c -a code test",
+    "test": "NODE_PATH=./lib NODE_ENV=test lab -v -c -a code test/unit test/functional",
     "unit": "NODE_PATH=./lib NODE_ENV=test lab -v -c -a code test/unit",
     "functional": "NODE_PATH=./lib NODE_ENV=test lab -v -a code test/functional",
-    "integration": "NODE_PATH=./lib NODE_ENV=test lab -v -a code test/integration",
+    "integration": "NODE_PATH=./lib NODE_ENV=integration lab -m 90000 -v -a code test/integration",
     "init-db": "createuser -s -d shiva && createdb shiva && createdb shiva-test",
     "migrate": "knex migrate:latest",
     "migrate-test": "NODE_ENV=test knex migrate:latest"

@@ -54,6 +54,7 @@ describe('models', function () {
             return queryBuilder;
           },
           reduce: function () {
+            instance.count.restore();
             done();
           }
         }
