@@ -103,6 +103,14 @@ describe('tasks', function() {
         instanceIds: ['1', '2', '3']
       };
       tagInstances(job).then(function () {
+        expect(aws.createTags.calledOnce).to.be.true();
+        expect(aws.createTags.firstCall.args[0]).to.deep.equal({
+          Resources: job.instanceIds,
+          Tags: [
+            { Key: 'type', Value: job.type },
+            { Key: 'org', Value: job.org }
+          ]
+        });
         done();
       }).catch(done);
     });
