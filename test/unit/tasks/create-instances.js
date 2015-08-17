@@ -16,13 +16,16 @@ var Promise = require('bluebird');
 var queue = require('queue');
 var TaskError = require('errors/task-error');
 var TaskFatalError = require('errors/task-fatal-error');
-var createInstances = require('tasks/create-instances');
 var error = require('error');
 var aws = require('providers/aws');
+var createInstances = require('tasks/create-instances');
 
 describe('tasks', function() {
   describe('create-instances', function() {
-    var instances = [1, 2, 3];
+    var instanceIds = [1, 2, 3];
+    var instances = instanceIds.map(function (id) {
+      return { InstanceId: id };
+    });
 
     beforeEach(function (done) {
       sinon.spy(error, 'rejectAndReport');
@@ -210,12 +213,32 @@ describe('tasks', function() {
         type: 'build'
       };
       createInstances(job).then(function () {
-        expect(queue.publish.calledOnce).to.be.true();
         expect(queue.publish.calledWith('check-instances-ready')).to.be.true();
         expect(queue.publish.firstCall.args[1]).to.deep.equal({
           cluster: job.cluster,
           type: job.type,
           instances: instances
+        });
+        done();
+      }).catch(done);
+    });
+
+    it('should publish `tag-instances` on success', function(done) {
+      var job = {
+        cluster: {
+          id: 'some-id',
+          security_group_id: 'some-security-id',
+          subnet_id: 'some-subnet-id',
+          ssh_key_name: 'some-ssh-key-name'
+        },
+        type: 'run'
+      };
+      createInstances(job).then(function () {
+        expect(queue.publish.calledWith('tag-instances')).to.be.true();
+        expect(queue.publish.secondCall.args[1]).to.deep.equal({
+          org: job.cluster.id,
+          type: job.type,
+          instanceIds: instanceIds
         });
         done();
       }).catch(done);
