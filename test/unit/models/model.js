@@ -87,8 +87,25 @@ describe('models', function () {
     }); // end 'exists'
 
     describe('get', function() {
+      beforeEach(function (done) {
+        sinon.spy(model, '_wherePrimaryEq');
+        done();
+      });
+
+      afterEach(function (done) {
+        model._wherePrimaryEq.restore();
+        done();
+      });
+
       it('should return a promise', function(done) {
         expect(model.get('someid').then).to.be.a.function();
+        done();
+      });
+
+      it('should use the correct where clause', function(done) {
+        var id = 'some-id';
+        model.get(id);
+        expect(model._wherePrimaryEq.calledWith(id)).to.be.true();
         done();
       });
     }); // end 'get'
