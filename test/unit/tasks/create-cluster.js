@@ -14,7 +14,7 @@ require('loadenv')('shiva:test');
 
 var Promise = require('bluebird');
 var Cluster = require('models/cluster');
-var hermes = require('queue');
+var queue = require('queue');
 var TaskError = require('errors/task-error');
 var TaskFatalError = require('errors/task-fatal-error');
 var createCluster = require('tasks/create-cluster');
@@ -26,7 +26,8 @@ describe('tasks', function() {
       sinon.spy(error, 'rejectAndReport');
       sinon.stub(Cluster, 'exists').returns(Promise.resolve(false));
       sinon.stub(Cluster, 'insert').returns(Promise.resolve());
-      sinon.stub(hermes, 'publish');
+      sinon.stub(queue, 'publish');
+      sinon.stub(queue, 'subscribe');
       done();
     });
 
@@ -34,7 +35,8 @@ describe('tasks', function() {
       error.rejectAndReport.restore();
       Cluster.exists.restore();
       Cluster.insert.restore();
-      hermes.publish.restore();
+      queue.publish.restore();
+      queue.subscribe.restore();
       done();
     });
 
@@ -88,8 +90,8 @@ describe('tasks', function() {
     it('should publish a message to create build instances', function(done) {
       var org_id = '399392';
       createCluster({ org_id: org_id }).then(function () {
-        expect(hermes.publish.firstCall.args[0]).to.equal('create-instances');
-        expect(hermes.publish.firstCall.args[1]).to.deep.equal({
+        expect(queue.publish.firstCall.args[0]).to.equal('create-instances');
+        expect(queue.publish.firstCall.args[1]).to.deep.equal({
           cluster_id: org_id,
           type: 'build'
         });
@@ -100,8 +102,8 @@ describe('tasks', function() {
     it('should publish a message to create run instances', function(done) {
       var org_id = '5995992';
       createCluster({ org_id: org_id }).then(function () {
-        expect(hermes.publish.secondCall.args[0]).to.equal('create-instances');
-        expect(hermes.publish.secondCall.args[1]).to.deep.equal({
+        expect(queue.publish.secondCall.args[0]).to.equal('create-instances');
+        expect(queue.publish.secondCall.args[1]).to.deep.equal({
           cluster_id: org_id,
           type: 'run'
         });
@@ -112,9 +114,9 @@ describe('tasks', function() {
     it('should publish a message to check for cluster ready', function(done) {
       var org_id = '19293';
       createCluster({ org_id: org_id }).then(function () {
-        expect(hermes.publish.thirdCall.args[0])
+        expect(queue.publish.thirdCall.args[0])
           .to.equal('check-cluster-ready');
-        expect(hermes.publish.thirdCall.args[1]).to.deep.equal({
+        expect(queue.publish.thirdCall.args[1]).to.deep.equal({
           cluster_id: org_id
         });
         done();

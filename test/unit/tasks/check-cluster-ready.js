@@ -14,7 +14,7 @@ require('loadenv')('shiva:test');
 
 var Promise = require('bluebird');
 var Cluster = require('models/cluster');
-var hermes = require('queue');
+var queue = require('queue');
 var TaskError = require('errors/task-error');
 var TaskFatalError = require('errors/task-fatal-error');
 var checkClusterReady = require('tasks/check-cluster-ready');
@@ -29,7 +29,8 @@ describe('tasks', function() {
       sinon.spy(error, 'report');
       sinon.spy(error, 'log');
       sinon.stub(Cluster, 'countInstances').returns(Promise.resolve(1));
-      sinon.stub(hermes, 'publish');
+      sinon.stub(queue, 'publish');
+      sinon.stub(queue, 'subscribe');
       clock = sinon.useFakeTimers();
       done();
     });
@@ -39,7 +40,8 @@ describe('tasks', function() {
       error.log.restore();
       error.report.restore();
       Cluster.countInstances.restore();
-      hermes.publish.restore();
+      queue.publish.restore();
+      queue.subscribe.restore();
       clock.restore();
       done();
     });
@@ -63,8 +65,8 @@ describe('tasks', function() {
     it('should publish a `cluster-ready` event', function(done) {
       var cluster_id = '12345';
       checkClusterReady({ cluster_id: cluster_id }).then(function () {
-        expect(hermes.publish.calledWith('cluster-ready')).to.be.true();
-        expect(hermes.publish.firstCall.args[1]).to.deep.equal({
+        expect(queue.publish.calledWith('cluster-ready')).to.be.true();
+        expect(queue.publish.firstCall.args[1]).to.deep.equal({
           org_id: cluster_id
         });
         done();
@@ -76,8 +78,8 @@ describe('tasks', function() {
       var cluster_id = '8128skns';
       Cluster.countInstances.returns(Promise.resolve(0));
       checkClusterReady({ cluster_id: cluster_id }).then(function () {
-        expect(hermes.publish.calledWith('cluster-ready')).to.be.true();
-        expect(hermes.publish.firstCall.args[1]).to.deep.equal({
+        expect(queue.publish.calledWith('cluster-ready')).to.be.true();
+        expect(queue.publish.firstCall.args[1]).to.deep.equal({
           org_id: cluster_id
         });
         done();

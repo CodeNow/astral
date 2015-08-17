@@ -14,7 +14,7 @@ require('loadenv')('shiva:test');
 
 var Promise = require('bluebird');
 var aws = require('providers/aws');
-var hermes = require('queue');
+var queue = require('queue');
 var checkInstancesReady = require('tasks/check-instances-ready');
 var TaskError = require('errors/task-error');
 var TaskFatalError = require('errors/task-fatal-error');
@@ -31,13 +31,15 @@ describe('tasks', function() {
 
     beforeEach(function (done) {
       sinon.stub(aws, 'waitFor').returns(Promise.resolve({}));
-      sinon.spy(hermes, 'publish');
+      sinon.stub(queue, 'publish');
+      sinon.stub(queue, 'subscribe');
       done();
     });
 
     afterEach(function (done) {
       aws.waitFor.restore();
-      hermes.publish.restore();
+      queue.publish.restore();
+      queue.subscribe.restore();
       done();
     });
 
@@ -166,14 +168,14 @@ describe('tasks', function() {
 
     it('should publish a `write-instances` job on resolution', function(done) {
       checkInstancesReady(job).then(function () {
-        expect(hermes.publish.calledWith('write-instances')).to.be.true();
+        expect(queue.publish.calledWith('write-instances')).to.be.true();
         done();
       }).catch(done);
     });
 
     it('should provide a cluster to the `write-instances` job', function(done) {
       checkInstancesReady(job).then(function () {
-        var data = hermes.publish.firstCall.args[1];
+        var data = queue.publish.firstCall.args[1];
         expect(data.cluster).to.deep.equal(job.cluster);
         done();
       }).catch(done);
@@ -181,7 +183,7 @@ describe('tasks', function() {
 
     it('should provide a type to the `write-instances` job', function(done) {
       checkInstancesReady(job).then(function () {
-        var data = hermes.publish.firstCall.args[1];
+        var data = queue.publish.firstCall.args[1];
         expect(data.type).to.deep.equal(job.type);
         done();
       }).catch(done);
@@ -189,7 +191,7 @@ describe('tasks', function() {
 
     it('should provide the instances to the `write-instances` job', function(done) {
       checkInstancesReady(job).then(function () {
-        var data = hermes.publish.firstCall.args[1];
+        var data = queue.publish.firstCall.args[1];
         expect(data.instances).to.deep.equal(job.instances);
         done();
       }).catch(done);

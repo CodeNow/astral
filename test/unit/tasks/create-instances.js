@@ -13,7 +13,7 @@ var sinon = require('sinon');
 require('loadenv')('shiva:test');
 
 var Promise = require('bluebird');
-var hermes = require('queue');
+var queue = require('queue');
 var TaskError = require('errors/task-error');
 var TaskFatalError = require('errors/task-fatal-error');
 var createInstances = require('tasks/create-instances');
@@ -27,14 +27,16 @@ describe('tasks', function() {
     beforeEach(function (done) {
       sinon.spy(error, 'rejectAndReport');
       sinon.stub(aws, 'createInstances').returns(Promise.resolve(instances));
-      sinon.spy(hermes, 'publish');
+      sinon.stub(queue, 'publish');
+      sinon.stub(queue, 'subscribe');
       done();
     });
 
     afterEach(function (done) {
       error.rejectAndReport.restore();
       aws.createInstances.restore();
-      hermes.publish.restore();
+      queue.publish.restore();
+      queue.subscribe.restore();
       done();
     });
 
@@ -208,9 +210,9 @@ describe('tasks', function() {
         type: 'build'
       };
       createInstances(job).then(function () {
-        expect(hermes.publish.calledOnce).to.be.true();
-        expect(hermes.publish.calledWith('check-instances-ready')).to.be.true();
-        expect(hermes.publish.firstCall.args[1]).to.deep.equal({
+        expect(queue.publish.calledOnce).to.be.true();
+        expect(queue.publish.calledWith('check-instances-ready')).to.be.true();
+        expect(queue.publish.firstCall.args[1]).to.deep.equal({
           cluster: job.cluster,
           type: job.type,
           instances: instances

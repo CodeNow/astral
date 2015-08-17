@@ -14,7 +14,7 @@ var sinon = require('sinon');
 
 require('loadenv')('shiva:test');
 
-var hermes = require('queue');
+var queue = require('queue');
 var db = require('database');
 var dbFixture = require('../../fixtures/database.js');
 var checkClusterReady = require('tasks/check-cluster-ready');
@@ -29,7 +29,8 @@ describe('functional', function() {
       beforeEach(function (done) {
         originalInterval = process.env.CLUSTER_READY_INTERVAL;
         process.env.CLUSTER_READY_INTERVAL = 10;
-        sinon.spy(hermes, 'publish');
+        sinon.stub(queue, 'publish');
+        sinon.stub(queue, 'subscribe');
         dbFixture.createCluster('1')
           .then(function () {
             return dbFixture.createInstance('a', '1', { type: 'run' });
@@ -42,16 +43,17 @@ describe('functional', function() {
 
       afterEach(function (done) {
         process.env.CLUSTER_READY_INTERVAL = originalInterval;
-        hermes.publish.restore();
+        queue.publish.restore();
+        queue.subscribe.restore();
         done();
       });
 
       it('should use the database to check for cluster ready', function(done) {
         var job = { cluster_id: '1' };
         checkClusterReady(job).then(function () {
-          expect(hermes.publish.calledOnce).to.be.true();
-          expect(hermes.publish.calledWith('cluster-ready')).to.be.true();
-          expect(hermes.publish.firstCall.args[1]).to.deep.equal({
+          expect(queue.publish.calledOnce).to.be.true();
+          expect(queue.publish.calledWith('cluster-ready')).to.be.true();
+          expect(queue.publish.firstCall.args[1]).to.deep.equal({
             org_id: '1'
           });
           done()
