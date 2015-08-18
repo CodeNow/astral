@@ -17,7 +17,6 @@ require('loadenv')('shiva:test');
 var Model = require('models/model');
 var cluster = require('models/cluster');
 var instance = require('models/instance');
-var volume = require('models/volume');
 
 describe('models', function () {
   describe('Cluster', function() {
@@ -81,24 +80,5 @@ describe('models', function () {
         cluster.getInstances(id);
       });
     }); // end 'getInstances'
-
-    describe('getVolumes', function() {
-      it('should return a promise', function(done) {
-        expect(cluster.getVolumes('some-id').then).to.be.a.function();
-        done();
-      });
-
-      it('should use the correct volumes select query', function(done) {
-        var id = 'some-volume';
-        sinon.stub(volume, 'select').returns({
-          where: function (opts) {
-            expect(opts.cluster_id).to.equal(id);
-            volume.select.restore();
-            done();
-          }
-        });
-        cluster.getVolumes(id);
-      });
-    }); // end 'getVolumes'
   }); // end 'Cluster'
 }); // end 'models'

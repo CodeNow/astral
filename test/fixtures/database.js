@@ -15,10 +15,7 @@ module.exports = {
   truncate: truncate,
   createCluster: createCluster,
   createInstance: createInstance,
-  createInstances: createInstances,
-  createVolume: createVolume,
-  createVolumes: createVolumes,
-  setInstanceVolumes: setInstanceVolumes
+  createInstances: createInstances
 };
 
 /**
@@ -26,25 +23,21 @@ module.exports = {
  * @param cb Callback to execute after each table has been truncated.
  */
 function truncate(cb) {
-  foreignKeys.remove().then(function () {
-    var truncateClusters = db('clusters').truncate();
-    debug(truncateClusters.toString());
-    return truncateClusters;
-  }).then(function () {
-    var truncateInstances = db('instances').truncate();
-    debug(truncateInstances.toString());
-    return truncateInstances;
-  }).then(function () {
-    var truncateVolumes =  db('volumes').truncate();
-    debug(truncateVolumes.toString());
-    return truncateVolumes;
-  }).then(function () {
-    var truncateInstanceVolumes = db('instance_volumes').truncate();
-    debug(truncateInstanceVolumes.toString());
-    return truncateInstanceVolumes;
-  }).then(function () {
-    return foreignKeys.add();
-  }).asCallback(cb);
+  foreignKeys.remove()
+    .then(function () {
+      var truncateClusters = db('clusters').truncate();
+      debug(truncateClusters.toString());
+      return truncateClusters;
+    })
+    .then(function () {
+      var truncateInstances = db('instances').truncate();
+      debug(truncateInstances.toString());
+      return truncateInstances;
+    })
+    .then(function () {
+      return foreignKeys.add();
+    })
+    .asCallback(cb);
 }
 
 /**
@@ -114,66 +107,4 @@ function createInstances(instance_ids, cluster_id) {
   }));
   debug(instancesInsert.toString());
   return instancesInsert;
-}
-
-/**
- * Creates a new volume in the test database.
- * @param {string} volume_id Id of the volume to create.
- * @param {string} cluster_id Id of the cluster for the volume.
- * @param {object} [fields] Overrides the default columns for a volume.
- * @return {knex~promise} A promise for the query.
- */
-function createVolume(volume_id, cluster_id, fields) {
-  var defaultValues = {
-    id: '1',
-    cluster_id: '1',
-    volume_type: 'awesome',
-    size: '1024'
-  };
-  var row = { id: volume_id, cluster_id: cluster_id };
-  if (isObject(fields)) {
-    defaults(row, fields);
-  }
-  defaults(row, defaultValues);
-
-  var volumeInsert = db('volumes').insert(row);
-  debug(volumeInsert.toString());
-  return volumeInsert;
-}
-
-/**
- * Creates many volumes for a cluster.
- * @param {array} volume_ids Ids for the volumes.
- * @param {string} cluster_id Id of the cluster.
- * @return {knex-promise} A promise for the query.
- */
-function createVolumes(volume_ids, cluster_id) {
-  var defaultValues = {
-    id: '1',
-    cluster_id: '1',
-    volume_type: 'awesome',
-    size: '1024'
-  };
-
-  var volumesInsert = db('volumes').insert(volume_ids.map(function (id) {
-    var row = { id: id, cluster_id: cluster_id };
-    defaults(row, defaultValues);
-    return row;
-  }));
-  debug(volumesInsert.toString());
-  return volumesInsert;
-}
-
-/**
- * Associates a given instance with the given volume ids.
- * @param {string} instance_id Id of the instance to associate.
- * @param {array} volume_ids Ids for the volumes to associate.
- * @return {knex~promise} A promise for the query.
- */
-function setInstanceVolumes(instance_id, volume_ids) {
-  var setVolume = db('instance_volumes').insert(volume_ids.map(function (volume_id) {
-    return { instance_id: instance_id, volume_id: volume_id }
-  }));
-  debug(setVolume.toString());
-  return setVolume;
 }

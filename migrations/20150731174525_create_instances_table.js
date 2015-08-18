@@ -1,18 +1,20 @@
 'use strict';
 
+var debug = require('debug')('shiva:migration');
+
 /**
  * Creates the instances table for the infrastructure database.
  * @author Ryan Sandor Richards
  */
 
 exports.up = function(knex, Promise) {
-  return knex.schema.createTable('instances', function (table) {
+  var createTable = knex.schema.createTable('instances', function (table) {
     table.string('id', 36)
       .primary();
     table.string('cluster_id', 36)
       .notNullable().index();
-    table.specificType('type', 'instance_type')
-      .notNullable().defaultsTo('build').index();
+    table.string('type')
+      .notNullable().defaultsTo('run').index();
     table.string('ami_id', 36)
       .notNullable();
     table.string('aws_type', 36)
@@ -22,8 +24,12 @@ exports.up = function(knex, Promise) {
     table.timestamp('updated_at')
       .defaultTo(knex.raw('now()'));
   });
+  debug(createTable.toString());
+  return createTable;
 };
 
 exports.down = function(knex, Promise) {
-  return knex.schema.dropTable('instances');
+  var dropTable = knex.schema.dropTable('instances');
+  debug(dropTable.toString());
+  return dropTable;
 };

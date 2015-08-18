@@ -31,21 +31,12 @@ describe('functional', function() {
           .then(function () {
             return dbFixture.createInstances(instanceIds, clusterId);
           })
-          .then(function () {
-            return dbFixture.createVolumes(volumeIds, clusterId);
-          }).asCallback(done);
+          .asCallback(done);
       });
 
       it('should find all instances for a cluster', function(done) {
         cluster.getInstances(clusterId).then(function (rows) {
           expect(rows.length).to.equal(instanceIds.length);
-          done();
-        }).catch(done);
-      });
-
-      it('should find all volumes for a cluster', function(done) {
-        cluster.getInstances(clusterId).then(function (rows) {
-          expect(rows.length).to.equal(volumeIds.length);
           done();
         }).catch(done);
       });
@@ -58,7 +49,7 @@ describe('functional', function() {
           });
       });
 
-      it('should correctly cound run instances', function(done) {
+      it('should correctly count run instances', function(done) {
         cluster.countInstances(clusterId, 'run')
           .then(function (count) {
             expect(count).to.equal(0);

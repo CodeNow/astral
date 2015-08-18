@@ -9,9 +9,10 @@
     "unit": "NODE_PATH=./lib NODE_ENV=test lab -v -c -a code test/unit",
     "functional": "NODE_PATH=./lib NODE_ENV=test lab -v -a code test/functional",
     "integration": "NODE_PATH=./lib NODE_ENV=integration lab -m 90000 -v -a code test/integration",
-    "init-db": "createuser -s -d shiva; createdb shiva && createdb shiva-test",
+    "init-db": "createuser -s -d shiva; createdb shiva; createdb shiva-test",
     "drop-db": "dropdb shiva && dropdb shiva-test",
     "migrate": "knex migrate:latest",
+    "rollback": "knex migrate:rollback",
     "migrate-test": "NODE_ENV=test knex migrate:latest"
   },
   "repository": {
