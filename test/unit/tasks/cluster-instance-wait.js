@@ -166,14 +166,14 @@ describe('tasks', function() {
       clusterInstanceWait(job).asCallback(done);
     });
 
-    it('should publish a `write-instances` job on resolution', function(done) {
+    it('should publish a `cluster-instance-write` job on resolution', function(done) {
       clusterInstanceWait(job).then(function () {
-        expect(queue.publish.calledWith('write-instances')).to.be.true();
+        expect(queue.publish.calledWith('cluster-instance-write')).to.be.true();
         done();
       }).catch(done);
     });
 
-    it('should provide a cluster to the `write-instances` job', function(done) {
+    it('should provide a cluster to the `cluster-instance-write` job', function(done) {
       clusterInstanceWait(job).then(function () {
         var data = queue.publish.firstCall.args[1];
         expect(data.cluster).to.deep.equal(job.cluster);
@@ -181,7 +181,7 @@ describe('tasks', function() {
       }).catch(done);
     });
 
-    it('should provide a type to the `write-instances` job', function(done) {
+    it('should provide a type to the `cluster-instance-write` job', function(done) {
       clusterInstanceWait(job).then(function () {
         var data = queue.publish.firstCall.args[1];
         expect(data.type).to.deep.equal(job.type);
@@ -189,7 +189,7 @@ describe('tasks', function() {
       }).catch(done);
     });
 
-    it('should provide the instances to the `write-instances` job', function(done) {
+    it('should provide the instances to the `cluster-instance-write` job', function(done) {
       clusterInstanceWait(job).then(function () {
         var data = queue.publish.firstCall.args[1];
         expect(data.instances).to.deep.equal(job.instances);

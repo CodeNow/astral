@@ -16,11 +16,11 @@ require('loadenv')('shiva:test');
 
 var db = require('database');
 var dbFixture = require('../../fixtures/database.js');
-var writeInstances = require('tasks/write-instances');
+var clusterInstanceWrite = require('tasks/cluster-instance-write');
 
 describe('functional', function() {
   describe('tasks', function() {
-    describe('write-instances', function() {
+    describe('cluster-instance-write', function() {
       beforeEach(dbFixture.truncate);
       beforeEach(function (done) {
         dbFixture.createCluster('1').asCallback(done)
@@ -38,7 +38,7 @@ describe('functional', function() {
             }
           ]
         };
-        writeInstances(job)
+        clusterInstanceWrite(job)
           .then(function () {
             return db.select().from('instances');
           })
@@ -66,7 +66,7 @@ describe('functional', function() {
             }
           ]
         };
-        writeInstances(job)
+        clusterInstanceWrite(job)
           .then(function () {
             return db.select().from('instances');
           })
@@ -99,7 +99,7 @@ describe('functional', function() {
             }
           ]
         };
-        writeInstances(job)
+        clusterInstanceWrite(job)
           .then(function () {
             return db.select().from('instances').orderBy('id', 'asc');
           })
@@ -115,6 +115,6 @@ describe('functional', function() {
           })
           .catch(done);
       });
-    }); // end 'write-instances'
+    }); // end 'cluster-instance-write'
   }); // end 'tasks'
 }); // end 'functional'
