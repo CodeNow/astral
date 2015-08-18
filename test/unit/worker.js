@@ -102,6 +102,24 @@ describe('Worker', function() {
     });
   }); // end 'constructor'
 
+  describe('create', function() {
+    beforeEach(function (done) {
+      sinon.stub(Worker.prototype, 'getTask').returns(noop);
+      done();
+    });
+
+    afterEach(function (done) {
+      Worker.prototype.getTask.restore();
+      done();
+    });
+
+    it('should create a new worker', function(done) {
+      expect(Worker.create('queue', {}, noop, false))
+        .to.be.an.instanceof(Worker);
+      done();
+    });
+  }); // end 'create'
+
   describe('getTask', function() {
     var worker;
 
