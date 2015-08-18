@@ -87,24 +87,12 @@ describe('tasks', function() {
       });
     });
 
-    it('should publish a message to create build instances', function(done) {
-      var org_id = '399392';
-      createCluster({ org_id: org_id }).then(function () {
-        expect(queue.publish.firstCall.args[0]).to.equal('create-instances');
-        expect(queue.publish.firstCall.args[1]).to.deep.equal({
-          cluster_id: org_id,
-          type: 'build'
-        });
-        done();
-      });
-    });
-
     it('should publish a message to create run instances', function(done) {
       var org_id = '5995992';
-      createCluster({ org_id: org_id }).then(function () {
-        expect(queue.publish.secondCall.args[0]).to.equal('create-instances');
-        expect(queue.publish.secondCall.args[1]).to.deep.equal({
-          cluster_id: org_id,
+      createCluster({ org_id: org_id }).then(function (cluster) {
+        expect(queue.publish.firstCall.args[0]).to.equal('create-instances');
+        expect(queue.publish.firstCall.args[1]).to.deep.equal({
+          cluster: cluster,
           type: 'run'
         });
         done();
@@ -114,9 +102,9 @@ describe('tasks', function() {
     it('should publish a message to check for cluster ready', function(done) {
       var org_id = '19293';
       createCluster({ org_id: org_id }).then(function () {
-        expect(queue.publish.thirdCall.args[0])
+        expect(queue.publish.secondCall.args[0])
           .to.equal('check-cluster-ready');
-        expect(queue.publish.thirdCall.args[1]).to.deep.equal({
+        expect(queue.publish.secondCall.args[1]).to.deep.equal({
           cluster_id: org_id
         });
         done();
