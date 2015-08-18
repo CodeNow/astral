@@ -16,14 +16,20 @@ require('loadenv')('shiva:test');
 
 var db = require('database');
 var dbFixture = require('../../fixtures/database.js');
-var createCluster = require('tasks/create-cluster');
+var createCluster = require('tasks/cluster-provision');
+var queue = require('queue');
 
 describe('functional', function() {
   describe('tasks', function() {
-    describe('create-cluster', function() {
+    describe('cluster-provision', function() {
       beforeEach(dbFixture.truncate);
       beforeEach(function (done) {
+        sinon.stub(queue, 'publish');
         dbFixture.createCluster('exists').asCallback(done);
+      });
+      afterEach(function (done) {
+        queue.publish.restore();
+        done();
       });
 
       it('should add the cluster to the database', function(done) {
@@ -36,7 +42,10 @@ describe('functional', function() {
             expect(rows[0].count).to.equal('2');
             done();
           })
-          .catch(done);
+          .catch(function (err) {
+            console.log(err);
+            done(err);
+          });
       });
 
       it('should not add the cluster if it already exists', function(done) {
@@ -51,6 +60,6 @@ describe('functional', function() {
           })
           .catch(done);
       });
-    }); // end 'create-cluster'
+    }); // end 'cluster-provision'
   }); // end 'tasks'
 }); // end 'functional'

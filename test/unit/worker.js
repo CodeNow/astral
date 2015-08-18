@@ -125,7 +125,7 @@ describe('Worker', function() {
 
     beforeEach(function (done) {
       sinon.stub(Worker.prototype, 'run');
-      worker = new Worker('create-cluster');
+      worker = new Worker('cluster-provision');
       done();
     });
 

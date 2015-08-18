@@ -17,11 +17,11 @@ var Cluster = require('models/cluster');
 var queue = require('queue');
 var TaskError = require('errors/task-error');
 var TaskFatalError = require('errors/task-fatal-error');
-var createCluster = require('tasks/create-cluster');
+var createCluster = require('tasks/cluster-provision');
 var error = require('error');
 
 describe('tasks', function() {
-  describe('create-cluster', function() {
+  describe('cluster-provision', function() {
     beforeEach(function (done) {
       sinon.spy(error, 'rejectAndReport');
       sinon.stub(Cluster, 'exists').returns(Promise.resolve(false));
@@ -43,7 +43,7 @@ describe('tasks', function() {
     it('should fatally reject if not given a job', function(done) {
       createCluster().catch(TaskFatalError, function (err) {
         expect(error.rejectAndReport.calledWith(err)).to.be.true();
-        expect(err.data.task).to.equal('create-cluster');
+        expect(err.data.task).to.equal('cluster-provision');
         done();
       });
     });
@@ -51,7 +51,7 @@ describe('tasks', function() {
     it('should fatally reject if the job is missing an org_id', function(done) {
       createCluster({}).catch(TaskFatalError, function (err) {
         expect(error.rejectAndReport.calledWith(err)).to.be.true();
-        expect(err.data.task).to.equal('create-cluster');
+        expect(err.data.task).to.equal('cluster-provision');
         done();
       });
     });
@@ -90,22 +90,11 @@ describe('tasks', function() {
     it('should publish a message to create run instances', function(done) {
       var org_id = '5995992';
       createCluster({ org_id: org_id }).then(function (cluster) {
-        expect(queue.publish.firstCall.args[0]).to.equal('create-instances');
+        expect(queue.publish.firstCall.args[0])
+          .to.equal('cluster-instance-provision');
         expect(queue.publish.firstCall.args[1]).to.deep.equal({
-          cluster: cluster,
+          cluster_id: org_id,
           type: 'run'
-        });
-        done();
-      });
-    });
-
-    it('should publish a message to check for cluster ready', function(done) {
-      var org_id = '19293';
-      createCluster({ org_id: org_id }).then(function () {
-        expect(queue.publish.secondCall.args[0])
-          .to.equal('check-cluster-ready');
-        expect(queue.publish.secondCall.args[1]).to.deep.equal({
-          cluster_id: org_id
         });
         done();
       });
@@ -129,7 +118,7 @@ describe('tasks', function() {
       var job = { org_id: '234ss5' };
       Cluster.exists.returns(Promise.reject(dbError));
       createCluster(job).catch(TaskError, function (err) {
-        expect(err.data.task).to.equal('create-cluster');
+        expect(err.data.task).to.equal('cluster-provision');
         expect(err.data.job).to.equal(job);
         expect(err.data.originalError).to.equal(dbError);
         done();
@@ -141,11 +130,11 @@ describe('tasks', function() {
       var job = { org_id: 'dooopppp' };
       Cluster.insert.returns(Promise.reject(dbError));
       createCluster(job).catch(TaskError, function (err) {
-        expect(err.data.task).to.equal('create-cluster');
+        expect(err.data.task).to.equal('cluster-provision');
         expect(err.data.job).to.equal(job);
         expect(err.data.originalError).to.equal(dbError);
         done();
       });
     });
-  }); // end 'create-cluster'
+  }); // end 'cluster-provision'
 }); // end 'tasks'
