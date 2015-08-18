@@ -57,11 +57,13 @@ describe('providers', function() {
 
       beforeEach(function (done) {
         sinon.spy(aws, 'getDefaultInstanceParams');
+        sinon.spy(aws, 'getUserDataScript');
         done();
       });
 
       afterEach(function (done) {
         aws.getDefaultInstanceParams.restore();
+        aws.getUserDataScript.restore();
         done();
       });
 
@@ -102,6 +104,18 @@ describe('providers', function() {
         }).catch(done);
       });
 
+      it('should set the correct `UserData` param', function(done) {
+        var type = 'run';
+        aws.createInstances(cluster, type).then(function (instances) {
+          var params = aws.ec2.runInstances.firstCall.args[0];
+          expect(aws.getUserDataScript.calledOnce).to.be.true();
+          expect(params.UserData).to.equal(new Buffer(
+            aws.getUserDataScript(cluster, type)
+          ).toString('base64'));
+          done();
+        }).catch(done);
+      });
+
       it('should use the given number of instances', function(done) {
         var numInstances = 2034
         aws.createInstances(cluster, 'run', numInstances).then(function () {
@@ -128,6 +142,22 @@ describe('providers', function() {
         });
       });
     }); // end 'createInstances'
+
+    describe('getUserDataScript', function() {
+      it('should generate a script with the correct tags', function(done) {
+        var cluster = { id: 'cluster-id' };
+        var type = 'build';
+        var tags = [cluster.id, type].join(',');
+        var expected = [
+          '#!/bin/sh',
+          'PROFILE_FILE=/etc/profile.d/runnable-host-tags.sh',
+          'echo \'#!/bin/sh\' >> $PROFILE_FILE',
+          'echo \'export HOST_TAGS=' + tags +  '\' >> $PROFILE_FILE'
+        ].join('\n');
+        expect(aws.getUserDataScript(cluster, type)).to.equal(expected);
+        done();
+      });
+    }); // end 'getUserDataScript'
 
     describe('waitFor', function() {
       it('should return a promise', function(done) {
