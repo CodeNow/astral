@@ -16,7 +16,7 @@ require('loadenv')('shiva:test');
 
 var db = require('database');
 var dbFixture = require('../../fixtures/database.js');
-var createCluster = require('tasks/cluster-provision');
+var clusterProvision = require('tasks/cluster-provision');
 var queue = require('queue');
 
 describe('functional', function() {
@@ -34,7 +34,7 @@ describe('functional', function() {
 
       it('should add the cluster to the database', function(done) {
         var job = { org_id: 'does-not-exist' };
-        createCluster(job)
+        clusterProvision(job)
           .then(function () {
             return db.count().table('clusters');
           })
@@ -50,7 +50,7 @@ describe('functional', function() {
 
       it('should not add the cluster if it already exists', function(done) {
         var job = { org_id: 'exists' };
-        createCluster(job)
+        clusterProvision(job)
           .then(function () {
             return db.count().table('clusters');
           })

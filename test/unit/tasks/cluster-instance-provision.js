@@ -18,10 +18,10 @@ var TaskError = require('errors/task-error');
 var TaskFatalError = require('errors/task-fatal-error');
 var error = require('error');
 var aws = require('providers/aws');
-var createInstances = require('tasks/create-instances');
+var clusterInstanceProvision = require('tasks/cluster-instance-provision');
 
 describe('tasks', function() {
-  describe('create-instances', function() {
+  describe('cluster-instance-provision', function() {
     var instanceIds = [1, 2, 3];
     var instances = instanceIds.map(function (id) {
       return { InstanceId: id };
@@ -44,16 +44,16 @@ describe('tasks', function() {
     });
 
     it('should fatally reject if not given a job', function(done) {
-      createInstances().catch(TaskFatalError, function (err) {
-        expect(err.data.task).to.equal('create-instances');
+      clusterInstanceProvision().catch(TaskFatalError, function (err) {
+        expect(err.data.task).to.equal('cluster-instance-provision');
         expect(error.rejectAndReport.calledWith(err)).to.be.true();
         done();
       }).catch(done);
     });
 
     it('should fatally reject without `cluster`', function(done) {
-      createInstances({ type: 'run' }).catch(TaskFatalError, function (err) {
-        expect(err.data.task).to.equal('create-instances');
+      clusterInstanceProvision({ type: 'run' }).catch(TaskFatalError, function (err) {
+        expect(err.data.task).to.equal('cluster-instance-provision');
         expect(error.rejectAndReport.calledWith(err)).to.be.true();
         done();
       }).catch(done);
@@ -61,8 +61,8 @@ describe('tasks', function() {
 
     it('should fatally reject if `cluster` is not an object', function(done) {
       var job = { cluster: 'invalid', type: 'run' };
-      createInstances(job).catch(TaskFatalError, function (err) {
-        expect(err.data.task).to.equal('create-instances');
+      clusterInstanceProvision(job).catch(TaskFatalError, function (err) {
+        expect(err.data.task).to.equal('cluster-instance-provision');
         expect(error.rejectAndReport.calledWith(err)).to.be.true();
         done();
       }).catch(done);
@@ -77,8 +77,8 @@ describe('tasks', function() {
         },
         type: 'run'
       };
-      createInstances(job).catch(TaskFatalError, function (err) {
-        expect(err.data.task).to.equal('create-instances');
+      clusterInstanceProvision(job).catch(TaskFatalError, function (err) {
+        expect(err.data.task).to.equal('cluster-instance-provision');
         expect(error.rejectAndReport.calledWith(err)).to.be.true();
         done();
       }).catch(done);
@@ -94,8 +94,8 @@ describe('tasks', function() {
         },
         type: 'run'
       };
-      createInstances(job).catch(TaskFatalError, function (err) {
-        expect(err.data.task).to.equal('create-instances');
+      clusterInstanceProvision(job).catch(TaskFatalError, function (err) {
+        expect(err.data.task).to.equal('cluster-instance-provision');
         expect(error.rejectAndReport.calledWith(err)).to.be.true();
         done();
       }).catch(done);
@@ -111,8 +111,8 @@ describe('tasks', function() {
         },
         type: 'run'
       };
-      createInstances(job).catch(TaskFatalError, function (err) {
-        expect(err.data.task).to.equal('create-instances');
+      clusterInstanceProvision(job).catch(TaskFatalError, function (err) {
+        expect(err.data.task).to.equal('cluster-instance-provision');
         expect(error.rejectAndReport.calledWith(err)).to.be.true();
         done();
       }).catch(done);
@@ -129,8 +129,8 @@ describe('tasks', function() {
         },
         type: 'run'
       };
-      createInstances(job).catch(TaskFatalError, function (err) {
-        expect(err.data.task).to.equal('create-instances');
+      clusterInstanceProvision(job).catch(TaskFatalError, function (err) {
+        expect(err.data.task).to.equal('cluster-instance-provision');
         expect(error.rejectAndReport.calledWith(err)).to.be.true();
         done();
       }).catch(done);
@@ -146,8 +146,8 @@ describe('tasks', function() {
         },
         type: 123
       };
-      createInstances(job).catch(TaskFatalError, function (err) {
-        expect(err.data.task).to.equal('create-instances');
+      clusterInstanceProvision(job).catch(TaskFatalError, function (err) {
+        expect(err.data.task).to.equal('cluster-instance-provision');
         expect(error.rejectAndReport.calledWith(err)).to.be.true();
         done();
       }).catch(done);
@@ -163,8 +163,8 @@ describe('tasks', function() {
         },
         type: 'not-valid'
       };
-      createInstances(job).catch(TaskFatalError, function (err) {
-        expect(err.data.task).to.equal('create-instances');
+      clusterInstanceProvision(job).catch(TaskFatalError, function (err) {
+        expect(err.data.task).to.equal('cluster-instance-provision');
         expect(error.rejectAndReport.calledWith(err)).to.be.true();
         done();
       }).catch(done);
@@ -180,7 +180,7 @@ describe('tasks', function() {
         },
         type: 'run'
       };
-      createInstances(job).asCallback(function (err) {
+      clusterInstanceProvision(job).asCallback(function (err) {
         expect(err).to.not.exist();
         done()
       });
@@ -196,13 +196,13 @@ describe('tasks', function() {
         },
         type: 'build'
       };
-      createInstances(job).asCallback(function (err) {
+      clusterInstanceProvision(job).asCallback(function (err) {
         expect(err).to.not.exist();
         done()
       });
     });
 
-    it('should publish `check-instances-ready` on success', function(done) {
+    it('should publish `cluster-instance-wait` on success', function(done) {
       var job = {
         cluster: {
           id: 'some-id',
@@ -212,8 +212,8 @@ describe('tasks', function() {
         },
         type: 'build'
       };
-      createInstances(job).then(function () {
-        expect(queue.publish.calledWith('check-instances-ready')).to.be.true();
+      clusterInstanceProvision(job).then(function () {
+        expect(queue.publish.calledWith('cluster-instance-wait')).to.be.true();
         expect(queue.publish.firstCall.args[1]).to.deep.equal({
           cluster: job.cluster,
           type: job.type,
@@ -223,7 +223,7 @@ describe('tasks', function() {
       }).catch(done);
     });
 
-    it('should publish `tag-instances` on success', function(done) {
+    it('should publish `cluster-instance-tag` on success', function(done) {
       var job = {
         cluster: {
           id: 'some-id',
@@ -233,8 +233,8 @@ describe('tasks', function() {
         },
         type: 'run'
       };
-      createInstances(job).then(function () {
-        expect(queue.publish.calledWith('tag-instances')).to.be.true();
+      clusterInstanceProvision(job).then(function () {
+        expect(queue.publish.calledWith('cluster-instance-tag')).to.be.true();
         expect(queue.publish.secondCall.args[1]).to.deep.equal({
           org: job.cluster.id,
           type: job.type,
@@ -256,13 +256,13 @@ describe('tasks', function() {
         },
         type: 'build'
       };
-      createInstances(job).asCallback(function (err) {
+      clusterInstanceProvision(job).asCallback(function (err) {
         expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskError);
-        expect(err.data.task).to.equal('create-instances');
+        expect(err.data.task).to.equal('cluster-instance-provision');
         expect(err.data.originalError).to.equal(awsError);
         done();
       });
     });
-  }); // end 'create-instances'
+  }); // end 'cluster-instance-provision'
 }); // end 'tasks'
