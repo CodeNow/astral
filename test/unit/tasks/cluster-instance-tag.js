@@ -18,10 +18,10 @@ var TaskError = require('errors/task-error');
 var TaskFatalError = require('errors/task-fatal-error');
 var error = require('error');
 var aws = require('providers/aws');
-var tagInstances = require('tasks/tag-instances');
+var clusterInstanceTag = require('tasks/cluster-instance-tag');
 
 describe('tasks', function() {
-  describe('tag-instances', function() {
+  describe('cluster-instance-tag', function() {
     beforeEach(function (done) {
       sinon.spy(error, 'rejectAndReport');
       sinon.stub(aws, 'createTags').returns(Promise.resolve());
@@ -39,10 +39,10 @@ describe('tasks', function() {
     });
 
     it('should fatally reject if not given a job', function(done) {
-      tagInstances().asCallback(function (err) {
+      clusterInstanceTag().asCallback(function (err) {
         expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('tag-instances');
+        expect(err.data.task).to.equal('cluster-instance-tag');
         expect(error.rejectAndReport.calledWith(err)).to.be.true();
         done();
       });
@@ -50,10 +50,10 @@ describe('tasks', function() {
 
     it('should fatally reject when given invalid `type`', function(done) {
       var job = { org: 'some-org', instanceIds: ['1', '2'] };
-      tagInstances(job).asCallback(function (err) {
+      clusterInstanceTag(job).asCallback(function (err) {
         expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('tag-instances');
+        expect(err.data.task).to.equal('cluster-instance-tag');
         expect(error.rejectAndReport.calledWith(err)).to.be.true();
         done();
       });
@@ -61,10 +61,10 @@ describe('tasks', function() {
 
     it('should fatally reject when given invalid `org`', function(done) {
       var job = { type: 'run', instanceIds: ['1', '2'] };
-      tagInstances(job).asCallback(function (err) {
+      clusterInstanceTag(job).asCallback(function (err) {
         expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('tag-instances');
+        expect(err.data.task).to.equal('cluster-instance-tag');
         expect(error.rejectAndReport.calledWith(err)).to.be.true();
         done();
       });
@@ -72,10 +72,10 @@ describe('tasks', function() {
 
     it('should fatally reject when given invalid `instanceIds`', function(done) {
       var job = { type: 'run', org: 'some-org', instanceIds: {} };
-      tagInstances(job).asCallback(function (err) {
+      clusterInstanceTag(job).asCallback(function (err) {
         expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('tag-instances');
+        expect(err.data.task).to.equal('cluster-instance-tag');
         expect(error.rejectAndReport.calledWith(err)).to.be.true();
         done();
       });
@@ -87,10 +87,10 @@ describe('tasks', function() {
         org: 'some-org',
         instanceIds: [{}, '2']
       };
-      tagInstances(job).asCallback(function (err) {
+      clusterInstanceTag(job).asCallback(function (err) {
         expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('tag-instances');
+        expect(err.data.task).to.equal('cluster-instance-tag');
         expect(error.rejectAndReport.calledWith(err)).to.be.true();
         done();
       });
@@ -102,7 +102,7 @@ describe('tasks', function() {
         type: 'run',
         instanceIds: ['1', '2', '3']
       };
-      tagInstances(job).then(function () {
+      clusterInstanceTag(job).then(function () {
         expect(aws.createTags.calledOnce).to.be.true();
         expect(aws.createTags.firstCall.args[0]).to.deep.equal({
           Resources: job.instanceIds,
@@ -114,5 +114,5 @@ describe('tasks', function() {
         done();
       }).catch(done);
     });
-  }); // end 'tag-instances'
+  }); // end 'cluster-instance-tag'
 }); // end 'tasks'
