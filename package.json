@@ -8,7 +8,7 @@
     "test": "NODE_PATH=./lib NODE_ENV=test lab -v -c -a code test/unit test/functional",
     "unit": "NODE_PATH=./lib NODE_ENV=test lab -v -c -a code test/unit",
     "functional": "NODE_PATH=./lib NODE_ENV=test lab -v -a code test/functional",
-    "integration": "NODE_PATH=./lib NODE_ENV=integration lab -m 900000 -v -a code test/integration",
+    "integration": "NODE_PATH=./lib NODE_ENV=test lab -m 900000 -v -a code test/integration",
     "integration-server": "LOG_LEVEL=debug NODE_PATH=./lib lab -a code -v -m 300000 test/integration/server.js | bunyan",
     "init-db": "createuser -s -d shiva; createdb shiva; createdb shiva-test",
     "drop-db": "dropdb shiva && dropdb shiva-test",
