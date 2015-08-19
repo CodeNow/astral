@@ -229,6 +229,7 @@ describe('Worker', function() {
       worker.task = rejectFatal;
       worker.run().then(function () {
         sinon.stub(worker, 'run');
+        expect(worker.done.calledOnce).to.be.true();
         clock.tick(process.env.WORKER_MAX_RETRY_DELAY);
         expect(worker.run.callCount).to.equal(0);
         done();
