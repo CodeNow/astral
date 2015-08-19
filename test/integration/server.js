@@ -45,7 +45,7 @@ describe('integration', function() {
             clearInterval(interval);
             done(err);
           });
-      }, 5000);
+      }, 1000);
     });
   }); // end 'server'
 }); // end 'integration'
