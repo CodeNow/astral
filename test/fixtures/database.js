@@ -4,6 +4,7 @@ var defaults = require('101/defaults');
 var isObject = require('101/is-object');
 var debug = require('debug')('shiva:test:fixtures');
 var db = require('database');
+var aws = require('providers/aws');
 var foreignKeys = require('./foreign-keys');
 
 /**
@@ -15,7 +16,8 @@ module.exports = {
   truncate: truncate,
   createCluster: createCluster,
   createInstance: createInstance,
-  createInstances: createInstances
+  createInstances: createInstances,
+  terminateInstances: terminateInstances
 };
 
 /**
@@ -107,4 +109,26 @@ function createInstances(instance_ids, cluster_id) {
   }));
   debug(instancesInsert.toString());
   return instancesInsert;
+}
+
+/**
+ * Terminates any instances still residing in the database.
+ * @param  {Function} cb Callback to execute after completion.
+ */
+function terminateInstances(cb) {
+  db.select('id').from('instances')
+    .map(function (row) {
+      return row.id;
+    })
+    .then(function (ids) {
+      if (ids.length === 0) { return; }
+      return aws.terminateInstances({ InstanceIds: ids });
+    })
+    .then(function () {
+      cb();
+    })
+    .catch(function (err) {
+      // No need to panic here, its okay if this fails
+      console.error("[OK] terminateInstances failed: ", err);
+    });
 }

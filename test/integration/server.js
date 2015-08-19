@@ -22,36 +22,30 @@ var Cluster = require('models/cluster');
 
 describe('integration', function() {
   describe('server', function() {
-    before(function (done) {
-      server.start(done);
-    });
+    var clusterId = 'example-org';
 
-    after(function (done) {
-      server.stop(done);
-    });
+    before(dbFixture.terminateInstances);
+    before(dbFixture.truncate);
+    before(server.start);
+    after(server.stop);
+    after(dbFixture.terminateInstances)
+    after(dbFixture.truncate);
 
-    beforeEach(dbFixture.truncate);
-
-    describe('cluster-provision', function() {
-      it('should create a new cluster', function(done) {
-        var clusterId = 'example-org';
-
-        queue.publish('cluster-provision', { org_id: clusterId });
-
-        var interval = setInterval(function() {
-          Cluster.countInstances(clusterId, 'run')
-            .then(function (count) {
-              if (count > 0) {
-                clearInterval(interval);
-                done();
-              }
-            })
-            .catch(function (err) {
+    it('should provision a full cluster', function(done) {
+      queue.publish('cluster-provision', { org_id: clusterId });
+      var interval = setInterval(function() {
+        Cluster.countInstances(clusterId, 'run')
+          .then(function (count) {
+            if (count === process.env.RUN_INSTANCE_MAX_COUNT) {
               clearInterval(interval);
-              done(err);
-            });
-        }, 5000);
-      });
-    }); // end 'cluster-provision'
+              done();
+            }
+          })
+          .catch(function (err) {
+            clearInterval(interval);
+            done(err);
+          });
+      }, 5000);
+    });
   }); // end 'server'
 }); // end 'integration'

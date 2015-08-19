@@ -16,6 +16,7 @@
     "rollback": "knex migrate:rollback",
     "migrate-test": "NODE_ENV=test knex migrate:latest",
     "rollback-test": "NODE_ENV=test knex migrate:rollback",
+    "queues": "while true; do OP=$(rabbitmqctl list_queues); clear; echo \"$OP\"; sleep 0.5; done;",
     "start": "node index.js"
   },
   "repository": {
