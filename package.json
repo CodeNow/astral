@@ -14,7 +14,9 @@
     "drop-db": "dropdb shiva && dropdb shiva-test",
     "migrate": "knex migrate:latest",
     "rollback": "knex migrate:rollback",
-    "migrate-test": "NODE_ENV=test knex migrate:latest"
+    "migrate-test": "NODE_ENV=test knex migrate:latest",
+    "rollback-test": "NODE_ENV=test knex migrate:rollback",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
