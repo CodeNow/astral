@@ -12,8 +12,8 @@ var Code = require('code');
 var expect = Code.expect;
 var sinon = require('sinon');
 
-process.env.NODE_ENV = 'integration';
 require('loadenv')('shiva:test');
+
 var exists = require('101/exists');
 var aws = require('providers/aws');
 

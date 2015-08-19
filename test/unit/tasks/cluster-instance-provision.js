@@ -18,6 +18,7 @@ var TaskError = require('errors/task-error');
 var TaskFatalError = require('errors/task-fatal-error');
 var error = require('error');
 var aws = require('providers/aws');
+var Cluster = require('models/cluster');
 var clusterInstanceProvision = require('tasks/cluster-instance-provision');
 
 describe('tasks', function() {
@@ -26,12 +27,20 @@ describe('tasks', function() {
     var instances = instanceIds.map(function (id) {
       return { InstanceId: id };
     });
+    var mockCluster = {
+      id: 'some-id',
+      security_group_id: 'some-security-id',
+      subnet_id: 'some-subnet-id',
+      ssh_key_name: 'some-ssh-key-name'
+    };
 
     beforeEach(function (done) {
       sinon.spy(error, 'rejectAndReport');
       sinon.stub(aws, 'createInstances').returns(Promise.resolve(instances));
       sinon.stub(queue, 'publish');
       sinon.stub(queue, 'subscribe');
+      sinon.stub(Cluster, 'get').returns(Promise.resolve(mockCluster));
+      sinon.stub(Cluster, 'exists').returns(Promise.resolve(true));
       done();
     });
 
@@ -40,6 +49,8 @@ describe('tasks', function() {
       aws.createInstances.restore();
       queue.publish.restore();
       queue.subscribe.restore();
+      Cluster.get.restore();
+      Cluster.exists.restore();
       done();
     });
 
@@ -51,85 +62,8 @@ describe('tasks', function() {
       }).catch(done);
     });
 
-    it('should fatally reject without `cluster`', function(done) {
+    it('should fatally reject without `cluster_id`', function(done) {
       clusterInstanceProvision({ type: 'run' }).catch(TaskFatalError, function (err) {
-        expect(err.data.task).to.equal('cluster-instance-provision');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
-        done();
-      }).catch(done);
-    });
-
-    it('should fatally reject if `cluster` is not an object', function(done) {
-      var job = { cluster: 'invalid', type: 'run' };
-      clusterInstanceProvision(job).catch(TaskFatalError, function (err) {
-        expect(err.data.task).to.equal('cluster-instance-provision');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
-        done();
-      }).catch(done);
-    });
-
-    it('should fatally reject without `cluster.id`', function(done) {
-      var job = {
-        cluster: {
-          security_group_id: 'some-security-id',
-          subnet_id: 'some-subnet-id',
-          ssh_key_name: 'some-ssh-key-name'
-        },
-        type: 'run'
-      };
-      clusterInstanceProvision(job).catch(TaskFatalError, function (err) {
-        expect(err.data.task).to.equal('cluster-instance-provision');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
-        done();
-      }).catch(done);
-    });
-
-    it('should fatally reject without string `cluster.security_group_id`', function(done) {
-      var job = {
-        cluster: {
-          id: 'some-id',
-          security_group_id: {},
-          subnet_id: 'some-subnet-id',
-          ssh_key_name: 'some-ssh-key-name'
-        },
-        type: 'run'
-      };
-      clusterInstanceProvision(job).catch(TaskFatalError, function (err) {
-        expect(err.data.task).to.equal('cluster-instance-provision');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
-        done();
-      }).catch(done);
-    });
-
-    it('should fatally reject without string `cluster.subnet_id`', function(done) {
-      var job = {
-        cluster: {
-          id: 'some-id',
-          security_group_id: 'some-security-id',
-          subnet_id: [23],
-          ssh_key_name: 'some-ssh-key-name'
-        },
-        type: 'run'
-      };
-      clusterInstanceProvision(job).catch(TaskFatalError, function (err) {
-        expect(err.data.task).to.equal('cluster-instance-provision');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
-        done();
-      }).catch(done);
-    });
-
-
-    it('should fatally reject without string `cluster.ssh_key_name`', function(done) {
-      var job = {
-        cluster: {
-          id: 'some-id',
-          security_group_id: 'some-security-id',
-          subnet_id: 'some-subnet-id',
-          ssh_key_name: { foo: 'bar' }
-        },
-        type: 'run'
-      };
-      clusterInstanceProvision(job).catch(TaskFatalError, function (err) {
         expect(err.data.task).to.equal('cluster-instance-provision');
         expect(error.rejectAndReport.calledWith(err)).to.be.true();
         done();
@@ -138,12 +72,7 @@ describe('tasks', function() {
 
     it('should fatally reject without a string `type`', function(done) {
       var job = {
-        cluster: {
-          id: 'some-id',
-          security_group_id: 'some-security-id',
-          subnet_id: 'some-subnet-id',
-          ssh_key_name: 'some-ssh-key-name'
-        },
+        cluster_id: 'some-id',
         type: 123
       };
       clusterInstanceProvision(job).catch(TaskFatalError, function (err) {
@@ -155,12 +84,7 @@ describe('tasks', function() {
 
     it('should fatally reject when given an invalid `type`', function(done) {
       var job = {
-        cluster: {
-          id: 'some-id',
-          security_group_id: 'some-security-id',
-          subnet_id: 'some-subnet-id',
-          ssh_key_name: 'some-ssh-key-name'
-        },
+        cluster_id: 'some-id',
         type: 'not-valid'
       };
       clusterInstanceProvision(job).catch(TaskFatalError, function (err) {
@@ -172,28 +96,18 @@ describe('tasks', function() {
 
     it('should accept `type` of "run"', function(done) {
       var job = {
-        cluster: {
-          id: 'some-id',
-          security_group_id: 'some-security-id',
-          subnet_id: 'some-subnet-id',
-          ssh_key_name: 'some-ssh-key-name'
-        },
+        cluster_id: 'some-id',
         type: 'run'
       };
       clusterInstanceProvision(job).asCallback(function (err) {
         expect(err).to.not.exist();
-        done()
+        done();
       });
     });
 
     it('should accept `type` of "build"', function(done) {
       var job = {
-        cluster: {
-          id: 'some-id',
-          security_group_id: 'some-security-id',
-          subnet_id: 'some-subnet-id',
-          ssh_key_name: 'some-ssh-key-name'
-        },
+        cluster_id: 'some-id',
         type: 'build'
       };
       clusterInstanceProvision(job).asCallback(function (err) {
@@ -202,20 +116,35 @@ describe('tasks', function() {
       });
     });
 
+    it('should fatally reject if the cluster does not exist', function(done) {
+      var job = {
+        cluster_id: 'some-id',
+        type: 'build'
+      };
+      Cluster.exists.returns(Promise.resolve(false));
+      clusterInstanceProvision(job).catch(TaskFatalError, function (err) {
+        expect(err.data.task).to.equal('cluster-instance-provision');
+        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        done();
+      }).catch(done);
+
+      // clusterInstanceProvision(job).asCallback(function (err) {
+      //   console.log(typeof err);
+      //   expect(err).to.be.an.instanceof(TaskFatalError);
+      //
+      //   done();
+      // });
+    });
+
     it('should publish `cluster-instance-wait` on success', function(done) {
       var job = {
-        cluster: {
-          id: 'some-id',
-          security_group_id: 'some-security-id',
-          subnet_id: 'some-subnet-id',
-          ssh_key_name: 'some-ssh-key-name'
-        },
+        cluster_id: 'some-id',
         type: 'build'
       };
       clusterInstanceProvision(job).then(function () {
         expect(queue.publish.calledWith('cluster-instance-wait')).to.be.true();
         expect(queue.publish.firstCall.args[1]).to.deep.equal({
-          cluster: job.cluster,
+          cluster: mockCluster,
           type: job.type,
           instances: instances
         });
@@ -225,18 +154,13 @@ describe('tasks', function() {
 
     it('should publish `cluster-instance-tag` on success', function(done) {
       var job = {
-        cluster: {
-          id: 'some-id',
-          security_group_id: 'some-security-id',
-          subnet_id: 'some-subnet-id',
-          ssh_key_name: 'some-ssh-key-name'
-        },
+        cluster_id: 'some-id',
         type: 'run'
       };
       clusterInstanceProvision(job).then(function () {
         expect(queue.publish.calledWith('cluster-instance-tag')).to.be.true();
         expect(queue.publish.secondCall.args[1]).to.deep.equal({
-          org: job.cluster.id,
+          org: mockCluster.id,
           type: job.type,
           instanceIds: instanceIds
         });
@@ -248,12 +172,7 @@ describe('tasks', function() {
       var awsError = new Error('Some aws tom-foolery');
       aws.createInstances.returns(Promise.reject(awsError));
       var job = {
-        cluster: {
-          id: 'some-id',
-          security_group_id: 'some-security-id',
-          subnet_id: 'some-subnet-id',
-          ssh_key_name: 'some-ssh-key-name'
-        },
+        cluster_id: 'some-id',
         type: 'build'
       };
       clusterInstanceProvision(job).asCallback(function (err) {
