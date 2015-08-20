@@ -107,6 +107,7 @@ describe('tasks', function() {
         expect(aws.createTags.firstCall.args[0]).to.deep.equal({
           Resources: job.instanceIds,
           Tags: [
+            { Key: 'role', Value: 'dock' },
             { Key: 'type', Value: job.type },
             { Key: 'org', Value: job.org }
           ]
