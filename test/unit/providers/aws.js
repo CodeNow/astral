@@ -12,6 +12,9 @@ var sinon = require('sinon');
 
 require('loadenv')('shiva:test');
 
+var fs = require('fs');
+var path = require('path');
+var Mustache = require('mustache');
 var Promise = require('bluebird');
 var aws = require('providers/aws');
 
@@ -45,6 +48,18 @@ describe('providers', function() {
       aws.ec2.createTags.restore();
       aws.ec2.terminateInstances.restore();
       done();
+    });
+
+    describe('constructor', function() {
+      it('should fetch the correct user data script template', function(done) {
+        var templatePath = path.resolve(
+          __dirname,
+          '../../../scripts/aws-instance-user-data.sh'
+        );
+        var expectedTemplate = fs.readFileSync(templatePath).toString();
+        expect(aws.userDataTemplate).to.equal(expectedTemplate);
+        done();
+      });
     });
 
     describe('createInstances', function() {
@@ -144,17 +159,80 @@ describe('providers', function() {
     }); // end 'createInstances'
 
     describe('getUserDataScript', function() {
-      it('should generate a script with the correct tags', function(done) {
-        var cluster = { id: 'cluster-id' };
-        var type = 'build';
+      var cluster = { id: 'cluster-id' };
+      var type = 'run';
+
+      beforeEach(function (done) {
+        sinon.spy(Mustache, 'render');
+        done();
+      });
+
+      afterEach(function (done) {
+        Mustache.render.restore();
+        done();
+      });
+
+      it('should render the correct template', function(done) {
+        var result = aws.getUserDataScript(cluster, type);
+        expect(Mustache.render.calledWith(aws.userDataTemplate)).to.be.true();
+        done();
+      });
+
+      it('should return the rendered template', function(done) {
+        var result = aws.getUserDataScript(cluster, type);
+        expect(result).to.equal(Mustache.render.returnValues[0]);
+        done();
+      });
+
+      it('should set the correct tags', function(done) {
         var tags = [cluster.id, type].join(',');
-        var expected = [
-          '#!/bin/sh',
-          'PROFILE_FILE=/etc/profile.d/runnable-host-tags.sh',
-          'echo \'#!/bin/sh\' >> $PROFILE_FILE',
-          'echo \'export HOST_TAGS=' + tags +  '\' >> $PROFILE_FILE'
-        ].join('\n');
-        expect(aws.getUserDataScript(cluster, type)).to.equal(expected);
+        aws.getUserDataScript(cluster, type);
+        expect(Mustache.render.firstCall.args[1].host_tags).to.equal(tags);
+        done();
+      });
+
+      it('should set the correct filibuster_version', function(done) {
+        var variableName = 'filibuster_version';
+        var expectedVariable = process.env.FILIBUSTER_VERSION;
+        aws.getUserDataScript(cluster, type);
+        expect(Mustache.render.firstCall.args[1][variableName])
+          .to.equal(expectedVariable);
+        done();
+      });
+
+      it('should set the correct krain_version', function(done) {
+        var variableName = 'krain_version';
+        var expectedVariable = process.env.KRAIN_VERSION;
+        aws.getUserDataScript(cluster, type);
+        expect(Mustache.render.firstCall.args[1][variableName])
+          .to.equal(expectedVariable);
+        done();
+      });
+
+      it('should set the correct sauron_version', function(done) {
+        var variableName = 'sauron_version';
+        var expectedVariable = process.env.SAURON_VERSION;
+        aws.getUserDataScript(cluster, type);
+        expect(Mustache.render.firstCall.args[1][variableName])
+          .to.equal(expectedVariable);
+        done();
+      });
+
+      it('should set the correct image_builder_version', function(done) {
+        var variableName = 'image_builder_version';
+        var expectedVariable = process.env.IMAGE_BUILDER_VERSION;
+        aws.getUserDataScript(cluster, type);
+        expect(Mustache.render.firstCall.args[1][variableName])
+          .to.equal(expectedVariable);
+        done();
+      });
+
+      it('should set the correct docker_listener_version', function(done) {
+        var variableName = 'docker_listener_version';
+        var expectedVariable = process.env.DOCKER_LISTENER_VERSION;
+        aws.getUserDataScript(cluster, type);
+        expect(Mustache.render.firstCall.args[1][variableName])
+          .to.equal(expectedVariable);
         done();
       });
     }); // end 'getUserDataScript'
