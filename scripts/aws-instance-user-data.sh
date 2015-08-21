@@ -1,27 +1,18 @@
 #!/bin/bash
 
-# Write the profile environment variables
-PROFILE_FILE=/etc/profile.d/runnable-host-tags.sh
-echo '#!/bin/sh' >> $PROFILE_FILE
-echo 'export HOST_TAGS={{host_tags}}' >> $PROFILE_FILE
-echo 'export FILIBUSTER_VERSION={{filibuster_version}}' >> $PROFILE_FILE
-echo 'export KRAIN_VERSION={{krain_version}}' >> $PROFILE_FILE
-echo 'export SAURON_VERSION={{sauron_version}}' >> $PROFILE_FILE
-echo 'export IMAGE_BUILDER_VERSION={{image_builder_version}}' >> $PROFILE_FILE
-echo 'export DOCKER_LISTENER_VERSION={{docker_listener_version}}' >> $PROFILE_FILE
+ENV_FILE=/etc/environment
+HOST_TAGS_FILE=/opt/runnable/host_tags
+DOCK_INIT_SCRIPT=/opt/runnable/dock-init/init.sh
 
-# Attempt to initialize the dock
-timeout=1
-while true
-do
-  bash /opt/runnable/dock-init.sh
-  if [[ $? == 0 ]]
-  then
-    break
-  fi
+# Set preferred versions of each of the dock services
+echo 'FILIBUSTER_VERSION={{filibuster_version}}' >> $ENV_FILE
+echo 'KRAIN_VERSION={{krain_version}}' >> $ENV_FILE
+echo 'SAURON_VERSION={{sauron_version}}' >> $ENV_FILE
+echo 'IMAGE_BUILDER_VERSION={{image_builder_version}}' >> $ENV_FILE
+echo 'DOCKER_LISTENER_VERSION={{docker_listener_version}}' >> $ENV_FILE
 
-  # TODO report failure
+# Set the host tags file (used by upstart for docker-listener)
+echo '{{host_tags}}' > $HOST_TAGS_FILE
 
-  sleep $timeout
-  timeout=$(( timeout * 2 ))
-done
+# Initialize the dock
+bash $DOCK_INIT_SCRIPT
