@@ -103,6 +103,7 @@ describe('providers', function() {
           expect(aws.ec2.runInstances.calledOnce).to.be.true();
           var params = aws.ec2.runInstances.firstCall.args[0];
           expect(params.SecurityGroupIds).to.deep.equal([
+            process.env.AWS_BASTION_SECURITY_GROUP,
             cluster.security_group_id
           ]);
           done();
@@ -409,40 +410,6 @@ describe('providers', function() {
         var value = process.env.AWS_SHUTDOWN_BEHAVIOR;
         var params = aws.getDefaultInstanceParams(type);
         expect(params[key]).to.equal(value);
-        done();
-      });
-
-      it('should set the correct `BlockDeviceMappings`', function(done) {
-        var type = 'run';
-        var key = 'BlockDeviceMappings';
-        var value = {
-          AvailabilityZone: process.env.AWS_AVAILABILITY_ZONE,
-          GroupName: process.env.AWS_GROUP_NAME
-        };
-        var params = aws.getDefaultInstanceParams(type);
-        expect(params[key]).to.deep.equal([
-          {
-            DeviceName: '/dev/sdb',
-            Ebs: {
-              VolumeSize: 1000,
-              DeleteOnTermination: true
-            }
-          },
-          {
-            DeviceName: '/dev/sdc',
-            Ebs: {
-              VolumeSize: 50,
-              DeleteOnTermination: true
-            }
-          },
-          {
-            DeviceName: '/dev/sdd',
-            Ebs: {
-              VolumeSize: 50,
-              DeleteOnTermination: true
-            }
-          }
-        ]);
         done();
       });
     }); // end 'getDefaultInstanceParams'
