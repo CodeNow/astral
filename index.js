@@ -10,6 +10,7 @@ var log = require('./lib/logger');
  * @module shiva
  */
 
+log.info('Starting shiva worker server');
 server.start(function (err) {
   if (err) {
     var message = 'Failed to start shiva worker server';
@@ -17,4 +18,5 @@ server.start(function (err) {
     logger.fatal({ err: err }, message);
     return;
   }
+  logger.info('Shiva worker server started.');
 });
