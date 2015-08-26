@@ -89,7 +89,7 @@ to mitigate problems in production):
 2. All functions should be 100% unit tested (including all execution paths)
 3. The project should maintain 100% test coverage
 4. Functional tests should be written for cross-module compatibility
-5. Project should be integration tested independent of other systems
+5. Project should be integration tested locally (`npm run integration`)
 6. Project should be perf and integration tested on production-beta
 
 Once these steps have been followed, the PR should be merged and master should
