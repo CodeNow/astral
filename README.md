@@ -16,7 +16,28 @@ While she currently only holds dominon over EC2, shiva will ultimately transcend
 Shiva is designed to be developed against locally. In this section we will cover
 how to setup your workstation to get a development server and tests running.
 
-#### Setup: Postgresql
+### Pull Requests
+Shiva is a foundational piece of our overall architecture. If we are unable to
+provision clusters for our customers, they will not be able to use our service.
+Since it is so important there are a few hard rules on what can and cannot be
+merged into master.
+
+Before a pull request can be merged the following conditions must be met (so as
+to mitigate problems in production):
+
+1. All new code should follow the task/worker architecture
+2. All functions should be heavily unit tested (every path should be tested)
+3. Functional tests should be written for cross-module compatibility
+4. The project should have 100% code coverage and tests should pass on circle
+5. Project should be integration tested locally (`npm run integration`)
+6. Project should be perf and integration tested on `production-beta`
+
+Once these steps have been followed, the PR should be merged and master should
+be deployed on production ASAP.
+
+### Setup
+
+#### Postgresql
 
 The first step is to install postgres. From the command-line (on Mac OSX) run
 the following:
@@ -36,7 +57,7 @@ shiva project repository directory:
 This script a super user named `shiva` and two databases on your machine:
 `shiva` (used for local development) and `shiva-test` (used by the test suite).
 
-#### Setup: Running Migrations
+#### Running Migrations
 
 Shiva uses [knex](https://www.npmjs.com/package/knex) to access the postgres
 database. The first thing you'll need to do after installing postgres is to
@@ -48,7 +69,21 @@ repository directory run the following:
    version.
 3. `NODE_ENV=test knex migrate:latest` - Update the test database schema.
 
-#### Creating Migrations
+#### RabbitMQ
+In order to fully test the codebase you will need to install RabbitMQ locally
+on your machine. Run the following commands to do so:
+
+* `brew update`
+* `brew install rabbitmq`
+
+Once installed, brew should instruct you on how to ensure that RabbitMQ is
+launched at reboot and login. Copy the commands from the brew output and execute
+them on your machine.
+
+For more information see:
+[RabbitMQ Homebrew Install Instructions](https://www.rabbitmq.com/install-homebrew.html)
+
+### Creating Migrations
 
 The infrastructure data model may change over time due to new constraints. When
 the schema needs to change you'll have to write your own migrations in order to
@@ -75,22 +110,3 @@ Note that the `production` environment is not available when developing.
 For more information on how to build migrations, take a look at the source code
 for the existing migrations in the `migrations/` directory and read the
 [knex schema documentation](http://knexjs.org/#Schema).
-
-#### Pull Requests
-Shiva is a foundational piece of our overall architecture. If we are unable to
-provision clusters for our customers, they will not be able to use our service.
-Since it is so important there are a few hard rules on what can and cannot be
-merged into master.
-
-Before a pull request can be merged the following conditions must be met (so as
-to mitigate problems in production):
-
-1. All new code should follow the task/worker architecture
-2. All functions should be 100% unit tested (including all execution paths)
-3. The project should maintain 100% test coverage
-4. Functional tests should be written for cross-module compatibility
-5. Project should be integration tested locally (`npm run integration`)
-6. Project should be perf and integration tested on production-beta
-
-Once these steps have been followed, the PR should be merged and master should
-be deployed on production ASAP.
