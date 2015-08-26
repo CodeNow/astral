@@ -11,6 +11,102 @@ Shiva is responsible for managing instances for Runnable's single-tenant build a
 
 While she currently only holds dominon over EC2, shiva will ultimately transcend AWS and become provider independent.
 
+## Architecture
+Shiva is a worker server that subscribes to specific RabbitMQ queues and processes
+incoming jobs. When performing tasks, workers may enqueue additional jobs that must
+be processed.
+
+Below is a diagram that shows how events are propagated within the system (green
+are database related, and purple are AWS related):
+
+![Shiva Jobs](https://docs.google.com/a/runnable.com/drawings/d/1wfmdM1qhnzWSrQ4lvDRPBIGrk5PMNb5omADyGz9j5bg/edit?usp=sharing)
+
+* `cluster-provision` - Sets an entry in the database for an organization cluster
+  then enques a `cluster-instance-provision` job. Example job:  `{ org_id: 1234 }`
+* `cluster-instance-provision` - Provisions dock instances for a cluster on EC2 then
+  enqueues a `cluster-instance-tag` job and `cluster-instance-wait` job.
+  Example job: `{ cluster_id: 1234, type: 'run' }`
+* `cluster-instance-tag` - Sets the EC2 instance tags for a newly spawned dock instance.
+* `cluster-instance-wait` - Waits for a set of instances to be ready on EC2.
+* `cluster-instance-write` - Writes information concerning running instances to the
+  infrastructure database.
+
+The rest of this section details how shiva handles jobs.
+
+#### Server Workflow
+0. The server is started and subscribes to the relevant queues (see: `lib/server.js` and
+  `lib/queue.js`)
+1. A job is assigned to the worker server from a particular queue (see: `lib/server.js`)
+2. Shiva constructs a new `Worker` instance for the job (see: `lib/worker.js`)
+3. The worker selects the appropriate "task handler" function from `lib/tasks/` (each
+  handler function has the same name as the queue)
+4. The worker attempts to perform the task by running the handler:
+  1. On success: the worker acknowledges to RabbitMQ that the job is complete
+  2. On failure: the worker retries the task with an exponential back-off (see: `lib/worker.js -- Worker.prototype.run`)
+  3. On fatal failure: The worker acknowledges the job complete to
+     remove it from the queue (more on this later).
+
+#### Queue Names
+The names of the queues used by shiva have been chosen according to the following format.
+
+* `cluster-[{sub-scopes}-]{action}`
+
+Queue names must begin with `cluster-`, this designates that the queue is part of
+the infrastructure space (specifically with messages concerning organization cluster
+EC2 instance provisioning, tagging, termination, etc.).
+
+The next part of the name `{sub-scopes}-` is an optional portion of the name that
+scopes the queue to a specific type of object or group of actions.
+
+The final section, `{action}`, describes the action or task to be performed when
+jobs are received on the queue.
+
+For example: **`cluster-instance-tag`** queue means:
+
+1. `cluster-` - It belongs to the infrastructure space surrounding organization
+  EC2 clusters.
+2. `instance-` - It belongs to a subsection of queues concerning EC2 instances
+  in the cluster.
+3. `tag` - Its action should tag cluster instances.
+
+Another example: **`cluster-provision`**
+
+1. `cluster-` - It belongs to infrastructure space clustering.
+2. `provision` - It should provision a full cluster.
+
+#### Task Handlers
+Task handlers are implemented a single function that can be executed by a worker
+(behaviorally: *Workers PERFORM Tasks*). A task handler function must return a
+`[Promise](https://github.com/petkaantonov/bluebird/blob/master/API.md#core)`, which
+either resolves or rejects depending on if the task could be performed.
+
+All tasks handlers live in the `lib/tasks/` directory and have the same name as
+the queues to which they are associated. Roughly speaking any given task handler
+is implemented in the same way:
+
+1. It is a function that accepts a single argument named `job`
+2. It expects the `job` argument to be an object representing the data passed
+   along with the message on the given queue. If it is not, the handler returns
+   a rejection promise with an instance of `TaskFatalError` (see `lib/errors/task-fatal-error.js`)
+3. It validates that the `job` object contains the appropriate information, otherwise
+  it returns a rejection promise with an instance of `TaskFatalError`
+4. It attempts to perform the task (usually some asynchronous call to an external
+  service like AWS or the database)
+5. It returns a promise that will resolve when the task has been completed, or
+  throw an error if something goes wrong.
+
+There are four possible outcomes for a task handler promise:
+
+1. Resolve - The task has succeeded and the worker should notify the queue that the
+   job has been completed.
+2. Reject and Retry (`TaskError`) - The task handler encountered an **expected** error
+   and the worker should retry.
+3. Reject and Retry (`Error`) - The task handler encountered an **unexpected** error
+   and the worker should retry.
+4. Reject and Fail (`TaskFatalError`) - The task handler encountered a fatal error
+   and cannot possibly process the job (this is currently only used if the job is
+   malformed and cannot be validated).
+
 ## Development
 
 Shiva is designed to be developed against locally. In this section we will cover
