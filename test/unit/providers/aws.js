@@ -186,7 +186,7 @@ describe('providers', function() {
       });
 
       it('should set the correct tags', function(done) {
-        var tags = [cluster.id, type].join(',');
+        var tags = [cluster.id, 'run', 'build'].join(',');
         aws.getUserDataScript(cluster, type);
         expect(Mustache.render.firstCall.args[1].host_tags).to.equal(tags);
         done();
