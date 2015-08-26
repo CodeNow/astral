@@ -1,6 +1,16 @@
+machine:
+  services:
+    - postgresql
+
 dependencies:
   override:
     - nvm install 0.10.38
     - nvm alias default 0.10.38
     - npm install -g npm@2.8.3
     - npm install
+
+database:
+  pre:
+    - createuser shiva-test
+    - createdb shiva-test
+    - npm run migrate-test
