@@ -24,6 +24,20 @@ describe('models', function () {
     var model;
     var columnNames = ['id', 'name', 'quantity'];
 
+    before(function (done) {
+      db.schema.dropTableIfExists(table).asCallback(done);
+    });
+
+    before(function (done) {
+      db.schema.createTable(table, function (table) {
+        table.string('id').primary();
+        table.string('name');
+        table.integer('quantity');
+        table.timestamp('created_at').index().defaultTo(db.raw('now()'));
+        table.timestamp('updated_at').defaultTo(db.raw('now()'));
+      }).asCallback(done);
+    });
+
     beforeEach(function (done) {
       model = new Model(table, primaryKey);
       done();
