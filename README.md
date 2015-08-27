@@ -107,6 +107,23 @@ There are four possible outcomes for a task handler promise:
    and cannot possibly process the job (this is currently only used if the job is
    malformed and cannot be validated).
 
+#### Task Best Practices
+To ensure that the system is robust as possible there are two hard rules that
+must be enforced when implementing tasks.
+
+1. Tasks must be idempotent. This means that they should be implemented in
+  such a way that if shiva receives the exact same job twice, the task should not
+  leave the data model for the system in an inconsistent state. Ideally the task
+  should be able to detect this scenario and simply throw the duplicate job away
+  if the task has already been performed.
+2. Tasks **cannot** write data to more than a single external service. By writing
+  tasks in this way we ensure that external data models (such as the database or
+  AWS) cannot get into a "half-complete" state (one service works, the other fails,
+  thus causing the job as a whole to fail).
+
+This list is bound to grow as we expand and test the system, so keep an eye on
+it if you actively work in the infrastructure side of the organization.
+
 ## Development
 
 Shiva is designed to be developed against locally. In this section we will cover
