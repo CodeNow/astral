@@ -12,12 +12,17 @@ Shiva is responsible for managing instances for Runnable's single-tenant build a
 While she currently only holds dominon over EC2, shiva will ultimately transcend AWS and become provider independent.
 
 ## Architecture
-Shiva is a worker server that subscribes to specific RabbitMQ queues and processes
-incoming jobs. When performing tasks, workers may enqueue additional jobs that must
-be processed.
+![Shiva Architecture](https://docs.google.com/drawings/d/1OdKZtVIi8q51Y13cfhFsrcS8yT2hVefi2yB1ApZNJ-4/pub?w=841&h=416)
 
-Below is a diagram that shows how events are propagated within the system (green
-are database related, and purple are AWS related):
+Shiva is a worker server that subscribes to specific RabbitMQ queues and spawns
+workers to processe incoming jobs. Many shiva servers can run at once processing
+jobs, provisioning EC2 instances, and writing information to our infrastructure
+database (hosted postgresql on Amazon RDS).
+
+#### Job Propagation
+When performing tasks, workers may enqueue additional jobs that must
+be processed. Below is a diagram that shows how jobs are propagated within the
+system (green are database related, and purple are AWS related):
 
 ![Shiva Jobs](https://docs.google.com/drawings/d/1wfmdM1qhnzWSrQ4lvDRPBIGrk5PMNb5omADyGz9j5bg/pub?w=489&h=401)
 
