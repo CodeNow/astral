@@ -129,6 +129,55 @@ must be enforced when implementing tasks.
 This list is bound to grow as we expand and test the system, so keep an eye on
 it if you actively work in the infrastructure side of the organization.
 
+## EC2 Dock Instance Provisioning
+Shiva provisions EC2 dock instances by calling the AWS `runInstances` action
+with the following information:
+
+* `ImageId` - Id of the an AMI in the VPC that should be started on the instance.
+* `KeyName` - The SSH key-pair name for the instance
+* `SecurityGroupIds` - Ids for the various security groups needed by the instance.
+  At this time we include the bastion security group along with the default group.
+* `SubnetId` - Id of the subnet upon which the instance should be provisioned.
+* `MinCount` - Minimum number of instances to start.
+* `MaxCount` - Maximum number of instances to start.
+* `InstanceType` - The type of EC2 instance upon which to run the image.
+* `InstanceInitiatedShutdownBehavior` - Sets the shutdown behavior for the instance.
+* `UserData` - A base64 encoded shell script to run upon instance start.
+
+#### UserData Shell Script
+Of particular interest is the `UserData` shell script that is passed to the dock
+instance upon instantiation. This script, roughly, looks like this:
+
+```sh
+#!/bin/bash
+
+ENV_FILE=/opt/runnable/env
+HOST_TAGS_FILE=/opt/runnable/host_tags
+DOCK_INIT_SCRIPT=/opt/runnable/dock-init/init.sh
+
+# Set preferred versions of each of the dock services
+echo 'export FILIBUSTER_VERSION={{filibuster_version}}' >> $ENV_FILE
+echo 'export KRAIN_VERSION={{krain_version}}' >> $ENV_FILE
+echo 'export SAURON_VERSION={{sauron_version}}' >> $ENV_FILE
+echo 'export IMAGE_BUILDER_VERSION={{image_builder_version}}' >> $ENV_FILE
+echo 'export DOCKER_LISTENER_VERSION={{docker_listener_version}}' >> $ENV_FILE
+
+# Set the host tags file (used by upstart for docker-listener)
+echo '{{host_tags}}' > $HOST_TAGS_FILE
+
+# Initialize the dock
+bash $DOCK_INIT_SCRIPT
+```
+(see `scripts/aws-instance-user-data.sh`).
+
+Primarily it is responsible for setting the appropriate versions for each of the
+dock services to a special file (`/opt/runnable/env`) and the setting of the
+host tags to a special file (`/opt/runnable/host_tags`). Finally it executes
+the dock initialization script (`/opt/runnable/dock-init/init.sh`).
+
+For more information on dock initialization see the
+[CodeNow/dock-init](https://github.com/CodeNow/dock-init) repository.
+
 ## Development
 
 Shiva is designed to be developed against locally. In this section we will cover
