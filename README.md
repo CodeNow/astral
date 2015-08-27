@@ -19,7 +19,7 @@ be processed.
 Below is a diagram that shows how events are propagated within the system (green
 are database related, and purple are AWS related):
 
-![Shiva Jobs](https://docs.google.com/a/runnable.com/drawings/d/1wfmdM1qhnzWSrQ4lvDRPBIGrk5PMNb5omADyGz9j5bg/edit?usp=sharing)
+![Shiva Jobs](https://docs.google.com/drawings/d/1wfmdM1qhnzWSrQ4lvDRPBIGrk5PMNb5omADyGz9j5bg/pub?w=489&h=401)
 
 * `cluster-provision` - Sets an entry in the database for an organization cluster
   then enques a `cluster-instance-provision` job. Example job:  `{ org_id: 1234 }`
