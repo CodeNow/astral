@@ -13,7 +13,7 @@ module.exports = {
     connection: process.env.POSTGRES_CONNECT_STRING
   },
 
-  production-beta: {
+  'production-beta': {
     client: 'pg',
     connection: process.env.POSTGRES_CONNECT_STRING,
     pool: {
