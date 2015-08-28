@@ -126,7 +126,7 @@ describe('providers', function() {
     }); // end 'createInstances'
 
     describe('getUserDataScript', function() {
-      var cluster = { id: 'cluster-id' };
+      var cluster = { id: 'cluster-id', github_id: '234222' };
 
       beforeEach(function (done) {
         sinon.spy(Mustache, 'render');
@@ -151,7 +151,7 @@ describe('providers', function() {
       });
 
       it('should set the correct tags', function(done) {
-        var tags = [cluster.id, 'run', 'build'].join(',');
+        var tags = [cluster.github_id, 'run', 'build'].join(',');
         aws.getUserDataScript(cluster);
         expect(Mustache.render.firstCall.args[1].host_tags).to.equal(tags);
         done();
