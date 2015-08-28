@@ -19,10 +19,11 @@ var dbFixture = require('../fixtures/database.js');
 var server = require('server');
 var queue = require('queue');
 var Cluster = require('models/cluster');
+var Instance = require('models/instance');
 
 describe('integration', function() {
   describe('server', function() {
-    var clusterId = 'example-org';
+    var github_id = 'example-org';
 
     before(dbFixture.terminateInstances);
     before(dbFixture.truncate);
@@ -32,11 +33,21 @@ describe('integration', function() {
     after(dbFixture.truncate);
 
     it('should provision a full cluster', function(done) {
-      queue.publish('cluster-provision', { org_id: clusterId });
+      queue.publish('cluster-provision', { github_id: github_id });
       var interval = setInterval(function() {
-        Cluster.countInstances(clusterId, 'run')
+        Cluster.getByGithubId(github_id)
+          .then(function (cluster) {
+            return Instance.count()
+              .where({
+                cluster_id: cluster.id
+              }).map(function (row) {
+                return row.count;
+              }).reduce(function (memo, row) {
+                return memo + parseInt(row);
+              }, 0);
+          })
           .then(function (count) {
-            if (count === process.env.RUN_INSTANCE_MAX_COUNT) {
+            if (count === process.env.AWS_INSTANCE_COUNT) {
               clearInterval(interval);
               done();
             }

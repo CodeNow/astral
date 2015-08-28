@@ -23,7 +23,7 @@ describe('tasks', function() {
   describe('cluster-instance-wait', function() {
     var job = {
       cluster: { id: '123' },
-      type: 'run',
+      role: 'dock',
       instances: [
         { InstanceId: '1234' }
       ]
@@ -46,7 +46,7 @@ describe('tasks', function() {
     it('should return a promise', function(done) {
       var job = {
         cluster: { id: '123' },
-        type: 'run',
+        role: 'dock',
         instances: [
           { InstanceId: '1234' }
         ]
@@ -84,10 +84,10 @@ describe('tasks', function() {
       });
     });
 
-    it('should fatally reject with a non-string `type`', function(done) {
+    it('should fatally reject with a non-string `role`', function(done) {
       var job = {
         cluster: { id: '123' },
-        type: { foo: 'bar' }
+        role: { foo: 'bar' }
       };
       clusterInstanceWait(job).asCallback(function (err) {
         expect(err).to.exist();
@@ -100,7 +100,7 @@ describe('tasks', function() {
     it('should fatally reject with a non-array `instances`', function(done) {
       var job = {
         cluster: { id: '123' },
-        type: 'run',
+        role: 'dock',
         instances: 890123
       };
       clusterInstanceWait(job).asCallback(function (err) {
@@ -114,7 +114,7 @@ describe('tasks', function() {
     it('should fatally reject if `instances` is malformed', function(done) {
       var job = {
         cluster: { id: '123' },
-        type: 'run',
+        role: 'dock',
         instances: [
           { InstanceId: '1234' },
           'woot'
@@ -131,7 +131,7 @@ describe('tasks', function() {
     it('should fatally reject given an instance without an id', function(done) {
       var job = {
         cluster: { id: '123' },
-        type: 'run',
+        role: 'dock',
         instances: [
           { InstanceId: '1234' },
           { foo: 'bar' }
@@ -148,7 +148,7 @@ describe('tasks', function() {
     it('should fatally reject given an instance with a non-string id', function(done) {
       var job = {
         cluster: { id: '123' },
-        type: 'run',
+        role: 'dock',
         instances: [
           { InstanceId: '1234' },
           { InstanceId: [1, 1, 2, 3, 5, 8, 13] }
@@ -184,7 +184,8 @@ describe('tasks', function() {
     it('should provide a type to the `cluster-instance-write` job', function(done) {
       clusterInstanceWait(job).then(function () {
         var data = queue.publish.firstCall.args[1];
-        expect(data.type).to.deep.equal(job.type);
+        expect(data.role).to.exist();
+        expect(data.role).to.deep.equal(job.role);
         done();
       }).catch(done);
     });

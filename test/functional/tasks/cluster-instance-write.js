@@ -26,15 +26,16 @@ describe('functional', function() {
         dbFixture.createCluster('1').asCallback(done)
       });
 
-      it('should write a run instance to the database', function(done) {
+      it('should write a dock instance to the database', function(done) {
         var job = {
           cluster: { id: '1' },
-          type: 'run',
+          role: 'dock',
           instances: [
             {
               InstanceId: '1234',
               ImageId: 'ami-13203',
-              InstanceType: 't1.micro'
+              InstanceType: 't1.micro',
+              PrivateIpAddress: '10.20.0.0'
             }
           ]
         };
@@ -47,36 +48,11 @@ describe('functional', function() {
             expect(rows[0].id).to.equal(job.instances[0].InstanceId);
             expect(rows[0].cluster_id).to.equal(job.cluster.id);
             expect(rows[0].type).to.equal(job.type);
-            expect(rows[0].ami_id).to.equal(job.instances[0].ImageId);
-            expect(rows[0].aws_type).to.equal(job.instances[0].InstanceType);
-            done();
-          })
-          .catch(done);
-      });
-
-      it('should write a build instance to the database', function(done) {
-        var job = {
-          cluster: { id: '1' },
-          type: 'build',
-          instances: [
-            {
-              InstanceId: 'apppplless',
-              ImageId: 'amsss;;;zzi-13203',
-              InstanceType: 't3.super'
-            }
-          ]
-        };
-        clusterInstanceWrite(job)
-          .then(function () {
-            return db.select().from('instances');
-          })
-          .then(function (rows) {
-            expect(rows.length).to.equal(1);
-            expect(rows[0].id).to.equal(job.instances[0].InstanceId);
-            expect(rows[0].cluster_id).to.equal(job.cluster.id);
-            expect(rows[0].type).to.equal(job.type);
-            expect(rows[0].ami_id).to.equal(job.instances[0].ImageId);
-            expect(rows[0].aws_type).to.equal(job.instances[0].InstanceType);
+            expect(rows[0].aws_image_id).to.equal(job.instances[0].ImageId);
+            expect(rows[0].aws_instance_type)
+              .to.equal(job.instances[0].InstanceType);
+            expect(rows[0].aws_private_ip_address)
+              .to.equal(job.instances[0].PrivateIpAddress);
             done();
           })
           .catch(done);
@@ -85,17 +61,19 @@ describe('functional', function() {
       it('should write many instances to the database', function(done) {
         var job = {
           cluster: { id: '1' },
-          type: 'build',
+          role: 'dock',
           instances: [
             {
               InstanceId: 'alpha',
               ImageId: '1',
-              InstanceType: 't1.micro'
+              InstanceType: 't1.micro',
+              PrivateIpAddress: '10.20.0.0'
             },
             {
               InstanceId: 'beta',
               ImageId: '2',
-              InstanceType: 't2.micro'
+              InstanceType: 't2.micro',
+              PrivateIpAddress: '10.20.0.1'
             }
           ]
         };
@@ -107,9 +85,12 @@ describe('functional', function() {
             rows.forEach(function (row, index) {
               expect(row.id).to.equal(job.instances[index].InstanceId);
               expect(row.cluster_id).to.equal(job.cluster.id);
-              expect(row.type).to.equal(job.type);
-              expect(row.ami_id).to.equal(job.instances[index].ImageId);
-              expect(row.aws_type).to.equal(job.instances[index].InstanceType);
+              expect(row.role).to.equal(job.role);
+              expect(row.aws_image_id).to.equal(job.instances[index].ImageId);
+              expect(row.aws_instance_type)
+                .to.equal(job.instances[index].InstanceType);
+              expect(row.aws_private_ip_address)
+                .to.equal(job.instances[index].PrivateIpAddress);
             });
             done();
           })

@@ -2,6 +2,7 @@
 
 var defaults = require('101/defaults');
 var isObject = require('101/is-object');
+var uuid = require('uuid');
 var debug = require('debug')('shiva:test:fixtures');
 var db = require('database');
 var aws = require('providers/aws');
@@ -44,22 +45,16 @@ function truncate(cb) {
 
 /**
  * Creates a new cluster in the test database.
- * @param {string} cluster_id Id of the cluster to create.
+ * @param {string} cluster_id Id for the cluster.
  * @param {object} [fields] Overrides the default columns for the cluster row.
  * @return {knex~promise} A promise for the insert query.
  */
 function createCluster(cluster_id, fields) {
-  var defaultValues = {
-    security_group_id: 'security-group-id',
-    ssh_key_name: 'ssh-key-name',
-    subnet_id: 'subnet-id'
-  };
   var row = { id: cluster_id };
   if (isObject(fields)) {
     defaults(row, fields);
   }
-  defaults(row, defaultValues);
-
+  defaults(row, { github_id: uuid.v1() });
   var clusterInsert = db('clusters').insert(row);
   debug(clusterInsert.toString());
   return clusterInsert;
@@ -74,9 +69,10 @@ function createCluster(cluster_id, fields) {
  */
 function createInstance(instance_id, cluster_id, fields) {
   var defaultValues = {
-    type: 'build',
-    ami_id: '1234',
-    aws_type: 't2.micro'
+    role: 'dock',
+    aws_image_id: '1234',
+    aws_instance_type: 't2.micro',
+    aws_private_ip_address: '10.20.0.0'
   };
   var row = { id: instance_id, cluster_id: cluster_id };
   if (isObject(fields)) {
@@ -97,9 +93,10 @@ function createInstance(instance_id, cluster_id, fields) {
  */
 function createInstances(instance_ids, cluster_id) {
   var defaultValues = {
-    type: 'build',
-    ami_id: '1234',
-    aws_type: 't2.micro'
+    role: 'dock',
+    aws_image_id: '1234',
+    aws_instance_type: 't2.micro',
+    aws_private_ip_address: '10.20.0.0'
   };
 
   var instancesInsert = db('instances').insert(instance_ids.map(function (id) {

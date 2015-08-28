@@ -87,46 +87,12 @@ describe('providers', function() {
         done();
       });
 
-      it('should set the correct `KeyName` param', function(done) {
-        aws.createInstances(cluster, 'run').then(function (instances) {
-          expect(aws.getDefaultInstanceParams.calledOnce).to.be.true();
-          expect(aws.ec2.runInstances.calledOnce).to.be.true();
-          var params = aws.ec2.runInstances.firstCall.args[0];
-          expect(params.KeyName).to.equal(cluster.ssh_key_name);
-          done();
-        }).catch(done);
-      });
-
-      it('should set the correct `SecurityGroupIds` param', function(done) {
-        aws.createInstances(cluster, 'run').then(function (instances) {
-          expect(aws.getDefaultInstanceParams.calledOnce).to.be.true();
-          expect(aws.ec2.runInstances.calledOnce).to.be.true();
-          var params = aws.ec2.runInstances.firstCall.args[0];
-          expect(params.SecurityGroupIds).to.deep.equal([
-            process.env.AWS_BASTION_SECURITY_GROUP,
-            cluster.security_group_id
-          ]);
-          done();
-        }).catch(done);
-      });
-
-      it('should set the correct `SubnetId` param', function(done) {
-        aws.createInstances(cluster, 'run').then(function (instances) {
-          expect(aws.getDefaultInstanceParams.calledOnce).to.be.true();
-          expect(aws.ec2.runInstances.calledOnce).to.be.true();
-          var params = aws.ec2.runInstances.firstCall.args[0];
-          expect(params.SubnetId).to.equal(cluster.subnet_id);
-          done();
-        }).catch(done);
-      });
-
       it('should set the correct `UserData` param', function(done) {
-        var type = 'run';
-        aws.createInstances(cluster, type).then(function (instances) {
+        aws.createInstances(cluster).then(function (instances) {
           var params = aws.ec2.runInstances.firstCall.args[0];
           expect(aws.getUserDataScript.calledOnce).to.be.true();
           expect(params.UserData).to.equal(new Buffer(
-            aws.getUserDataScript(cluster, type)
+            aws.getUserDataScript(cluster)
           ).toString('base64'));
           done();
         }).catch(done);
@@ -134,7 +100,7 @@ describe('providers', function() {
 
       it('should use the given number of instances', function(done) {
         var numInstances = 2034
-        aws.createInstances(cluster, 'run', numInstances).then(function () {
+        aws.createInstances(cluster, numInstances).then(function () {
           var params = aws.ec2.runInstances.firstCall.args[0];
           expect(params.MinCount).to.equal(numInstances);
           expect(params.MaxCount).to.equal(numInstances);
@@ -143,7 +109,7 @@ describe('providers', function() {
       });
 
       it('should resolve with aws response instances', function(done) {
-        aws.createInstances(cluster, 'run').then(function (instances) {
+        aws.createInstances(cluster).then(function (instances) {
           expect(instances).to.equal(instanceResponse.Instances);
           done();
         }).catch(done);
@@ -152,7 +118,7 @@ describe('providers', function() {
       it('should handle error responses', function(done) {
         var ec2Error = new Error('Yup, the whole AZ fell into a pit...');
         aws.ec2.runInstances.yieldsAsync(ec2Error);
-        aws.createInstances(cluster, 'run').asCallback(function (err) {
+        aws.createInstances(cluster).asCallback(function (err) {
           expect(err).to.equal(ec2Error);
           done();
         });
@@ -161,7 +127,6 @@ describe('providers', function() {
 
     describe('getUserDataScript', function() {
       var cluster = { id: 'cluster-id' };
-      var type = 'run';
 
       beforeEach(function (done) {
         sinon.spy(Mustache, 'render');
@@ -174,20 +139,20 @@ describe('providers', function() {
       });
 
       it('should render the correct template', function(done) {
-        var result = aws.getUserDataScript(cluster, type);
+        var result = aws.getUserDataScript(cluster);
         expect(Mustache.render.calledWith(aws.userDataTemplate)).to.be.true();
         done();
       });
 
       it('should return the rendered template', function(done) {
-        var result = aws.getUserDataScript(cluster, type);
+        var result = aws.getUserDataScript(cluster);
         expect(result).to.equal(Mustache.render.returnValues[0]);
         done();
       });
 
       it('should set the correct tags', function(done) {
         var tags = [cluster.id, 'run', 'build'].join(',');
-        aws.getUserDataScript(cluster, type);
+        aws.getUserDataScript(cluster);
         expect(Mustache.render.firstCall.args[1].host_tags).to.equal(tags);
         done();
       });
@@ -195,7 +160,7 @@ describe('providers', function() {
       it('should set the correct filibuster_version', function(done) {
         var variableName = 'filibuster_version';
         var expectedVariable = process.env.FILIBUSTER_VERSION;
-        aws.getUserDataScript(cluster, type);
+        aws.getUserDataScript(cluster);
         expect(Mustache.render.firstCall.args[1][variableName])
           .to.equal(expectedVariable);
         done();
@@ -204,7 +169,7 @@ describe('providers', function() {
       it('should set the correct krain_version', function(done) {
         var variableName = 'krain_version';
         var expectedVariable = process.env.KRAIN_VERSION;
-        aws.getUserDataScript(cluster, type);
+        aws.getUserDataScript(cluster);
         expect(Mustache.render.firstCall.args[1][variableName])
           .to.equal(expectedVariable);
         done();
@@ -213,7 +178,7 @@ describe('providers', function() {
       it('should set the correct sauron_version', function(done) {
         var variableName = 'sauron_version';
         var expectedVariable = process.env.SAURON_VERSION;
-        aws.getUserDataScript(cluster, type);
+        aws.getUserDataScript(cluster);
         expect(Mustache.render.firstCall.args[1][variableName])
           .to.equal(expectedVariable);
         done();
@@ -222,7 +187,7 @@ describe('providers', function() {
       it('should set the correct image_builder_version', function(done) {
         var variableName = 'image_builder_version';
         var expectedVariable = process.env.IMAGE_BUILDER_VERSION;
-        aws.getUserDataScript(cluster, type);
+        aws.getUserDataScript(cluster);
         expect(Mustache.render.firstCall.args[1][variableName])
           .to.equal(expectedVariable);
         done();
@@ -231,7 +196,7 @@ describe('providers', function() {
       it('should set the correct docker_listener_version', function(done) {
         var variableName = 'docker_listener_version';
         var expectedVariable = process.env.DOCKER_LISTENER_VERSION;
-        aws.getUserDataScript(cluster, type);
+        aws.getUserDataScript(cluster);
         expect(Mustache.render.firstCall.args[1][variableName])
           .to.equal(expectedVariable);
         done();
@@ -351,64 +316,69 @@ describe('providers', function() {
     }); // end 'createTags'
 
     describe('getDefaultInstanceParams', function() {
-      beforeEach(function (done) {
-        sinon.spy(aws, 'getTypeEnvironmentPrefix');
-        done();
-      });
-
-      afterEach(function (done) {
-        aws.getTypeEnvironmentPrefix.restore();
-        done();
-      });
-
-      it('should use the correct environment prefix', function(done) {
-        var type = 'run';
-        aws.getDefaultInstanceParams(type);
-        expect(aws.getTypeEnvironmentPrefix.calledWith(type)).to.be.true();
-        done();
-      });
-
       it('should set the correct `ImageId`', function(done) {
-        var type = 'run';
         var key = 'ImageId';
-        var value = process.env.RUN_INSTANCE_AMI_ID;
-        var params = aws.getDefaultInstanceParams(type);
+        var value = process.env.AWS_INSTANCE_IMAGE_ID;
+        var params = aws.getDefaultInstanceParams();
         expect(params[key]).to.equal(value);
         done();
       });
 
       it('should set the correct `MinCount`', function(done) {
-        var type = 'run';
         var key = 'MinCount';
-        var value = process.env.RUN_INSTANCE_MIN_COUNT;
-        var params = aws.getDefaultInstanceParams(type);
+        var value = process.env.AWS_INSTANCE_COUNT;
+        var params = aws.getDefaultInstanceParams();
         expect(params[key]).to.equal(value);
         done();
       });
 
       it('should set the correct `MaxCount`', function(done) {
-        var type = 'run';
         var key = 'MaxCount';
-        var value = process.env.RUN_INSTANCE_MAX_COUNT;
-        var params = aws.getDefaultInstanceParams(type);
+        var value = process.env.AWS_INSTANCE_COUNT;
+        var params = aws.getDefaultInstanceParams();
         expect(params[key]).to.equal(value);
         done();
       });
 
       it('should set the correct `InstanceType`', function(done) {
-        var type = 'run';
         var key = 'InstanceType';
-        var value = process.env.RUN_INSTANCE_TYPE;
-        var params = aws.getDefaultInstanceParams(type);
+        var value = process.env.AWS_INSTANCE_TYPE;
+        var params = aws.getDefaultInstanceParams();
         expect(params[key]).to.equal(value);
         done();
       });
 
       it('should set the correct `InstanceInitiatedShutdownBehavior`', function(done) {
-        var type = 'run';
         var key = 'InstanceInitiatedShutdownBehavior';
         var value = process.env.AWS_SHUTDOWN_BEHAVIOR;
-        var params = aws.getDefaultInstanceParams(type);
+        var params = aws.getDefaultInstanceParams();
+        expect(params[key]).to.equal(value);
+        done();
+      });
+
+      it('should set the correct `KeyName` param', function(done) {
+        var key = 'KeyName';
+        var value = process.env.AWS_SSH_KEY_NAME;
+        var params = aws.getDefaultInstanceParams();
+        expect(params[key]).to.equal(value);
+        done();
+      });
+
+      it('should set the correct `SecurityGroupIds` param', function(done) {
+        var key = 'SecurityGroupIds';
+        var values = [
+          process.env.AWS_BASTION_SECURITY_GROUP,
+          process.env.AWS_CLUSTER_SECURITY_GROUP_ID
+        ];
+        var params = aws.getDefaultInstanceParams();
+        expect(params[key]).to.deep.equal(values);
+        done();
+      });
+
+      it('should set the correct `SubnetId` param', function(done) {
+        var key = 'SubnetId';
+        var value = process.env.AWS_CLUSTER_SUBNET;
+        var params = aws.getDefaultInstanceParams();
         expect(params[key]).to.equal(value);
         done();
       });

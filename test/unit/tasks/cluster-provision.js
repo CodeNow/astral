@@ -24,7 +24,7 @@ describe('tasks', function() {
   describe('cluster-provision', function() {
     beforeEach(function (done) {
       sinon.spy(error, 'rejectAndReport');
-      sinon.stub(Cluster, 'exists').returns(Promise.resolve(false));
+      sinon.stub(Cluster, 'githubOrgExists').returns(Promise.resolve(false));
       sinon.stub(Cluster, 'insert').returns(Promise.resolve());
       sinon.stub(queue, 'publish');
       sinon.stub(queue, 'subscribe');
@@ -33,7 +33,7 @@ describe('tasks', function() {
 
     afterEach(function (done) {
       error.rejectAndReport.restore();
-      Cluster.exists.restore();
+      Cluster.githubOrgExists.restore();
       Cluster.insert.restore();
       queue.publish.restore();
       queue.subscribe.restore();
@@ -48,75 +48,58 @@ describe('tasks', function() {
       }).catch(done);
     });
 
-    it('should fatally reject if the job is missing an org_id', function(done) {
-      clusterProvision({}).catch(TaskFatalError, function (err) {
+    it('should fatally reject without job `github_id`', function(done) {
+      clusterProvision({ bitbucket_id: 'no' }).catch(TaskFatalError, function (err) {
         expect(error.rejectAndReport.calledWith(err)).to.be.true();
         expect(err.data.task).to.equal('cluster-provision');
         done();
       }).catch(done);
     });
 
-    it('should check to see if the cluster exists', function(done) {
-      var org_id = '1234';
-      Cluster.exists.returns(Promise.resolve(true));
-      clusterProvision({ org_id: org_id }).then(function () {
-        expect(Cluster.exists.calledWith(org_id)).to.be.true();
+    it('should check to see if a cluster already exists', function(done) {
+      var github_id = '1234';
+      Cluster.githubOrgExists.returns(Promise.resolve(true));
+      clusterProvision({ github_id: github_id }).then(function () {
+        expect(Cluster.githubOrgExists.calledWith(github_id)).to.be.true();
         done();
       }).catch(done);
     });
 
     it('should stop if the cluster already exists', function(done) {
-      Cluster.exists.returns(Promise.resolve(true));
-      clusterProvision({ org_id: '22' }).then(function () {
+      Cluster.githubOrgExists.returns(Promise.resolve(true));
+      clusterProvision({ github_id: '22' }).then(function () {
         expect(Cluster.insert.callCount).to.equal(0);
         done();
       }).catch(done);
     });
 
     it('should insert the cluster into the database', function(done) {
-      var org_id = '2345';
-      clusterProvision({ org_id: org_id }).then(function () {
+      var github_id = '2345';
+      clusterProvision({ github_id: github_id }).then(function () {
         expect(Cluster.insert.calledOnce).to.be.true();
         expect(Cluster.insert.firstCall.args[0]).to.deep.equal({
-          id: org_id,
-          security_group_id: process.env.AWS_CLUSTER_SECURITY_GROUP_ID,
-          subnet_id: process.env.AWS_CLUSTER_SUBNET,
-          ssh_key_name: process.env.AWS_SSH_KEY_NAME
+          github_id: github_id
         });
         done();
       }).catch(done);
     });
 
     it('should publish a message to create run instances', function(done) {
-      var org_id = '5995992';
-      clusterProvision({ org_id: org_id }).then(function (cluster) {
+      var github_id = '5995992';
+      clusterProvision({ github_id: github_id }).then(function (cluster) {
         expect(queue.publish.firstCall.args[0])
           .to.equal('cluster-instance-provision');
         expect(queue.publish.firstCall.args[1]).to.deep.equal({
-          cluster_id: org_id,
-          type: 'run'
+          github_id: github_id
         });
         done();
       }).catch(done);
     });
 
-    it('should return the cluster on resolution', function(done) {
-      var org_id = '482';
-      clusterProvision({ org_id: org_id }).then(function (cluster) {
-        expect(cluster).to.deep.equal({
-          id: org_id,
-          security_group_id: process.env.AWS_CLUSTER_SECURITY_GROUP_ID,
-          subnet_id: process.env.AWS_CLUSTER_SUBNET,
-          ssh_key_name: process.env.AWS_SSH_KEY_NAME
-        });
-        done();
-      }).catch(done);
-    });
-
-    it('should reject on `Cluster.exists` errors', function(done) {
+    it('should reject on `Cluster.githubOrgExists` errors', function(done) {
       var dbError = new Error('some friggen db error');
-      var job = { org_id: '234ss5' };
-      Cluster.exists.returns(Promise.reject(dbError));
+      var job = { github_id: '234ss5' };
+      Cluster.githubOrgExists.returns(Promise.reject(dbError));
       clusterProvision(job).catch(TaskError, function (err) {
         expect(err.data.task).to.equal('cluster-provision');
         expect(err.data.job).to.equal(job);
@@ -127,7 +110,7 @@ describe('tasks', function() {
 
     it('should reject on `Cluster.insert` errors', function(done) {
       var dbError = new Error('insert friggen failed');
-      var job = { org_id: 'dooopppp' };
+      var job = { github_id: 'dooopppp' };
       Cluster.insert.returns(Promise.reject(dbError));
       clusterProvision(job).catch(TaskError, function (err) {
         expect(err.data.task).to.equal('cluster-provision');

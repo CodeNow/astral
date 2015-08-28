@@ -22,10 +22,20 @@ describe('tasks', function() {
   describe('cluster-instance-write', function() {
     var job = {
       cluster: { id: '123' },
-      type: 'run',
+      role: 'dock',
       instances: [
-        { InstanceId: '1234', ImageId: '123454', InstanceType: 't1.micro' },
-        { InstanceId: '4582', ImageId: '728392', InstanceType: 't1.micro' }
+        {
+          InstanceId: '1234',
+          ImageId: '123454',
+          InstanceType: 't1.micro',
+          PrivateIpAddress: '10.20.0.0'
+        },
+        {
+          InstanceId: '4582',
+          ImageId: '728392',
+          InstanceType: 't1.micro',
+          PrivateIpAddress: '10.20.0.1'
+        }
       ]
     };
 
@@ -33,16 +43,18 @@ describe('tasks', function() {
       {
         id: job.instances[0].InstanceId,
         cluster_id: job.cluster.id,
-        type: job.type,
-        ami_id: job.instances[0].ImageId,
-        aws_type: job.instances[0].InstanceType
+        role: job.role,
+        aws_image_id: job.instances[0].ImageId,
+        aws_instance_type: job.instances[0].InstanceType,
+        aws_private_ip_address: job.instances[0].PrivateIpAddress
       },
       {
         id: job.instances[1].InstanceId,
         cluster_id: job.cluster.id,
-        type: job.type,
-        ami_id: job.instances[1].ImageId,
-        aws_type: job.instances[1].InstanceType
+        role: job.role,
+        aws_image_id: job.instances[1].ImageId,
+        aws_instance_type: job.instances[1].InstanceType,
+        aws_private_ip_address: job.instances[1].PrivateIpAddress
       }
     ];
 
@@ -90,10 +102,10 @@ describe('tasks', function() {
       });
     });
 
-    it('should fatally reject with a non-string `type`', function(done) {
+    it('should fatally reject with a non-string `role`', function(done) {
       var job = {
         cluster: { id: '123' },
-        type: { foo: 'bar' }
+        role: { foo: 'bar' }
       };
       clusterInstanceWrite(job).asCallback(function (err) {
         expect(err).to.exist();
@@ -106,7 +118,7 @@ describe('tasks', function() {
     it('should fatally reject with a non-array `instances`', function(done) {
       var job = {
         cluster: { id: '123' },
-        type: 'run',
+        role: 'dock',
         instances: 890123
       };
       clusterInstanceWrite(job).asCallback(function (err) {
@@ -120,7 +132,7 @@ describe('tasks', function() {
     it('should fatally reject if an instance is null or undefined', function(done) {
       var job = {
         cluster: { id: '123' },
-        type: 'run',
+        role: 'dock',
         instances: [
           { InstanceId: '1234' },
           null
@@ -137,7 +149,7 @@ describe('tasks', function() {
     it('should fatally reject if an instance is a non-object', function(done) {
       var job = {
         cluster: { id: '123' },
-        type: 'run',
+        role: 'dock',
         instances: [
           'woot'
         ]
@@ -153,7 +165,7 @@ describe('tasks', function() {
     it('should fatally reject given an instance with a non-string `InstanceId`', function(done) {
       var job = {
         cluster: { id: '123' },
-        type: 'run',
+        role: 'dock',
         instances: [
           { InstanceId: [1, 1, 2, 3, 5, 8, 13] }
         ]
@@ -169,7 +181,7 @@ describe('tasks', function() {
     it('should fatally reject given an instance with a non-string `ImageId`', function(done) {
       var job = {
         cluster: { id: '123' },
-        type: 'run',
+        role: 'dock',
         instances: [
           { InstanceId: '4582', ImageId: [1, 2, 4, 8] }
         ]
@@ -185,9 +197,30 @@ describe('tasks', function() {
     it('should fatally reject given an instance with a non-string `InstanceType`', function(done) {
       var job = {
         cluster: { id: '123' },
-        type: 'run',
+        role: 'dock',
         instances: [
           { InstanceId: '4582', ImageId: '728392', InstanceType: { foo: 'bar'} }
+        ]
+      };
+      clusterInstanceWrite(job).asCallback(function (err) {
+        expect(err).to.exist();
+        expect(err).to.be.an.instanceof(TaskFatalError);
+        expect(err.data.task).to.equal('cluster-instance-write');
+        done();
+      });
+    });
+
+    it('should fatally reject given an instance with a non-string `PrivateIpAddress`', function(done) {
+      var job = {
+        cluster: { id: '123' },
+        role: 'dock',
+        instances: [
+          {
+            InstanceId: '4582',
+            ImageId: '728392',
+            InstanceType: 'wow',
+            PrivateIpAddress: [23, 42]
+          }
         ]
       };
       clusterInstanceWrite(job).asCallback(function (err) {

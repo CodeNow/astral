@@ -34,7 +34,7 @@ describe('integration', function() {
             ids = instances.map(function (instance) {
               expect(instance.InstanceId).to.exist();
               expect(instance.ImageId)
-                .to.equal(process.env.RUN_INSTANCE_AMI_ID);
+                .to.equal(process.env.AWS_INSTANCE_IMAGE_ID);
               return instance.InstanceId;
             });
             done();

@@ -29,9 +29,7 @@ describe('tasks', function() {
     });
     var mockCluster = {
       id: 'some-id',
-      security_group_id: 'some-security-id',
-      subnet_id: 'some-subnet-id',
-      ssh_key_name: 'some-ssh-key-name'
+      github_id: 'some-github-id'
     };
 
     beforeEach(function (done) {
@@ -39,8 +37,9 @@ describe('tasks', function() {
       sinon.stub(aws, 'createInstances').returns(Promise.resolve(instances));
       sinon.stub(queue, 'publish');
       sinon.stub(queue, 'subscribe');
-      sinon.stub(Cluster, 'get').returns(Promise.resolve(mockCluster));
-      sinon.stub(Cluster, 'exists').returns(Promise.resolve(true));
+      sinon.stub(Cluster, 'getByGithubId')
+        .returns(Promise.resolve(mockCluster));
+      sinon.stub(Cluster, 'githubOrgExists').returns(Promise.resolve(true));
       done();
     });
 
@@ -49,8 +48,8 @@ describe('tasks', function() {
       aws.createInstances.restore();
       queue.publish.restore();
       queue.subscribe.restore();
-      Cluster.get.restore();
-      Cluster.exists.restore();
+      Cluster.getByGithubId.restore();
+      Cluster.githubOrgExists.restore();
       done();
     });
 
@@ -62,19 +61,8 @@ describe('tasks', function() {
       }).catch(done);
     });
 
-    it('should fatally reject without `cluster_id`', function(done) {
-      clusterInstanceProvision({ type: 'run' }).catch(TaskFatalError, function (err) {
-        expect(err.data.task).to.equal('cluster-instance-provision');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
-        done();
-      }).catch(done);
-    });
-
-    it('should fatally reject without a string `type`', function(done) {
-      var job = {
-        cluster_id: 'some-id',
-        type: 123
-      };
+    it('should fatally reject without `github_id`', function(done) {
+      var job = { role: 'dock' };
       clusterInstanceProvision(job).catch(TaskFatalError, function (err) {
         expect(err.data.task).to.equal('cluster-instance-provision');
         expect(error.rejectAndReport.calledWith(err)).to.be.true();
@@ -82,70 +70,49 @@ describe('tasks', function() {
       }).catch(done);
     });
 
-    it('should fatally reject when given an invalid `type`', function(done) {
+    it('should fatally reject when given an invalid `role`', function(done) {
       var job = {
-        cluster_id: 'some-id',
-        type: 'not-valid'
+        github_id: 'some-id',
+        role: 'not-valid'
       };
       clusterInstanceProvision(job).catch(TaskFatalError, function (err) {
         expect(err.data.task).to.equal('cluster-instance-provision');
         expect(error.rejectAndReport.calledWith(err)).to.be.true();
         done();
       }).catch(done);
-    });
-
-    it('should accept `type` of "run"', function(done) {
-      var job = {
-        cluster_id: 'some-id',
-        type: 'run'
-      };
-      clusterInstanceProvision(job).asCallback(function (err) {
-        expect(err).to.not.exist();
-        done();
-      });
-    });
-
-    it('should accept `type` of "build"', function(done) {
-      var job = {
-        cluster_id: 'some-id',
-        type: 'build'
-      };
-      clusterInstanceProvision(job).asCallback(function (err) {
-        expect(err).to.not.exist();
-        done()
-      });
     });
 
     it('should fatally reject if the cluster does not exist', function(done) {
       var job = {
-        cluster_id: 'some-id',
-        type: 'build'
+        github_id: 'some-id',
+        role: 'dock'
       };
-      Cluster.exists.returns(Promise.resolve(false));
+      Cluster.githubOrgExists.returns(Promise.resolve(false));
       clusterInstanceProvision(job).catch(TaskFatalError, function (err) {
         expect(err.data.task).to.equal('cluster-instance-provision');
         expect(error.rejectAndReport.calledWith(err)).to.be.true();
         done();
       }).catch(done);
+    });
 
-      // clusterInstanceProvision(job).asCallback(function (err) {
-      //   console.log(typeof err);
-      //   expect(err).to.be.an.instanceof(TaskFatalError);
-      //
-      //   done();
-      // });
+    it('should default `role` to "dock"', function(done) {
+      var job = { github_id: 'some-id' };
+      clusterInstanceProvision(job).then(function () {
+        expect(job.role).to.equal('dock');
+        done();
+      }).catch(done);
     });
 
     it('should publish `cluster-instance-wait` on success', function(done) {
       var job = {
-        cluster_id: 'some-id',
-        type: 'build'
+        github_id: 'some-id',
+        role: 'dock'
       };
       clusterInstanceProvision(job).then(function () {
         expect(queue.publish.calledWith('cluster-instance-wait')).to.be.true();
         expect(queue.publish.firstCall.args[1]).to.deep.equal({
           cluster: mockCluster,
-          type: job.type,
+          role: job.role,
           instances: instances
         });
         done();
@@ -154,14 +121,14 @@ describe('tasks', function() {
 
     it('should publish `cluster-instance-tag` on success', function(done) {
       var job = {
-        cluster_id: 'some-id',
-        type: 'run'
+        github_id: 'some-id',
+        role: 'dock'
       };
       clusterInstanceProvision(job).then(function () {
         expect(queue.publish.calledWith('cluster-instance-tag')).to.be.true();
         expect(queue.publish.secondCall.args[1]).to.deep.equal({
-          org: mockCluster.id,
-          type: job.type,
+          org: mockCluster.github_id,
+          role: job.role,
           instanceIds: instanceIds
         });
         done();
@@ -172,8 +139,8 @@ describe('tasks', function() {
       var awsError = new Error('Some aws tom-foolery');
       aws.createInstances.returns(Promise.reject(awsError));
       var job = {
-        cluster_id: 'some-id',
-        type: 'build'
+        github_id: 'some-id',
+        role: 'dock'
       };
       clusterInstanceProvision(job).asCallback(function (err) {
         expect(err).to.exist();

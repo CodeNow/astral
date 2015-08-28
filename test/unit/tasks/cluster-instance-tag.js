@@ -48,7 +48,7 @@ describe('tasks', function() {
       });
     });
 
-    it('should fatally reject when given invalid `type`', function(done) {
+    it('should fatally reject when given invalid `role`', function(done) {
       var job = { org: 'some-org', instanceIds: ['1', '2'] };
       clusterInstanceTag(job).asCallback(function (err) {
         expect(err).to.exist();
@@ -60,7 +60,7 @@ describe('tasks', function() {
     });
 
     it('should fatally reject when given invalid `org`', function(done) {
-      var job = { type: 'run', instanceIds: ['1', '2'] };
+      var job = { role: 'dock', instanceIds: ['1', '2'] };
       clusterInstanceTag(job).asCallback(function (err) {
         expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskFatalError);
@@ -71,7 +71,7 @@ describe('tasks', function() {
     });
 
     it('should fatally reject when given invalid `instanceIds`', function(done) {
-      var job = { type: 'run', org: 'some-org', instanceIds: {} };
+      var job = { role: 'dock', org: 'some-org', instanceIds: {} };
       clusterInstanceTag(job).asCallback(function (err) {
         expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskFatalError);
@@ -83,7 +83,7 @@ describe('tasks', function() {
 
     it('should fatally reject when given non-string instance id', function(done) {
       var job = {
-        type: 'run',
+        role: 'dock',
         org: 'some-org',
         instanceIds: [{}, '2']
       };
@@ -99,7 +99,7 @@ describe('tasks', function() {
     it('should call aws `createTags` with the correct tags', function(done) {
       var job = {
         org: 'org-id',
-        type: 'run',
+        role: 'dock',
         instanceIds: ['1', '2', '3']
       };
       clusterInstanceTag(job).then(function () {
@@ -107,9 +107,8 @@ describe('tasks', function() {
         expect(aws.createTags.firstCall.args[0]).to.deep.equal({
           Resources: job.instanceIds,
           Tags: [
-            { Key: 'role', Value: 'dock' },
-            { Key: 'type', Value: job.type },
-            { Key: 'org', Value: job.org }
+            { Key: 'org', Value: job.org },
+            { Key: 'role', Value: job.role }
           ]
         });
         done();
