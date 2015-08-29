@@ -84,14 +84,18 @@ describe('tasks', function() {
       }).catch(done);
     });
 
-    it('should publish a message to create run instances', function(done) {
+    it('should publish messages to provision dock instances', function(done) {
       var github_id = '5995992';
       clusterProvision({ github_id: github_id }).then(function (cluster) {
-        expect(queue.publish.firstCall.args[0])
-          .to.equal('cluster-instance-provision');
-        expect(queue.publish.firstCall.args[1]).to.deep.equal({
-          github_id: github_id
-        });
+        expect(queue.publish.callCount)
+          .to.equal(process.env.CLUSTER_INITIAL_DOCKS);
+        for (var i = 0; i < process.env.CLUSTER_INITIAL_DOCKS; i++) {
+          expect(queue.publish.getCall(i).args[0])
+            .to.equal('cluster-instance-provision');
+          expect(queue.publish.getCall(i).args[1]).to.deep.equal({
+            github_id: github_id
+          });
+        }
         done();
       }).catch(done);
     });
