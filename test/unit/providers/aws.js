@@ -326,7 +326,7 @@ describe('providers', function() {
 
       it('should set the correct `MinCount`', function(done) {
         var key = 'MinCount';
-        var value = process.env.AWS_INSTANCE_COUNT;
+        var value = 1;
         var params = aws.getDefaultInstanceParams();
         expect(params[key]).to.equal(value);
         done();
@@ -334,7 +334,7 @@ describe('providers', function() {
 
       it('should set the correct `MaxCount`', function(done) {
         var key = 'MaxCount';
-        var value = process.env.AWS_INSTANCE_COUNT;
+        var value = 1;
         var params = aws.getDefaultInstanceParams();
         expect(params[key]).to.equal(value);
         done();
