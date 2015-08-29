@@ -55,21 +55,19 @@ describe('logger', function() {
 
       it('should limit `instances` to specific fields', function(done) {
         var job = {
-          instances: [
-            {
-              ImageId: 'image-id',
-              InstanceId: 'instance-id',
-              InstanceType: 'instance-type',
-              KeyName: 'key-name',
-              PrivateIpAddress: 'private-ip-address',
-              SubnetId: 'subnet-id',
-              VpcId: 'vpc-id',
-              NotThere: 'woo',
-              TotesNotThere: {
-                Nope: 'hahaha'
-              }
+          instance: {
+            ImageId: 'image-id',
+            InstanceId: 'instance-id',
+            InstanceType: 'instance-type',
+            KeyName: 'key-name',
+            PrivateIpAddress: 'private-ip-address',
+            SubnetId: 'subnet-id',
+            VpcId: 'vpc-id',
+            NotThere: 'woo',
+            TotesNotThere: {
+              Nope: 'hahaha'
             }
-          ]
+          }
         };
 
         var expectedFields = [
@@ -82,11 +80,11 @@ describe('logger', function() {
 
         var result = logger.serializers.job(job);
         expectedFields.forEach(function (field) {
-          expect(result.instances[0][field], field)
-            .to.equal(job.instances[0][field]);
+          expect(result.instance[field], field)
+            .to.equal(job.instance[field]);
         });
         unexpectedFields.forEach(function (field) {
-          expect(result.instances[0][field]).to.not.exist();
+          expect(result.instance[field]).to.not.exist();
         });
 
         done();

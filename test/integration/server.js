@@ -47,7 +47,7 @@ describe('integration', function() {
               }, 0);
           })
           .then(function (count) {
-            if (count === process.env.AWS_INSTANCE_COUNT) {
+            if (count === process.env.CLUSTER_INITIAL_DOCKS) {
               clearInterval(interval);
               done();
             }

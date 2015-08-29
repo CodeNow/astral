@@ -49,7 +49,7 @@ describe('tasks', function() {
     });
 
     it('should fatally reject when given invalid `role`', function(done) {
-      var job = { org: 'some-org', instanceIds: ['1', '2'] };
+      var job = { org: 'some-org', instanceIds: '1' };
       clusterInstanceTag(job).asCallback(function (err) {
         expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskFatalError);
@@ -60,7 +60,7 @@ describe('tasks', function() {
     });
 
     it('should fatally reject when given invalid `org`', function(done) {
-      var job = { role: 'dock', instanceIds: ['1', '2'] };
+      var job = { role: 'dock', instanceIds: '1' };
       clusterInstanceTag(job).asCallback(function (err) {
         expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskFatalError);
@@ -70,22 +70,11 @@ describe('tasks', function() {
       });
     });
 
-    it('should fatally reject when given invalid `instanceIds`', function(done) {
-      var job = { role: 'dock', org: 'some-org', instanceIds: {} };
-      clusterInstanceTag(job).asCallback(function (err) {
-        expect(err).to.exist();
-        expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-instance-tag');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
-        done();
-      });
-    });
-
-    it('should fatally reject when given non-string instance id', function(done) {
+    it('should fatally reject when given invalid `instanceId`', function(done) {
       var job = {
         role: 'dock',
         org: 'some-org',
-        instanceIds: [{}, '2']
+        instanceId: {}
       };
       clusterInstanceTag(job).asCallback(function (err) {
         expect(err).to.exist();
@@ -97,15 +86,16 @@ describe('tasks', function() {
     });
 
     it('should call aws `createTags` with the correct tags', function(done) {
+      var instanceId = '1';
       var job = {
         org: 'org-id',
         role: 'dock',
-        instanceIds: ['1', '2', '3']
+        instanceId: instanceId
       };
       clusterInstanceTag(job).then(function () {
         expect(aws.createTags.calledOnce).to.be.true();
         expect(aws.createTags.firstCall.args[0]).to.deep.equal({
-          Resources: job.instanceIds,
+          Resources: [ instanceId ],
           Tags: [
             { Key: 'org', Value: job.org },
             { Key: 'role', Value: job.role }

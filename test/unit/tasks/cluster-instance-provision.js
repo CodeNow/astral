@@ -23,7 +23,7 @@ var clusterInstanceProvision = require('tasks/cluster-instance-provision');
 
 describe('tasks', function() {
   describe('cluster-instance-provision', function() {
-    var instanceIds = [1, 2, 3];
+    var instanceIds = [1];
     var instances = instanceIds.map(function (id) {
       return { InstanceId: id };
     });
@@ -103,6 +103,19 @@ describe('tasks', function() {
       }).catch(done);
     });
 
+    it('should reject if AWS returns no instances', function(done) {
+      var job = {
+        github_id: 'some-id',
+        role: 'dock'
+      };
+      aws.createInstances.returns(Promise.resolve([]));
+      clusterInstanceProvision(job).catch(TaskError, function (err) {
+        expect(err.data.task).to.equal('cluster-instance-provision');
+        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        done();
+      }).catch(done);
+    });
+
     it('should publish `cluster-instance-wait` on success', function(done) {
       var job = {
         github_id: 'some-id',
@@ -113,7 +126,7 @@ describe('tasks', function() {
         expect(queue.publish.firstCall.args[1]).to.deep.equal({
           cluster: mockCluster,
           role: job.role,
-          instances: instances
+          instance: instances[0]
         });
         done();
       }).catch(done);
@@ -129,7 +142,7 @@ describe('tasks', function() {
         expect(queue.publish.secondCall.args[1]).to.deep.equal({
           org: mockCluster.github_id,
           role: job.role,
-          instanceIds: instanceIds
+          instanceId: instanceIds[0]
         });
         done();
       }).catch(done);

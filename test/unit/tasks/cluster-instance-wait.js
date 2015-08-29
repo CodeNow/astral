@@ -24,9 +24,7 @@ describe('tasks', function() {
     var job = {
       cluster: { id: '123' },
       role: 'dock',
-      instances: [
-        { InstanceId: '1234' }
-      ]
+      instance: { InstanceId: '1234' }
     };
 
     beforeEach(function (done) {
@@ -47,9 +45,7 @@ describe('tasks', function() {
       var job = {
         cluster: { id: '123' },
         role: 'dock',
-        instances: [
-          { InstanceId: '1234' }
-        ]
+        instance: { InstanceId: '1234' }
       };
       expect(clusterInstanceWait(job).then).to.be.a.function();
       done();
@@ -97,11 +93,11 @@ describe('tasks', function() {
       });
     });
 
-    it('should fatally reject with a non-array `instances`', function(done) {
+    it('should fatally reject with a non-object `instance`', function(done) {
       var job = {
         cluster: { id: '123' },
         role: 'dock',
-        instances: 890123
+        instance: 890123
       };
       clusterInstanceWait(job).asCallback(function (err) {
         expect(err).to.exist();
@@ -111,48 +107,11 @@ describe('tasks', function() {
       });
     });
 
-    it('should fatally reject if `instances` is malformed', function(done) {
+    it('should fatally reject with an invalid `instance`', function(done) {
       var job = {
         cluster: { id: '123' },
         role: 'dock',
-        instances: [
-          { InstanceId: '1234' },
-          'woot'
-        ]
-      };
-      clusterInstanceWait(job).asCallback(function (err) {
-        expect(err).to.exist();
-        expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-instance-wait');
-        done();
-      });
-    });
-
-    it('should fatally reject given an instance without an id', function(done) {
-      var job = {
-        cluster: { id: '123' },
-        role: 'dock',
-        instances: [
-          { InstanceId: '1234' },
-          { foo: 'bar' }
-        ]
-      };
-      clusterInstanceWait(job).asCallback(function (err) {
-        expect(err).to.exist();
-        expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-instance-wait');
-        done();
-      });
-    });
-
-    it('should fatally reject given an instance with a non-string id', function(done) {
-      var job = {
-        cluster: { id: '123' },
-        role: 'dock',
-        instances: [
-          { InstanceId: '1234' },
-          { InstanceId: [1, 1, 2, 3, 5, 8, 13] }
-        ]
+        instance: { foo: 'bar' }
       };
       clusterInstanceWait(job).asCallback(function (err) {
         expect(err).to.exist();
@@ -193,7 +152,8 @@ describe('tasks', function() {
     it('should provide the instances to the `cluster-instance-write` job', function(done) {
       clusterInstanceWait(job).then(function () {
         var data = queue.publish.firstCall.args[1];
-        expect(data.instances).to.deep.equal(job.instances);
+        expect(data.instance).to.exist();
+        expect(data.instance).to.deep.equal(job.instance);
         done();
       }).catch(done);
     });

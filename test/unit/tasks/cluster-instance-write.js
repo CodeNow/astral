@@ -23,48 +23,32 @@ describe('tasks', function() {
     var job = {
       cluster: { id: '123' },
       role: 'dock',
-      instances: [
-        {
-          InstanceId: '1234',
-          ImageId: '123454',
-          InstanceType: 't1.micro',
-          PrivateIpAddress: '10.20.0.0'
-        },
-        {
-          InstanceId: '4582',
-          ImageId: '728392',
-          InstanceType: 't1.micro',
-          PrivateIpAddress: '10.20.0.1'
-        }
-      ]
+      instance: {
+        InstanceId: '1234',
+        ImageId: '123454',
+        InstanceType: 't1.micro',
+        PrivateIpAddress: '10.20.0.0'
+      }
     };
 
-    var instanceRows = [
-      {
-        id: job.instances[0].InstanceId,
-        cluster_id: job.cluster.id,
-        role: job.role,
-        aws_image_id: job.instances[0].ImageId,
-        aws_instance_type: job.instances[0].InstanceType,
-        aws_private_ip_address: job.instances[0].PrivateIpAddress
-      },
-      {
-        id: job.instances[1].InstanceId,
-        cluster_id: job.cluster.id,
-        role: job.role,
-        aws_image_id: job.instances[1].ImageId,
-        aws_instance_type: job.instances[1].InstanceType,
-        aws_private_ip_address: job.instances[1].PrivateIpAddress
-      }
-    ];
+    var instanceRow = {
+      id: job.instance.InstanceId,
+      cluster_id: job.cluster.id,
+      role: job.role,
+      aws_image_id: job.instance.ImageId,
+      aws_instance_type: job.instance.InstanceType,
+      aws_private_ip_address: job.instance.PrivateIpAddress
+    };
 
     beforeEach(function (done) {
       sinon.stub(Instance, 'insert').returns(Promise.resolve());
+      sinon.stub(Instance, 'exists').returns(Promise.resolve(false));
       done();
     });
 
     afterEach(function (done) {
       Instance.insert.restore();
+      Instance.exists.restore();
       done();
     });
 
@@ -115,44 +99,11 @@ describe('tasks', function() {
       });
     });
 
-    it('should fatally reject with a non-array `instances`', function(done) {
+    it('should fatally reject with a non-object `instance`', function(done) {
       var job = {
         cluster: { id: '123' },
         role: 'dock',
-        instances: 890123
-      };
-      clusterInstanceWrite(job).asCallback(function (err) {
-        expect(err).to.exist();
-        expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-instance-write');
-        done();
-      });
-    });
-
-    it('should fatally reject if an instance is null or undefined', function(done) {
-      var job = {
-        cluster: { id: '123' },
-        role: 'dock',
-        instances: [
-          { InstanceId: '1234' },
-          null
-        ]
-      };
-      clusterInstanceWrite(job).asCallback(function (err) {
-        expect(err).to.exist();
-        expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-instance-write');
-        done();
-      });
-    });
-
-    it('should fatally reject if an instance is a non-object', function(done) {
-      var job = {
-        cluster: { id: '123' },
-        role: 'dock',
-        instances: [
-          'woot'
-        ]
+        instance: 890123
       };
       clusterInstanceWrite(job).asCallback(function (err) {
         expect(err).to.exist();
@@ -166,9 +117,7 @@ describe('tasks', function() {
       var job = {
         cluster: { id: '123' },
         role: 'dock',
-        instances: [
-          { InstanceId: [1, 1, 2, 3, 5, 8, 13] }
-        ]
+        instance: { InstanceId: [1, 1, 2, 3, 5, 8, 13] }
       };
       clusterInstanceWrite(job).asCallback(function (err) {
         expect(err).to.exist();
@@ -182,9 +131,7 @@ describe('tasks', function() {
       var job = {
         cluster: { id: '123' },
         role: 'dock',
-        instances: [
-          { InstanceId: '4582', ImageId: [1, 2, 4, 8] }
-        ]
+        instance: { InstanceId: '4582', ImageId: [1, 2, 4, 8] }
       };
       clusterInstanceWrite(job).asCallback(function (err) {
         expect(err).to.exist();
@@ -198,9 +145,11 @@ describe('tasks', function() {
       var job = {
         cluster: { id: '123' },
         role: 'dock',
-        instances: [
-          { InstanceId: '4582', ImageId: '728392', InstanceType: { foo: 'bar'} }
-        ]
+        instance: {
+          InstanceId: '4582',
+          ImageId: '728392',
+          InstanceType: { foo: 'bar'}
+        }
       };
       clusterInstanceWrite(job).asCallback(function (err) {
         expect(err).to.exist();
@@ -214,14 +163,12 @@ describe('tasks', function() {
       var job = {
         cluster: { id: '123' },
         role: 'dock',
-        instances: [
-          {
-            InstanceId: '4582',
-            ImageId: '728392',
-            InstanceType: 'wow',
-            PrivateIpAddress: [23, 42]
-          }
-        ]
+        instance: {
+          InstanceId: '4582',
+          ImageId: '728392',
+          InstanceType: 'wow',
+          PrivateIpAddress: [23, 42]
+        }
       };
       clusterInstanceWrite(job).asCallback(function (err) {
         expect(err).to.exist();
@@ -235,10 +182,26 @@ describe('tasks', function() {
       clusterInstanceWrite(job).asCallback(done);
     });
 
+    it('should check to see if the instance exists', function(done) {
+      clusterInstanceWrite(job).then(function () {
+        expect(Instance.exists.calledOnce).to.be.true();
+        expect(Instance.exists.firstCall.args[0]).to.deep.equal(instanceRow.id);
+        done();
+      }).catch(done);
+    });
+
+    it('should not attempt to insert rows if the instance exists', function(done) {
+      Instance.exists.returns(Promise.resolve(true));
+      clusterInstanceWrite(job).then(function () {
+        expect(Instance.insert.callCount).to.equal(0);
+        done();
+      }).catch(done);
+    });
+
     it('should insert the instances into the database', function(done) {
       clusterInstanceWrite(job).then(function () {
         expect(Instance.insert.calledOnce).to.be.true();
-        expect(Instance.insert.firstCall.args[0]).to.deep.equal(instanceRows);
+        expect(Instance.insert.firstCall.args[0]).to.deep.equal(instanceRow);
         done();
       }).catch(done);
     });
