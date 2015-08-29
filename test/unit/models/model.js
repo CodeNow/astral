@@ -24,6 +24,20 @@ describe('models', function () {
     var model;
     var columnNames = ['id', 'name', 'quantity'];
 
+    before(function (done) {
+      db.schema.dropTableIfExists(table).asCallback(done);
+    });
+
+    before(function (done) {
+      db.schema.createTable(table, function (table) {
+        table.string('id').primary();
+        table.string('name');
+        table.integer('quantity');
+        table.timestamp('created_at').index().defaultTo(db.raw('now()'));
+        table.timestamp('updated_at').defaultTo(db.raw('now()'));
+      }).asCallback(done);
+    });
+
     beforeEach(function (done) {
       model = new Model(table, primaryKey);
       done();
@@ -87,8 +101,59 @@ describe('models', function () {
     }); // end 'exists'
 
     describe('get', function() {
-      it('should return a promise', function(done) {
-        expect(model.get('someid').then).to.be.a.function();
+      var mock = {
+        where: function () { return mock; },
+        limit: function () { return mock; },
+        then: function () { return mock; }
+      };
+
+      beforeEach(function (done) {
+        sinon.spy(model, '_wherePrimaryEq');
+        sinon.stub(model, 'select').returns(mock);
+        sinon.spy(mock, 'where');
+        sinon.spy(mock, 'limit');
+        sinon.spy(mock, 'then');
+        done();
+      });
+
+      afterEach(function (done) {
+        model._wherePrimaryEq.restore();
+        model.select.restore();
+        mock.where.restore();
+        mock.limit.restore();
+        mock.then.restore();
+        done();
+      });
+
+      it('should use the correct where clause', function(done) {
+        var id = 'some-id';
+        model.get(id);
+        expect(model._wherePrimaryEq.calledWith(id)).to.be.true();
+        done();
+      });
+
+      it('should limit the result set to a single row', function(done) {
+        model.get('wowza');
+        expect(mock.limit.calledWith(1)).to.be.true();
+        done();
+      });
+
+      it('should return null if no such row exists', function(done) {
+        model.get('whatever');
+        expect(mock.then.calledOnce).to.be.true();
+        expect(mock.then.firstCall.args[0]).to.be.a.function();
+        var thenFunction = mock.then.firstCall.args[0];
+        expect(thenFunction([])).to.equal(null);
+        done();
+      });
+
+      it('should return the resulting row', function(done) {
+        model.get('whatever');
+        expect(mock.then.calledOnce).to.be.true();
+        expect(mock.then.firstCall.args[0]).to.be.a.function();
+        var thenFunction = mock.then.firstCall.args[0];
+        var row = { foo: 'bar' };
+        expect(thenFunction([row])).to.deep.equal(row);
         done();
       });
     }); // end 'get'

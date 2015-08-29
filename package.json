@@ -5,13 +5,19 @@
   "main": "index.js",
   "scripts": {
     "lint": "jshint index.js lib/",
-    "test": "NODE_PATH=./lib NODE_ENV=test lab -v -c -a code test",
+    "test": "npm run lint && NODE_PATH=./lib NODE_ENV=test lab -v -c -a code test/unit test/functional",
     "unit": "NODE_PATH=./lib NODE_ENV=test lab -v -c -a code test/unit",
     "functional": "NODE_PATH=./lib NODE_ENV=test lab -v -a code test/functional",
-    "integration": "NODE_PATH=./lib NODE_ENV=test lab -v -a code test/integration",
-    "init-db": "createuser -s -d shiva && createdb shiva && createdb shiva-test",
+    "integration": "NODE_PATH=./lib NODE_ENV=test lab -m 900000 -v -a code test/integration",
+    "integration-server": "LOG_LEVEL=debug NODE_PATH=./lib lab -a code -v -m 300000 test/integration/server.js | bunyan",
+    "init-db": "createuser -s -d shiva; createdb shiva; createdb shiva-test",
+    "drop-db": "dropdb shiva && dropdb shiva-test",
     "migrate": "knex migrate:latest",
-    "migrate-test": "NODE_ENV=test knex migrate:latest"
+    "rollback": "knex migrate:rollback",
+    "migrate-test": "NODE_ENV=test knex migrate:latest",
+    "rollback-test": "NODE_ENV=test knex migrate:rollback",
+    "queues": "while true; do OP=$(rabbitmqctl list_queues); clear; echo \"$OP\"; sleep 0.5; done;",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
@@ -31,16 +37,20 @@
     "code": "^1.4.1",
     "jshint": "^2.8.0",
     "lab": "^5.14.0",
-    "sinon": "^1.15.4",
-    "uuid": "^2.0.1"
+    "sinon": "^1.15.4"
   },
   "dependencies": {
     "101": "^1.0.0",
+    "aws-sdk": "^2.1.43",
+    "bluebird": "^2.9.34",
     "bunyan": "^1.4.0",
     "debug": "^2.2.0",
     "error-cat": "^1.3.4",
     "knex": "^0.8.6",
     "loadenv": "^1.1.0",
-    "pg": "^4.4.0"
+    "mustache": "^2.1.3",
+    "pg": "^4.4.0",
+    "runnable-hermes": "^4.0.0",
+    "uuid": "^2.0.1"
   }
 }

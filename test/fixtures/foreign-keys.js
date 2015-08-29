@@ -29,24 +29,6 @@ var foreignKeys = {
     column: 'cluster_id',
     foreignTable: 'clusters',
     foreignColumn: 'id'
-  },
-  'volumes_to_clusters': {
-    table: 'volumes',
-    column: 'cluster_id',
-    foreignTable: 'clusters',
-    foreignColumn: 'id'
-  },
-  'instance_volumes_to_instances': {
-    table: 'instance_volumes',
-    column: 'instance_id',
-    foreignTable: 'instances',
-    foreignColumn: 'id'
-  },
-  'instance_volumes_to_volumes': {
-    table: 'instance_volumes',
-    column: 'volume_id',
-    foreignTable: 'volumes',
-    foreignColumn: 'id'
   }
 };
 

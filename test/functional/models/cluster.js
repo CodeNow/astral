@@ -21,17 +21,18 @@ var cluster = require('models/cluster');
 describe('functional', function() {
   describe('models', function() {
     var clusterId = '1';
+    var github_id = '2344';
     var instanceIds = ['1', '2', '3'];
     var volumeIds = ['4', '5', '6'];
 
     describe('Cluster', function() {
       beforeEach(dbFixture.truncate);
       beforeEach(function (done) {
-        dbFixture.createCluster(clusterId).then(function () {
-          return dbFixture.createInstances(instanceIds, clusterId);
-        }).then(function () {
-          return dbFixture.createVolumes(volumeIds, clusterId);
-        }).asCallback(done);
+        dbFixture.createCluster(clusterId, { github_id: github_id })
+          .then(function () {
+            return dbFixture.createInstances(instanceIds, clusterId);
+          })
+          .asCallback(done);
       });
 
       it('should find all instances for a cluster', function(done) {
@@ -41,11 +42,19 @@ describe('functional', function() {
         }).catch(done);
       });
 
-      it('should find all volumes for a cluster', function(done) {
-        cluster.getInstances(clusterId).then(function (rows) {
-          expect(rows.length).to.equal(volumeIds.length);
+      it('should detemine if a cluster exists for a github org', function(done) {
+        cluster.githubOrgExists(github_id).then(function (exists) {
+          expect(exists).to.be.true();
           done();
         }).catch(done);
+      });
+
+      it('should find a cluster with the given github org', function(done) {
+        cluster.getByGithubId(github_id).then(function (cluster) {
+          expect(cluster.id).to.equal(clusterId);
+          expect(cluster.github_id).to.equal(github_id);
+          done();
+        });
       });
     }); // end 'Cluster'
   }); // end 'models'
