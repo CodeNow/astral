@@ -26,17 +26,23 @@ system (green are database related, and purple are AWS related):
 
 ![Shiva Jobs](https://docs.google.com/drawings/d/1wfmdM1qhnzWSrQ4lvDRPBIGrk5PMNb5omADyGz9j5bg/pub?w=489&h=401)
 
-* `cluster-provision` - Sets an entry in the database for an organization cluster
-  then enques a `cluster-instance-provision` job. Example job:  `{ org_id: 1234 }`
-* `cluster-instance-provision` - Provisions dock instances for a cluster on EC2 then
-  enqueues a `cluster-instance-tag` job and `cluster-instance-wait` job.
-  Example job: `{ cluster_id: 1234, type: 'run' }`
-* `cluster-instance-tag` - Sets the EC2 instance tags for a newly spawned dock instance.
-* `cluster-instance-wait` - Waits for a set of instances to be ready on EC2.
-* `cluster-instance-write` - Writes information concerning running instances to the
-  infrastructure database.
+##### cluster-provision
+Sets an entry in the database for an organization cluster then enques a
+`cluster-instance-provision` job. Example job:  `{ githubId: '1234' }`.
 
-The rest of this section details how shiva handles jobs.
+##### cluster-instance-provision
+Provisions a dock instance for a cluster on EC2 then enqueues a
+`cluster-instance-tag` job and `cluster-instance-wait` job. Example job:
+`{ githubId: '1234', role: 'dock' }`
+
+##### cluster-instance-tag
+Sets the EC2 instance tags for a new EC2 dock instance.
+
+##### cluster-instance-wait
+Waits for a cluster instance to enter the running state on EC2.
+
+##### cluster-instance-write
+Writes information concerning running instances to the infrastructure database.
 
 #### Server Workflow
 0. The server is started and subscribes to the relevant queues (see: `lib/server.js` and
