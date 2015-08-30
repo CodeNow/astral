@@ -227,7 +227,7 @@ shiva project repository directory:
 
 1. `npm run init-db`
 
-This script a super user named `shiva` and two databases on your machine:
+This script creates a super user named `shiva` and two databases on your machine:
 `shiva` (used for local development) and `shiva-test` (used by the test suite).
 
 #### Running Migrations
