@@ -11,7 +11,7 @@ var debug = require('debug')('shiva:migration');
 
 exports.up = function(knex, Promise) {
   var updateTable = knex.schema.table('clusters', function (table) {
-    table.string('githubId', 36).unique().notNullable();
+    table.string('github_id', 36).unique().notNullable();
   });
   debug(updateTable.toString());
   return updateTable;
@@ -19,7 +19,7 @@ exports.up = function(knex, Promise) {
 
 exports.down = function(knex, Promise) {
   var updateTable = knex.schema.table('clusters', function (table) {
-    table.dropColumn('githubId');
+    table.dropColumn('github_id');
   });
   debug(updateTable.toString());
   return updateTable;
