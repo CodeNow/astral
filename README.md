@@ -2,7 +2,7 @@
 
 ![Shiva](http://fc04.deviantart.net/fs71/i/2012/166/e/c/lord_shiva_by_satishverma-d53fzrp.jpg)
 
-## The Runnable god of instance creation and destruction.
+## The Runnable god of dock creation and destruction.
 
 Shiva is responsible for managing instances for Runnable's single-tenant build and run clusters (the realm of Acheron). Her primary responsibilities are:
 
