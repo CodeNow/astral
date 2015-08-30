@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "lint": "jshint index.js lib/",
-    "test": "npm run lint && NODE_PATH=./lib NODE_ENV=test lab -v -c -a code test/unit test/functional",
+    "eslint": "eslint index.js lib/",
+    "test": "npm run lint && npm run eslint && NODE_PATH=./lib NODE_ENV=test lab -m 250 -v -c -a code test/unit test/functional",
     "unit": "NODE_PATH=./lib NODE_ENV=test lab -v -c -a code test/unit",
     "functional": "NODE_PATH=./lib NODE_ENV=test lab -v -a code test/functional",
     "integration": "NODE_PATH=./lib NODE_ENV=test lab -m 900000 -v -a code test/integration",
@@ -35,6 +36,7 @@
   "homepage": "https://github.com/CodeNow/shiva",
   "devDependencies": {
     "code": "^1.4.1",
+    "eslint": "^1.3.1",
     "jshint": "^2.8.0",
     "lab": "^5.14.0",
     "sinon": "^1.15.4"

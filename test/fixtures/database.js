@@ -54,7 +54,7 @@ function createCluster(cluster_id, fields) {
   if (isObject(fields)) {
     defaults(row, fields);
   }
-  defaults(row, { github_id: uuid.v1() });
+  defaults(row, { "github_id": uuid.v1() });
   var clusterInsert = db('clusters').insert(row);
   debug(clusterInsert.toString());
   return clusterInsert;
