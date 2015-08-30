@@ -77,10 +77,10 @@ describe('models', function () {
       });
 
       it('should use the correct query', function(done) {
-        var github_id = '1234wow';
-        cluster.githubOrgExists(github_id);
+        var githubId = '1234wow';
+        cluster.githubOrgExists(githubId);
         expect(mock.where.firstCall.args[0])
-          .to.deep.equal({ github_id: github_id });
+          .to.deep.equal({ 'github_id': githubId });
         done();
       });
 
@@ -125,10 +125,10 @@ describe('models', function () {
       });
 
       it('should use the correct query', function(done) {
-        var github_id = 'omgwow';
-        cluster.getByGithubId(github_id);
+        var githubId = 'omgwow';
+        cluster.getByGithubId(githubId);
         expect(mock.where.firstCall.args[0])
-          .to.deep.equal({ github_id: github_id });
+          .to.deep.equal({ 'github_id': githubId });
         done();
       });
 

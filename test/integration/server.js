@@ -23,7 +23,7 @@ var Instance = require('models/instance');
 
 describe('integration', function() {
   describe('server', function() {
-    var github_id = 'example-org';
+    var githubId = 'example-org';
 
     before(dbFixture.terminateInstances);
     before(dbFixture.truncate);
@@ -33,9 +33,9 @@ describe('integration', function() {
     after(dbFixture.truncate);
 
     it('should provision a full cluster', function(done) {
-      queue.publish('cluster-provision', { github_id: github_id });
+      queue.publish('cluster-provision', { githubId: githubId });
       var interval = setInterval(function() {
-        Cluster.getByGithubId(github_id)
+        Cluster.getByGithubId(githubId)
           .then(function (cluster) {
             return Instance.count()
               .where({

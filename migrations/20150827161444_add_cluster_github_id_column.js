@@ -3,7 +3,7 @@
 var debug = require('debug')('shiva:migration');
 
 /**
- * Adds a new field named `github_id` to the clusters table that holds the id
+ * Adds a new field named `githubId` to the clusters table that holds the id
  * of the github user/organization associated with the cluster.
  *
  * @author Ryan Sandor Richards

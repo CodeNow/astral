@@ -22,12 +22,12 @@ var queue = require('queue');
 describe('functional', function() {
   describe('tasks', function() {
     describe('cluster-provision', function() {
-      var github_id = '1245';
+      var githubId = '1245';
 
       beforeEach(dbFixture.truncate);
       beforeEach(function (done) {
         sinon.stub(queue, 'publish');
-        dbFixture.createCluster('exists', { github_id: github_id })
+        dbFixture.createCluster('exists', { 'github_id': githubId })
           .asCallback(done);
       });
       afterEach(function (done) {
@@ -36,7 +36,7 @@ describe('functional', function() {
       });
 
       it('should add the cluster to the database', function(done) {
-        var job = { github_id: 'does-not-exist' };
+        var job = { githubId: 'does-not-exist' };
         clusterProvision(job)
           .then(function () {
             return db.count().table('clusters');
@@ -52,7 +52,7 @@ describe('functional', function() {
       });
 
       it('should not add the cluster if it already exists', function(done) {
-        var job = { github_id: github_id };
+        var job = { githubId: githubId };
         clusterProvision(job)
           .then(function () {
             return db.count().table('clusters');
