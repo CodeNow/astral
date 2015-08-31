@@ -70,6 +70,17 @@ describe('tasks', function() {
       });
     });
 
+    it('should fatally reject with a non-scalar `org`', function(done) {
+      var job = { role: 'dock', instanceIds: '1', org: [1, 2, 3]};
+      clusterInstanceTag(job).asCallback(function (err) {
+        expect(err).to.exist();
+        expect(err).to.be.an.instanceof(TaskFatalError);
+        expect(err.data.task).to.equal('cluster-instance-tag');
+        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        done();
+      });
+    });
+
     it('should fatally reject when given invalid `instanceId`', function(done) {
       var job = {
         role: 'dock',
