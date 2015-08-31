@@ -116,5 +116,26 @@ describe('tasks', function() {
         done();
       }).catch(done);
     });
+
+    it('should convert numeric `org` param to a string', function(done) {
+      var instanceId = '1';
+      var job = {
+        org: 12343545,
+        role: 'dock',
+        instanceId: instanceId
+      };
+      clusterInstanceTag(job).then(function () {
+        expect(aws.createTags.calledOnce).to.be.true();
+        expect(aws.createTags.firstCall.args[0]).to.deep.equal({
+          Resources: [ instanceId ],
+          Tags: [
+            { Key: 'org', Value: job.org.toString() },
+            { Key: 'role', Value: job.role }
+          ]
+        });
+        done();
+      }).catch(done);
+    });
+
   }); // end 'cluster-instance-tag'
 }); // end 'tasks'
