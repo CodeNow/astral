@@ -85,6 +85,18 @@ describe('tasks', function() {
       });
     });
 
+    it('should allow numeric `org` tag', function(done) {
+      var job = {
+        org: 1345,
+        role: 'dock',
+        instanceId: 'some-id'
+      };
+      clusterInstanceTag(job).asCallback(function (err) {
+        expect(err).to.not.exist();
+        done();
+      });
+    });
+
     it('should call aws `createTags` with the correct tags', function(done) {
       var instanceId = '1';
       var job = {
