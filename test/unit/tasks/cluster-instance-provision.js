@@ -140,7 +140,7 @@ describe('tasks', function() {
       clusterInstanceProvision(job).then(function () {
         expect(queue.publish.calledWith('cluster-instance-tag')).to.be.true();
         expect(queue.publish.secondCall.args[1]).to.deep.equal({
-          org: mockCluster.githubId,
+          org: job.githubId,
           role: job.role,
           instanceId: instanceIds[0]
         });
