@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "jshint index.js lib/",
     "eslint": "eslint index.js lib/",
-    "test": "npm run lint && npm run eslint && NODE_PATH=./lib NODE_ENV=test lab -m 500 -v -c -a code test/unit test/functional",
+    "test": "npm run lint && npm run eslint && NODE_PATH=./lib NODE_ENV=test lab -m 1000 -v -c -a code test/unit test/functional",
     "unit": "NODE_PATH=./lib NODE_ENV=test lab -v -c -a code test/unit",
     "functional": "NODE_PATH=./lib NODE_ENV=test lab -v -a code test/functional",
     "integration": "NODE_PATH=./lib NODE_ENV=test lab -m 900000 -v -a code test/integration",
