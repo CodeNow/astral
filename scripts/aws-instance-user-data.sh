@@ -2,6 +2,7 @@
 
 ENV_FILE=/opt/runnable/env
 HOST_TAGS_FILE=/opt/runnable/host_tags
+NODE_ENV_FILE=/opt/runnable/node_env
 DOCK_INIT_SCRIPT=/opt/runnable/dock-init/init.sh
 
 # Set preferred versions of each of the dock services
@@ -13,6 +14,9 @@ echo 'export DOCKER_LISTENER_VERSION={{docker_listener_version}}' >> $ENV_FILE
 
 # Set the host tags file (used by upstart for docker-listener)
 echo '{{host_tags}}' > $HOST_TAGS_FILE
+
+# Set the node environment file
+echo '{{node_env}}' > $NODE_ENV_FILE
 
 # Initialize the dock
 bash $DOCK_INIT_SCRIPT
