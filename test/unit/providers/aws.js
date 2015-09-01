@@ -202,7 +202,7 @@ describe('providers', function() {
         done();
       });
 
-      it('should set the correct docker_listener_version', function(done) {
+      it('should set the correct node_env', function(done) {
         var variableName = 'node_env';
         var expectedVariable = process.env.NODE_ENV;
         aws.getUserDataScript(cluster);
