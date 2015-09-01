@@ -201,6 +201,15 @@ describe('providers', function() {
           .to.equal(expectedVariable);
         done();
       });
+
+      it('should set the correct node_env', function(done) {
+        var variableName = 'node_env';
+        var expectedVariable = process.env.NODE_ENV;
+        aws.getUserDataScript(cluster);
+        expect(Mustache.render.firstCall.args[1][variableName])
+          .to.equal(expectedVariable);
+        done();
+      });
     }); // end 'getUserDataScript'
 
     describe('waitFor', function() {
