@@ -29,6 +29,7 @@ describe('providers', function() {
     var waitForResponse = { foo: 'bar' };
     var createTagsResponse = { bar: 'far' };
     var terminateInstancesResponse = { near: 'scar' };
+    var describeInstancesResponse = { neat: 'woot' };
 
     beforeEach(function (done) {
       sinon.stub(aws.ec2, 'runInstances')
@@ -39,6 +40,8 @@ describe('providers', function() {
         .yieldsAsync(null, createTagsResponse);
       sinon.stub(aws.ec2, 'terminateInstances')
         .yieldsAsync(null, terminateInstancesResponse);
+      sinon.stub(aws.ec2, 'describeInstances')
+        .yieldsAsync(null, describeInstancesResponse);
       done();
     });
 
@@ -47,6 +50,7 @@ describe('providers', function() {
       aws.ec2.waitFor.restore();
       aws.ec2.createTags.restore();
       aws.ec2.terminateInstances.restore();
+      aws.ec2.describeInstances.restore();
       done();
     });
 
@@ -294,7 +298,7 @@ describe('providers', function() {
         done();
       });
 
-      it('should correctly call ec2 `terminateInstances`', function(done) {
+      it('should correctly call ec2 `createTags`', function(done) {
         var params = { neat: 'sweet' };
         aws.createTags(params)
           .then(function () {
@@ -323,6 +327,42 @@ describe('providers', function() {
         });
       });
     }); // end 'createTags'
+
+    describe('describeInstances', function() {
+      it('should return a promise', function(done) {
+        expect(aws.describeInstances({}).then).to.be.a.function();
+        done();
+      });
+
+      it('should correctly call ec2 `describeInstances`', function(done) {
+        var params = { neat: 'sweet' };
+        aws.describeInstances(params)
+          .then(function () {
+            expect(aws.ec2.describeInstances.calledOnce).to.be.true();
+            expect(aws.ec2.describeInstances.calledWith(params)).to.be.true();
+            done();
+          })
+          .catch(done);
+      });
+
+      it('should handle success responses', function(done) {
+        aws.describeInstances({})
+          .then(function (data) {
+            expect(data).to.deep.equal(describeInstancesResponse);
+            done();
+          })
+          .catch(done);
+      });
+
+      it('should handle error responses', function(done) {
+        var ec2Error = new Error('We only accept lambda functions');
+        aws.ec2.describeInstances.yieldsAsync(ec2Error);
+        aws.describeInstances({}).asCallback(function (err) {
+          expect(err).to.equal(ec2Error);
+          done();
+        });
+      });
+    }); // end 'describeInstances'
 
     describe('getDefaultInstanceParams', function() {
       it('should set the correct `ImageId`', function(done) {
