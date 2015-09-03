@@ -18,6 +18,7 @@ var TaskError = require('errors/task-error');
 var TaskFatalError = require('errors/task-fatal-error');
 var error = require('error');
 var aws = require('providers/aws');
+var Instance = require('models/instance');
 var clusterInstanceTerminate = require('tasks/cluster-instance-terminate');
 
 describe('tasks', function() {
@@ -27,6 +28,7 @@ describe('tasks', function() {
       sinon.stub(aws, 'terminateInstances').returns(Promise.resolve());
       sinon.stub(queue, 'publish');
       sinon.stub(queue, 'subscribe');
+      sinon.stub(Instance, 'get').returns(Promise.resolve({ id: 'some-id' }));
       done();
     });
 
@@ -35,6 +37,7 @@ describe('tasks', function() {
       aws.terminateInstances.restore();
       queue.publish.restore();
       queue.subscribe.restore();
+      Instance.get.restore();
       done();
     });
 
@@ -63,6 +66,25 @@ describe('tasks', function() {
         expect(err).to.be.an.instanceof(TaskFatalError);
         expect(err.data.task).to.equal('cluster-instance-terminate');
         expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        done();
+      });
+    });
+
+    it('should fatally reject if no instance with `id` exists', function(done) {
+      Instance.get.returns(Promise.resolve(null));
+      clusterInstanceTerminate({ id: '123' }).asCallback(function (err) {
+        expect(err).to.be.an.instanceof(TaskFatalError);
+        expect(err.data.task).to.equal('cluster-instance-terminate');
+        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        done();
+      });
+    });
+
+    it('should handle errors when checking for the instance', function(done) {
+      var instanceError = new Error('I have misplaced the database...');
+      Instance.get.returns(Promise.reject(instanceError));
+      clusterInstanceTerminate({ id: '234' }).asCallback(function (err) {
+        expect(err).to.exist();
         done();
       });
     });
