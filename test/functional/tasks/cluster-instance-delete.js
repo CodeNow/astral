@@ -12,6 +12,7 @@ var sinon = require('sinon');
 
 require('loadenv')('shiva:test');
 
+var Instance = require('models/instance');
 var db = require('database');
 var dbFixture = require('../../fixtures/database.js');
 var clusterInstanceDelete = require('tasks/cluster-instance-delete');
@@ -30,6 +31,16 @@ describe('functional', function() {
           .asCallback(done)
       });
 
+      beforeEach(function (done) {
+        sinon.spy(Instance, 'update');
+        done();
+      })
+
+      afterEach(function (done) {
+        Instance.update.restore();
+        done();
+      });
+
       it('should delete the instance from the database', function(done) {
         clusterInstanceDelete({ id: instanceId })
           .then(function () {
@@ -38,6 +49,15 @@ describe('functional', function() {
           .then(function (rows) {
             expect(rows.length).to.equal(1);
             expect(rows[0].deleted).to.not.be.null();
+            done();
+          })
+          .catch(done);
+      });
+
+      it('should not delete an instance that does not exist', function(done) {
+        clusterInstanceDelete({ id: 'not-there' })
+          .then(function () {
+            expect(Instance.update.callCount).to.equal(0);
             done();
           })
           .catch(done);

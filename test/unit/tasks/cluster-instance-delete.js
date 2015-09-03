@@ -95,6 +95,15 @@ describe('tasks', function() {
       }).catch(done);
     });
 
+    it('should not proceed if no instance with the given id exists', function(done) {
+      var job = { id: 'i-neatsuchwow' };
+      selectMock.where.returns(Promise.resolve([]));
+      clusterInstanceDelete(job).then(function () {
+        expect(Instance.update.callCount).to.equal(0);
+        done();
+      }).catch(done);
+    });
+
     it('should handle instance deleted check errors', function(done) {
       var countError = new Error('Psql forgot how to count');
       selectMock.where.returns(Promise.reject(countError));
