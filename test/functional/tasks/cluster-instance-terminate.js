@@ -47,7 +47,7 @@ describe('functional', function() {
       });
 
       it('should terminate an existing instance', function(done) {
-        clusterInstanceTerminate({ id: instanceId })
+        clusterInstanceTerminate({ instanceId: instanceId })
           .then(function () {
             expect(aws.terminateInstances.calledOnce).to.be.true();
             expect(queue.publish.calledOnce).to.be.true();
@@ -57,7 +57,7 @@ describe('functional', function() {
       });
 
       it('should not terminate a non-existant instance', function(done) {
-        clusterInstanceTerminate({ id: 'not-a-thing' })
+        clusterInstanceTerminate({ instanceId: 'not-a-thing' })
           .then(function () { done('Did not throw an error.'); })
           .catch(TaskFatalError, function (err) {
             expect(err.data.task).to.equal('cluster-instance-terminate');

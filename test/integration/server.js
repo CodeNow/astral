@@ -66,7 +66,7 @@ describe('integration', function() {
       }
 
       ids.forEach(function (id) {
-        queue.publish('cluster-instance-terminate', { id: id })
+        queue.publish('cluster-instance-terminate', { instanceId: id });
       });
 
       var interval = setInterval(function () {

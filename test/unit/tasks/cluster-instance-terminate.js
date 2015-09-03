@@ -28,7 +28,7 @@ describe('tasks', function() {
       sinon.stub(aws, 'terminateInstances').returns(Promise.resolve());
       sinon.stub(queue, 'publish');
       sinon.stub(queue, 'subscribe');
-      sinon.stub(Instance, 'get').returns(Promise.resolve({ id: 'some-id' }));
+      sinon.stub(Instance, 'get').returns(Promise.resolve({ instanceId: 'some-id' }));
       done();
     });
 
@@ -51,7 +51,7 @@ describe('tasks', function() {
     });
 
     it('should fatally reject without `id` of type {string}', function(done) {
-      var job = { id: [1, 2, 3, 4] };
+      var job = { instanceId: [1, 2, 3, 4] };
       clusterInstanceTerminate(job).asCallback(function (err) {
         expect(err).to.be.an.instanceof(TaskFatalError);
         expect(err.data.task).to.equal('cluster-instance-terminate');
@@ -61,7 +61,7 @@ describe('tasks', function() {
     });
 
     it('should fatally reject if `id` is empty', function(done) {
-      var job = { id: '' };
+      var job = { instanceId: '' };
       clusterInstanceTerminate(job).asCallback(function (err) {
         expect(err).to.be.an.instanceof(TaskFatalError);
         expect(err.data.task).to.equal('cluster-instance-terminate');
@@ -72,7 +72,7 @@ describe('tasks', function() {
 
     it('should fatally reject if no instance with `id` exists', function(done) {
       Instance.get.returns(Promise.resolve(null));
-      clusterInstanceTerminate({ id: '123' }).asCallback(function (err) {
+      clusterInstanceTerminate({ instanceId: '123' }).asCallback(function (err) {
         expect(err).to.be.an.instanceof(TaskFatalError);
         expect(err.data.task).to.equal('cluster-instance-terminate');
         expect(error.rejectAndReport.calledWith(err)).to.be.true();
@@ -83,7 +83,7 @@ describe('tasks', function() {
     it('should handle errors when checking for the instance', function(done) {
       var instanceError = new Error('I have misplaced the database...');
       Instance.get.returns(Promise.reject(instanceError));
-      clusterInstanceTerminate({ id: '234' }).asCallback(function (err) {
+      clusterInstanceTerminate({ instanceId: '234' }).asCallback(function (err) {
         expect(err).to.exist();
         done();
       });
@@ -91,7 +91,7 @@ describe('tasks', function() {
 
     it('should call aws `terminateInstances` with correct id', function(done) {
       var id = 'i-12345';
-      var job = { id: id };
+      var job = { instanceId: id };
       clusterInstanceTerminate(job).then(function () {
         expect(aws.terminateInstances.calledOnce).to.be.true();
         expect(aws.terminateInstances.firstCall.args[0]).to.deep.equal({
@@ -103,12 +103,12 @@ describe('tasks', function() {
 
     it('should enqueue a `cluster-instance-delete` job', function(done) {
       var id = 'i-abc';
-      var job = { id: id };
+      var job = { instanceId: id };
       clusterInstanceTerminate(job).then(function () {
         expect(queue.publish.calledOnce).to.be.true();
         expect(queue.publish.firstCall.args[0])
           .to.equal('cluster-instance-delete');
-        expect(queue.publish.firstCall.args[1]).to.deep.equal({ id: id });
+        expect(queue.publish.firstCall.args[1]).to.deep.equal({ instanceId: id });
         done();
       }).catch(done);
     });
@@ -116,7 +116,7 @@ describe('tasks', function() {
     it('should correctly catch AWS errors', function(done) {
       var awsError = new Error('instances be bad yo');
       aws.terminateInstances.returns(Promise.reject(awsError));
-      clusterInstanceTerminate({ id: 'a' })
+      clusterInstanceTerminate({ instanceId: 'a' })
         .then(function () { done('Did not reject with error')})
         .catch(TaskError, function (err) {
           expect(err).to.be.an.instanceof(TaskError);
@@ -130,7 +130,7 @@ describe('tasks', function() {
     it('should catch all other errors', function(done) {
       var queueError = new Error('just exploding cause whateves');
       queue.publish.throws(queueError);
-      clusterInstanceTerminate({ id: 'b' })
+      clusterInstanceTerminate({ instanceId: 'b' })
         .then(function () { done('Did not reject with error')})
         .catch(TaskError, function (err) {
           expect(err).to.be.an.instanceof(TaskError);

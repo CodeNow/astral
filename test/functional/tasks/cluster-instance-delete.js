@@ -42,7 +42,7 @@ describe('functional', function() {
       });
 
       it('should delete the instance from the database', function(done) {
-        clusterInstanceDelete({ id: instanceId })
+        clusterInstanceDelete({ instanceId: instanceId })
           .then(function () {
             return db('instances').select().where({ id: instanceId });
           })
@@ -55,7 +55,7 @@ describe('functional', function() {
       });
 
       it('should not delete an instance that does not exist', function(done) {
-        clusterInstanceDelete({ id: 'not-there' })
+        clusterInstanceDelete({ instanceId: 'not-there' })
           .then(function () {
             expect(Instance.update.callCount).to.equal(0);
             done();
