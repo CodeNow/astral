@@ -44,6 +44,15 @@ Waits for a cluster instance to enter the running state on EC2.
 ##### cluster-instance-write
 Writes information concerning running instances to the infrastructure database.
 
+##### cluster-instance-terminate
+Terminates a running cluster instance, then enqueues a `cluster-instance-delete`
+job. Example: `{ instanceId: 'i-1233a' }`
+
+##### cluster-instance-delete
+Soft deletes (flags) an instance record in the database. Example:
+`{ instanceId: 'i-13454b' }`
+
+
 #### Server Workflow
 0. The server is started and subscribes to the relevant queues (see: `lib/server.js` and
   `lib/queue.js`)
