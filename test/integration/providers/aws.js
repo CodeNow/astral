@@ -49,6 +49,23 @@ describe('integration', function() {
         aws.waitFor('instanceRunning', { InstanceIds: ids }).asCallback(done);
       });
 
+      it('should describe instances in a running state', function(done) {
+        if (!exists(ids)) {
+          done(new Error('AWS integration tests must be run as a suite.'));
+        }
+        aws.describeInstances({ InstanceIds: ids }).then(function (data) {
+          expect(data.Reservations).to.exist();
+          data.Reservations.forEach(function (reservation) {
+            expect(reservation.Instances).to.exist();
+            reservation.Instances.forEach(function (instance) {
+              expect(instance.State).to.be.an.object();
+              expect(instance.State.Name).to.equal('running');
+            });
+          });
+          done();
+        }).catch(done);
+      });
+
       it('should be able to tag instances', function(done) {
         if (!exists(ids)) {
           done(new Error('AWS integration tests must be run as a suite.'));
