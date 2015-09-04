@@ -56,6 +56,22 @@ describe('functional', function() {
           done();
         });
       });
+
+      it('should set a cluster as deprovisioing', function(done) {
+        cluster.getByGithubId(githubId)
+          .then(function (githubCluster) {
+            var clusterId = githubCluster.id;
+            return cluster.setDeprovisioning(clusterId)
+              .then(function () {
+                return cluster.get(clusterId);
+              })
+              .then(function (cluster) {
+                expect(cluster.deprovisioning).to.be.true();
+                done();
+              })
+          })
+          .catch(done);
+      });
     }); // end 'Cluster'
   }); // end 'models'
 }); // end 'functional'

@@ -190,5 +190,27 @@ describe('models', function () {
       });
     }); // end 'insert'
 
+    describe('setDeprovisioning', function() {
+      beforeEach(function (done) {
+        sinon.stub(cluster, 'update');
+        done();
+      });
+
+      afterEach(function (done) {
+        cluster.update.restore();
+        done();
+      });
+
+      it('should call update to set the deprovisioning flag', function(done) {
+        var clusterId = '12343';
+        cluster.setDeprovisioning(clusterId);
+        expect(cluster.update.calledOnce).to.be.true();
+        expect(cluster.update.firstCall.args[0]).to.equal(clusterId);
+        expect(cluster.update.firstCall.args[1]).to.deep.equal({
+          deprovisioning: true
+        });
+        done();
+      });
+    }); // end 'setDeprovisioning'
   }); // end 'Cluster'
 }); // end 'models'
