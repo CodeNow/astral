@@ -23,7 +23,10 @@ var clusterDeprovision = require('tasks/cluster-deprovision');
 
 describe('tasks', function() {
   describe('cluster-deprovision', function() {
-    var mockCluster = { id: '12324-fsx-2244' };
+    var mockCluster = {
+      id: '12324-fsx-2244',
+      deprovisioning: false
+    };
     var mockInstances = [
       { id: 'a' },
       { id: 'b' },
@@ -37,6 +40,8 @@ describe('tasks', function() {
       sinon.stub(Cluster, 'getInstances')
         .returns(Promise.resolve(mockInstances));
       sinon.spy(error, 'rejectAndReport');
+      sinon.stub(Cluster, 'setDeprovisioning')
+        .returns(Promise.resolve());
       done();
     });
 
@@ -44,6 +49,7 @@ describe('tasks', function() {
       queue.publish.restore();
       Cluster.getByGithubId.restore();
       Cluster.getInstances.restore();
+      Cluster.setDeprovisioning.restore();
       error.rejectAndReport.restore();
       done();
     });
@@ -95,6 +101,31 @@ describe('tasks', function() {
         expect(error.rejectAndReport.calledWith(err)).to.be.true();
         done();
       });
+    });
+
+    it('should fatally reject if the cluster is already deprovisioning', function(done) {
+      Cluster.getByGithubId.returns(Promise.resolve({
+        id: '12324-fsx-2244',
+        deprovisioning: true
+      }));
+      clusterDeprovision({ githubId: 'aabbdddxx' }).asCallback(function (err) {
+        expect(err).to.be.an.instanceof(TaskFatalError);
+        expect(err.data.task).to.equal('cluster-deprovision');
+        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        done();
+      });
+    });
+
+    it('should set the cluster as deprovisioning', function(done) {
+      var job = { githubId: '12z324' };
+      clusterDeprovision(job)
+        .then(function () {
+          expect(Cluster.setDeprovisioning.calledOnce).to.be.true();
+          expect(Cluster.setDeprovisioning.calledWith(mockCluster.id))
+            .to.be.true();
+          done();
+        })
+        .catch(done);
     });
 
     it('should find all instances for the cluster', function(done) {
