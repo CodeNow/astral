@@ -16,6 +16,7 @@ require('loadenv')('shiva:test');
 
 var Promise = require('bluebird');
 var uuid = require('uuid');
+var noop = require('101/noop');
 var Model = require('models/model');
 var cluster = require('models/cluster');
 var instance = require('models/instance');
@@ -212,5 +213,32 @@ describe('models', function () {
         done();
       });
     }); // end 'setDeprovisioning'
+
+    describe('deleteInstances', function() {
+      var queryMock = { del: noop }
+
+      beforeEach(function (done) {
+        sinon.stub(instance.db, 'where').returns(queryMock);
+        sinon.spy(queryMock, 'del');
+        done();
+      });
+
+      afterEach(function (done) {
+        instance.db.where.restore();
+        queryMock.del.restore();
+        done();
+      });
+
+      it('should delete all instances with the given cluster_id', function(done) {
+        var clusterId = 'some-cluster';
+        cluster.deleteInstances(clusterId);
+        expect(instance.db.where.calledOnce).to.be.true();
+        expect(instance.db.where.firstCall.args[0]).to.deep.equal({
+          'cluster_id': clusterId
+        });
+        expect(queryMock.del.calledOnce).to.be.true();
+        done();
+      });
+    });
   }); // end 'Cluster'
 }); // end 'models'

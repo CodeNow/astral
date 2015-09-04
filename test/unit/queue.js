@@ -61,4 +61,10 @@ describe('queue', function() {
     expect(queue.queues).to.contain(queueName);
     done();
   });
+
+  it('should include `cluster-delete`', function(done) {
+    var queueName = 'cluster-delete';
+    expect(queue.queues).to.contain(queueName);
+    done();
+  });
 }); // end 'queue'
