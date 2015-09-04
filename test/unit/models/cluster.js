@@ -215,25 +215,31 @@ describe('models', function () {
     }); // end 'setDeprovisioning'
 
     describe('deleteInstances', function() {
-      var queryMock = { del: noop }
+      var queryMock = {
+        where: function () { return queryMock; },
+        del: function () { return queryMock; }
+      };
 
       beforeEach(function (done) {
-        sinon.stub(instance.db, 'where').returns(queryMock);
+        sinon.stub(cluster, 'db').returns(queryMock)
+        sinon.spy(queryMock, 'where');
         sinon.spy(queryMock, 'del');
         done();
       });
 
       afterEach(function (done) {
-        instance.db.where.restore();
+        cluster.db.restore();
         queryMock.del.restore();
+        queryMock.where.restore();
         done();
       });
 
       it('should delete all instances with the given cluster_id', function(done) {
         var clusterId = 'some-cluster';
         cluster.deleteInstances(clusterId);
-        expect(instance.db.where.calledOnce).to.be.true();
-        expect(instance.db.where.firstCall.args[0]).to.deep.equal({
+        expect(cluster.db.calledWith('instances')).to.be.true();
+        expect(queryMock.where.calledOnce).to.be.true();
+        expect(queryMock.where.firstCall.args[0]).to.deep.equal({
           'cluster_id': clusterId
         });
         expect(queryMock.del.calledOnce).to.be.true();
