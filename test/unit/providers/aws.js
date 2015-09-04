@@ -214,6 +214,61 @@ describe('providers', function() {
           .to.equal(expectedVariable);
         done();
       });
+
+      it('should set the correct redis_port', function(done) {
+        var variableName = 'redis_port';
+        var expectedVariable = process.env.REDIS_PORT;
+        aws.getUserDataScript(cluster);
+        expect(Mustache.render.firstCall.args[1][variableName])
+          .to.equal(expectedVariable);
+        done();
+      });
+
+      it('should set the correct redis_ipaddress', function(done) {
+        var variableName = 'redis_ipaddress';
+        var expectedVariable = process.env.REDIS_IPADDRESS;
+        aws.getUserDataScript(cluster);
+        expect(Mustache.render.firstCall.args[1][variableName])
+          .to.equal(expectedVariable);
+        done();
+      });
+
+      it('should set the correct rabbitmq_hostname', function(done) {
+        var variableName = 'rabbitmq_hostname';
+        var expectedVariable = process.env.RABBITMQ_HOSTNAME;
+        aws.getUserDataScript(cluster);
+        expect(Mustache.render.firstCall.args[1][variableName])
+          .to.equal(expectedVariable);
+        done();
+      });
+
+      it('should set the correct rabbitmq_port', function(done) {
+        var variableName = 'rabbitmq_port';
+        var expectedVariable = process.env.RABBITMQ_PORT;
+        aws.getUserDataScript(cluster);
+        expect(Mustache.render.firstCall.args[1][variableName])
+          .to.equal(expectedVariable);
+        done();
+      });
+
+      it('should set the correct rabbitmq_username', function(done) {
+        var variableName = 'rabbitmq_username';
+        var expectedVariable = process.env.RABBITMQ_USERNAME;
+        aws.getUserDataScript(cluster);
+        expect(Mustache.render.firstCall.args[1][variableName])
+          .to.equal(expectedVariable);
+        done();
+      });
+
+      it('should set the correct rabbitmq_password', function(done) {
+        var variableName = 'rabbitmq_password';
+        var expectedVariable = process.env.RABBITMQ_PASSWORD;
+        aws.getUserDataScript(cluster);
+        expect(Mustache.render.firstCall.args[1][variableName])
+          .to.equal(expectedVariable);
+        done();
+      });
+
     }); // end 'getUserDataScript'
 
     describe('waitFor', function() {
