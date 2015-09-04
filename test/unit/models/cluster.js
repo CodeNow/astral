@@ -16,6 +16,7 @@ require('loadenv')('shiva:test');
 
 var Promise = require('bluebird');
 var uuid = require('uuid');
+var noop = require('101/noop');
 var Model = require('models/model');
 var cluster = require('models/cluster');
 var instance = require('models/instance');
@@ -190,5 +191,60 @@ describe('models', function () {
       });
     }); // end 'insert'
 
+    describe('setDeprovisioning', function() {
+      beforeEach(function (done) {
+        sinon.stub(cluster, 'update');
+        done();
+      });
+
+      afterEach(function (done) {
+        cluster.update.restore();
+        done();
+      });
+
+      it('should call update to set the deprovisioning flag', function(done) {
+        var clusterId = '12343';
+        cluster.setDeprovisioning(clusterId);
+        expect(cluster.update.calledOnce).to.be.true();
+        expect(cluster.update.firstCall.args[0]).to.equal(clusterId);
+        expect(cluster.update.firstCall.args[1]).to.deep.equal({
+          deprovisioning: true
+        });
+        done();
+      });
+    }); // end 'setDeprovisioning'
+
+    describe('deleteInstances', function() {
+      var queryMock = {
+        where: function () { return queryMock; },
+        del: function () { return queryMock; }
+      };
+
+      beforeEach(function (done) {
+        sinon.stub(cluster, 'db').returns(queryMock)
+        sinon.spy(queryMock, 'where');
+        sinon.spy(queryMock, 'del');
+        done();
+      });
+
+      afterEach(function (done) {
+        cluster.db.restore();
+        queryMock.del.restore();
+        queryMock.where.restore();
+        done();
+      });
+
+      it('should delete all instances with the given cluster_id', function(done) {
+        var clusterId = 'some-cluster';
+        cluster.deleteInstances(clusterId);
+        expect(cluster.db.calledWith('instances')).to.be.true();
+        expect(queryMock.where.calledOnce).to.be.true();
+        expect(queryMock.where.firstCall.args[0]).to.deep.equal({
+          'cluster_id': clusterId
+        });
+        expect(queryMock.del.calledOnce).to.be.true();
+        done();
+      });
+    });
   }); // end 'Cluster'
 }); // end 'models'

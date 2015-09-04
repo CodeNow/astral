@@ -29,7 +29,8 @@ describe('tasks', function() {
     });
     var mockCluster = {
       id: 'some-id',
-      githubId: 'some-github-id'
+      githubId: 'some-github-id',
+      deprovisioning: false
     };
 
     beforeEach(function (done) {
@@ -88,6 +89,23 @@ describe('tasks', function() {
         role: 'dock'
       };
       Cluster.githubOrgExists.returns(Promise.resolve(false));
+      clusterInstanceProvision(job).catch(TaskFatalError, function (err) {
+        expect(err.data.task).to.equal('cluster-instance-provision');
+        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        done();
+      }).catch(done);
+    });
+
+    it('should fatally reject if the cluster is deprovisioning', function(done) {
+      var job = {
+        githubId: 'some-id',
+        role: 'dock'
+      };
+      Cluster.getByGithubId.returns(Promise.resolve({
+        id: 'some-id',
+        githubId: 'some-github-id',
+        deprovisioning: true
+      }));
       clusterInstanceProvision(job).catch(TaskFatalError, function (err) {
         expect(err.data.task).to.equal('cluster-instance-provision');
         expect(error.rejectAndReport.calledWith(err)).to.be.true();

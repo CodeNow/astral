@@ -60,25 +60,17 @@ describe('integration', function() {
       }, 1000);
     });
 
-    it('should remove instances via terminate-instances job', function(done) {
+    it('should deprovision the cluster', function(done) {
       if (ids.length === 0) {
         done('Server tests must be run as a suite.');
       }
 
-      ids.forEach(function (id) {
-        queue.publish('cluster-instance-terminate', { instanceId: id });
-      });
+      queue.publish('cluster-deprovision', { githubId: githubId });
 
       var interval = setInterval(function () {
         Cluster.getByGithubId(githubId)
           .then(function (cluster) {
-            return Instance.select().where({ cluster_id: cluster.id });
-          })
-          .then(function (rows) {
-            var allDeleted = rows
-              .map(function (row) { return row.deleted !== null; })
-              .reduce(function (memo, curr) { return memo && curr; }, true);
-            if (allDeleted) {
+            if (!cluster) {
               clearInterval(interval);
               done();
             }

@@ -50,8 +50,20 @@ describe('queue', function() {
     done();
   });
 
-  it('should include `cluster-instance-delete`', function(done) {
+  it('should include `cluster-instance-terminate`', function(done) {
     var queueName = 'cluster-instance-terminate';
+    expect(queue.queues).to.contain(queueName);
+    done();
+  });
+
+  it('should include `cluster-deprovision`', function(done) {
+    var queueName = 'cluster-deprovision';
+    expect(queue.queues).to.contain(queueName);
+    done();
+  });
+
+  it('should include `cluster-delete`', function(done) {
+    var queueName = 'cluster-delete';
     expect(queue.queues).to.contain(queueName);
     done();
   });
