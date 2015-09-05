@@ -13,6 +13,7 @@ var sinon = require('sinon');
 require('loadenv')('shiva:test');
 
 var Promise = require('bluebird');
+var monitor = require('monitor-dog');
 var aws = require('providers/aws');
 var queue = require('queue');
 var clusterInstanceWait = require('tasks/cluster-instance-wait');
@@ -31,6 +32,7 @@ describe('tasks', function() {
       sinon.stub(aws, 'waitFor').returns(Promise.resolve({}));
       sinon.stub(queue, 'publish');
       sinon.stub(queue, 'subscribe');
+      sinon.spy(monitor, 'increment');
       done();
     });
 
@@ -38,6 +40,7 @@ describe('tasks', function() {
       aws.waitFor.restore();
       queue.publish.restore();
       queue.subscribe.restore();
+      monitor.increment.restore();
       done();
     });
 
@@ -137,6 +140,25 @@ describe('tasks', function() {
         expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskFatalError);
         expect(err.data.task).to.equal('cluster-instance-wait');
+        done();
+      });
+    });
+
+    it('should report aws limit errors to datadog', function(done) {
+      var job = {
+        cluster: { id: '123' },
+        role: 'dock',
+        instance: { InstanceId: '1234' }
+      };
+
+      var awsError = new Error('Resource is not in the state instanceRunning');
+      awsError.code = 'ResourceNotReady';
+      awsError.retryable = false;
+      aws.waitFor.returns(Promise.reject(awsError));
+
+      clusterInstanceWait(job).asCallback(function (err) {
+        expect(monitor.increment.calledWith('aws.limit.exceeded'))
+          .to.be.true();
         done();
       });
     });

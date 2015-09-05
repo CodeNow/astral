@@ -16,9 +16,20 @@ var Promise = require('bluebird');
 var logger = require('logger');
 var Worker = require('worker');
 var error = require('error');
+var monitor = require('monitor-dog');
 var TaskFatalError = require('errors/task-fatal-error');
 
 describe('Worker', function() {
+  beforeEach(function (done) {
+    sinon.spy(monitor, 'increment');
+    done();
+  });
+
+  afterEach(function (done) {
+    monitor.increment.restore();
+    done();
+  });
+
   describe('constructor', function() {
     beforeEach(function (done) {
       sinon.stub(Worker.prototype, 'getTask').returns(noop);
@@ -98,6 +109,21 @@ describe('Worker', function() {
       expect(error.createAndReport.calledWith(
         500, 'No worker task found to handle jobs from given queue'
       )).to.be.true();
+      done();
+    });
+
+    it('should report worker creation to datadog', function(done) {
+      var woker = new Worker('some-queue', {}, noop, false);
+      expect(monitor.increment.calledWith('worker.some-queue.start'))
+        .to.be.true();
+      done();
+    });
+
+    it('should report task handler errors to datadog', function(done) {
+      Worker.prototype.getTask.throws(new Error());
+      var worker = new Worker('queue', {}, noop);
+      expect(monitor.increment.calledWith('worker.queue.no-handler'))
+        .to.be.true();
       done();
     });
   }); // end 'constructor'
@@ -182,17 +208,42 @@ describe('Worker', function() {
       worker.run().then(function () {
         expect(worker.done.calledOnce).to.be.true();
         done();
-      });
+      }).catch(done);
+    });
+
+    it('should report work complete to datadog', function(done) {
+      worker.run()
+        .then(function () {
+          expect(monitor.increment.calledWith('worker.queue.complete'))
+            .to.be.true();
+          done();
+        })
+        .catch(done);
     });
 
     it('should retry if the task fails', function(done) {
       worker.task = reject;
-      worker.run().then(function () {
-        sinon.stub(worker, 'run');
-        clock.tick(process.env.WORKER_MAX_RETRY_DELAY);
-        expect(worker.run.calledOnce).to.be.true();
-        done();
-      });
+      worker.run()
+        .then(function () {
+          sinon.stub(worker, 'run');
+          clock.tick(process.env.WORKER_MAX_RETRY_DELAY);
+          expect(worker.run.calledOnce).to.be.true();
+          done();
+        })
+        .catch(done);
+    });
+
+    it('should report retries to datadog', function(done) {
+      worker.task = reject;
+      worker.run()
+        .then(function () {
+          sinon.stub(worker, 'run');
+          clock.tick(process.env.WORKER_MAX_RETRY_DELAY);
+          expect(monitor.increment.calledWith('worker.queue.retry'))
+            .to.be.true();
+          done();
+        })
+        .catch(done);
     });
 
     it('should exponentially backoff retries', function(done) {
@@ -202,7 +253,7 @@ describe('Worker', function() {
           2 * process.env.WORKER_MIN_RETRY_DELAY
         );
         done();
-      });
+      }).catch(done);
     });
 
     it('should not exceed the maximum retry delay', function(done) {
@@ -211,7 +262,7 @@ describe('Worker', function() {
       worker.run().then(function () {
         expect(worker.retryDelay).to.equal(process.env.WORKER_MAX_RETRY_DELAY);
         done();
-      });
+      }).catch(done);
     });
 
     it('should not exceed the maximum nuber of retries', function(done) {
@@ -222,7 +273,7 @@ describe('Worker', function() {
         clock.tick(process.env.WORKER_MAX_RETRY_DELAY);
         expect(worker.run.callCount).to.equal(0);
         done();
-      });
+      }).catch(done);
     });
 
     it('should stop upon encountering a TaskFatalError', function(done) {
@@ -233,7 +284,18 @@ describe('Worker', function() {
         clock.tick(process.env.WORKER_MAX_RETRY_DELAY);
         expect(worker.run.callCount).to.equal(0);
         done();
-      });
+      }).catch(done);
+    });
+
+    it('should report fatal errors to datadog', function(done) {
+      worker.task = rejectFatal;
+      worker.run().then(function () {
+        sinon.stub(worker, 'run');
+        expect(worker.done.calledOnce).to.be.true();
+        expect(monitor.increment.calledWith('worker.queue.fatal'))
+          .to.be.true();
+        done();
+      }).catch(done);
     });
   }); // end 'run'
 }); // end 'Worker'
