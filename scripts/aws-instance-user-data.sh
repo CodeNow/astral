@@ -10,6 +10,7 @@ RABBITMQ_HOSTNAME_PATH=/opt/runnable/rabbitmq_hostname
 RABBITMQ_PORT_PATH=/opt/runnable/rabbitmq_port
 RABBITMQ_USERNAME_PATH=/opt/runnable/rabbitmq_username
 RABBITMQ_PASSWORD_PATH=/opt/runnable/rabbitmq_password
+REGISTRY_HOST_PATH=/opt/runnable/registry_host
 
 # Set preferred versions of each of the dock services
 echo 'export FILIBUSTER_VERSION={{filibuster_version}}' >> $ENV_FILE
@@ -33,6 +34,9 @@ echo '{{rabbitmq_hostname}}' > $RABBITMQ_HOSTNAME_PATH
 echo '{{rabbitmq_port}}' > $RABBITMQ_PORT_PATH
 echo '{{rabbitmq_username}}' > $RABBITMQ_USERNAME_PATH
 echo '{{rabbitmq_password}}' > $RABBITMQ_PASSWORD_PATH
+
+# Set the registry ip
+echo '{{registry_host}}' > $REGISTRY_HOST_PATH
 
 # Initialize the dock
 bash $DOCK_INIT_SCRIPT

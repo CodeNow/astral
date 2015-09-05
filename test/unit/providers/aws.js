@@ -269,6 +269,14 @@ describe('providers', function() {
         done();
       });
 
+      it('should set the correct registry_host', function(done) {
+        var variableName = 'registry_host';
+        var expectedVariable = process.env.REGISTRY_HOST;
+        aws.getUserDataScript(cluster);
+        expect(Mustache.render.firstCall.args[1][variableName])
+          .to.equal(expectedVariable);
+        done();
+      });
     }); // end 'getUserDataScript'
 
     describe('waitFor', function() {
