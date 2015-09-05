@@ -269,6 +269,14 @@ describe('providers', function() {
         done();
       });
 
+      it('should set the correct registry_ip', function(done) {
+        var variableName = 'registry_ip';
+        var expectedVariable = process.env.REGISTRY_IP;
+        aws.getUserDataScript(cluster);
+        expect(Mustache.render.firstCall.args[1][variableName])
+          .to.equal(expectedVariable);
+        done();
+      });
     }); // end 'getUserDataScript'
 
     describe('waitFor', function() {
