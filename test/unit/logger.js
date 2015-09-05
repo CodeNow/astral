@@ -14,8 +14,31 @@ require('loadenv')('shiva:test');
 
 var bunyan = require('bunyan');
 var logger = require('logger');
+var Bunyan2Loggly = require('bunyan-loggly').Bunyan2Loggly;
 
 describe('logger', function() {
+  describe('getStreams', function() {
+    it('should include loggly when `LOGGLY_TOKEN` exists', function(done) {
+      var oldLogglyToken = process.env.LOGGLY_TOKEN;
+      delete process.env.LOGGLY_TOKEN;
+      var streams = logger.getStreams();
+      expect(streams.length).to.equal(1);
+      expect(streams[0].stream).to.equal(process.stdout);
+      process.env.LOGGLY_TOKEN = oldLogglyToken;
+      done();
+    });
+
+    it('should not include loggly without `LOGGLY_TOKEN`', function(done) {
+      var oldLogglyToken = process.env.LOGGLY_TOKEN;
+      process.env.LOGGLY_TOKEN = 'abcdefg';
+      var streams = logger.getStreams();
+      expect(streams.length).to.equal(2);
+      expect(streams[1].stream).to.be.an.instanceof(Bunyan2Loggly);
+      process.env.LOGGLY_TOKEN = oldLogglyToken;
+      done();
+    });
+  });
+
   describe('serializers', function() {
     describe('err', function() {
       beforeEach(function (done) {
