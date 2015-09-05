@@ -52,6 +52,15 @@ job. Example: `{ instanceId: 'i-1233a' }`
 Soft deletes (flags) an instance record in the database. Example:
 `{ instanceId: 'i-13454b' }`
 
+##### cluster-deprovision
+Sets a cluster to the `deprovisioning` state and enqueues jobs to terminate
+all cluster instances, and to hard delete all cluster records.
+Example: `{ githubId: '234355' }`.
+
+##### cluster-delete
+Hard deletes all cluster instances and the cluster from the database.
+Example: `{ clusterId: '133-4322-4442-ss'}`
+
 
 #### Server Workflow
 0. The server is started and subscribes to the relevant queues (see: `lib/server.js` and
