@@ -25,7 +25,12 @@ describe('tasks', function() {
   describe('cluster-instance-provision', function() {
     var instanceIds = [1];
     var instances = instanceIds.map(function (id) {
-      return { InstanceId: id };
+      return {
+        InstanceId: id,
+        State: {
+          Name: 'pending'
+        }
+      };
     });
     var mockCluster = {
       id: 'some-id',
@@ -166,20 +171,22 @@ describe('tasks', function() {
       }).catch(done);
     });
 
-    it('should correctly reject on aws errors', function(done) {
-      var awsError = new Error('Some aws tom-foolery');
-      aws.createInstances.returns(Promise.reject(awsError));
+    it('should fatally reject if the instance is not pending', function(done) {
       var job = {
         githubId: 'some-id',
         role: 'dock'
       };
-      clusterInstanceProvision(job).asCallback(function (err) {
-        expect(err).to.exist();
-        expect(err).to.be.an.instanceof(TaskError);
+      aws.createInstances.returns(Promise.resolve([{
+        InstanceId: 'i-someinstance',
+        State: {
+          Name: 'terminated'
+        }
+      }]));
+      clusterInstanceProvision(job).catch(TaskError, function (err) {
         expect(err.data.task).to.equal('cluster-instance-provision');
-        expect(err.data.originalError).to.equal(awsError);
+        expect(error.rejectAndReport.calledWith(err)).to.be.true();
         done();
-      });
+      }).catch(done);
     });
   }); // end 'cluster-instance-provision'
 }); // end 'tasks'

@@ -121,6 +121,26 @@ describe('tasks', function() {
       });
     });
 
+    it('should fatally reject if the instance cannot enter a running state', function(done) {
+      var job = {
+        cluster: { id: '123' },
+        role: 'dock',
+        instance: { InstanceId: '1234' }
+      };
+
+      var awsError = new Error('Resource is not in the state instanceRunning');
+      awsError.code = 'ResourceNotReady';
+      awsError.retryable = false;
+      aws.waitFor.returns(Promise.reject(awsError));
+
+      clusterInstanceWait(job).asCallback(function (err) {
+        expect(err).to.exist();
+        expect(err).to.be.an.instanceof(TaskFatalError);
+        expect(err.data.task).to.equal('cluster-instance-wait');
+        done();
+      });
+    });
+
     it('should resolve with correct parameters', function(done) {
       clusterInstanceWait(job).asCallback(done);
     });
