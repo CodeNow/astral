@@ -255,10 +255,8 @@ database. The first thing you'll need to do after installing postgres is to
 run the knex migrations to create the database schema. From the shiva project
 repository directory run the following:
 
-1. `npm install` - Install required libraries (including `knex`)
-2. `knex migrate:latest` - Update your development database schema to the latest
-   version.
-3. `NODE_ENV=test knex migrate:latest` - Update the test database schema.
+1. `npm install` - Install required libraries
+2. `npm run migrate` - Migrates the test and local development databases.
 
 #### RabbitMQ
 In order to fully test the codebase you will need to install RabbitMQ locally
