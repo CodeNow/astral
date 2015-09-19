@@ -21,7 +21,7 @@ echo 'export KRAIN_VERSION={{krain_version}}' >> $ENV_FILE
 echo 'export SAURON_VERSION={{sauron_version}}' >> $ENV_FILE
 echo 'export IMAGE_BUILDER_VERSION={{image_builder_version}}' >> $ENV_FILE
 echo 'export DOCKER_LISTENER_VERSION={{docker_listener_version}}' >> $ENV_FILE
-echo 'export CHARON_VERSION={{chaon_version}}' >> $ENV_FILE
+echo 'export CHARON_VERSION={{charon_version}}' >> $ENV_FILE
 
 # Set the host tags file (used by upstart for docker-listener)
 echo '{{host_tags}}' > $HOST_TAGS_FILE
