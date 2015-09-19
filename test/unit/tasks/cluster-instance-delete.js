@@ -24,25 +24,16 @@ var clusterInstanceDelete = require('tasks/cluster-instance-delete');
 
 describe('tasks', function() {
   describe('cluster-instance-delete', function() {
-    var selectMock = {
-      where: function () {}
-    };
 
     beforeEach(function (done) {
       sinon.spy(error, 'rejectAndReport');
-      sinon.stub(Instance, 'update').returns(Promise.resolve());
-      sinon.stub(Instance, 'select').returns(selectMock);
-      sinon.stub(selectMock, 'where').returns(Promise.resolve([
-        { deleted: null }
-      ]));
+      sinon.stub(Instance, 'markAsDeleted').returns(Promise.resolve());
       done();
     });
 
     afterEach(function (done) {
       error.rejectAndReport.restore();
-      Instance.update.restore();
-      Instance.select.restore();
-      selectMock.where.restore();
+      Instance.markAsDeleted.restore();
       done();
     });
 
@@ -74,73 +65,12 @@ describe('tasks', function() {
       });
     });
 
-    it('should check if the instance has already been deleted', function(done) {
-      var job = { instanceId: 'i-hiya' };
-      clusterInstanceDelete(job).then(function () {
-        expect(Instance.select.calledOnce).to.be.true();
-        expect(selectMock.where.calledOnce).to.be.true();
-        expect(selectMock.where.firstCall.args[0]).to.deep.equal({
-          id: job.instanceId
-        });
-        done();
-      }).catch(done);
-    });
-
-    it('should not proceed if the instance is already deleted', function(done) {
-      var job = { instanceId: 'i-yay' };
-      selectMock.where.returns(Promise.resolve([ { deleted: new Date() } ]));
-      clusterInstanceDelete(job).then(function () {
-        expect(Instance.update.callCount).to.equal(0);
-        done();
-      }).catch(done);
-    });
-
-    it('should not proceed if no instance with the given id exists', function(done) {
-      var job = { instanceId: 'i-neatsuchwow' };
-      selectMock.where.returns(Promise.resolve([]));
-      clusterInstanceDelete(job).then(function () {
-        expect(Instance.update.callCount).to.equal(0);
-        done();
-      }).catch(done);
-    });
-
-    it('should handle instance deleted check errors', function(done) {
-      var countError = new Error('Psql forgot how to count');
-      selectMock.where.returns(Promise.reject(countError));
-      clusterInstanceDelete({ instanceId: '1' })
-        .then(function () { done('Did not reject correctly.')})
-        .catch(TaskError, function (err) {
-          expect(err.data.task).to.equal('cluster-instance-delete');
-          expect(error.rejectAndReport.calledWith(err)).to.be.true();
-          expect(err.data.originalError).to.equal(countError);
-          done();
-        })
-        .catch(done);
-    });
-
     it('should mark the instance as deleted', function(done) {
       var job = { instanceId: 'i-woooo' };
       clusterInstanceDelete(job)
         .then(function () {
-          expect(Instance.update.calledOnce).to.be.true();
-          expect(Instance.update.firstCall.args[0]).to.equal(job.instanceId);
-          expect(Instance.update.firstCall.args[1]).to.deep.equal({
-            deleted: knex.raw('now()')
-          });
-          done();
-        })
-        .catch(done);
-    });
-
-    it('should handle errors when marking the instance', function(done) {
-      var updateError = new Error('Update failed, taking a nap');
-      Instance.update.returns(Promise.reject(updateError));
-      clusterInstanceDelete({ instanceId: 'abc' })
-        .then(function () { done('Did not reject correctly.'); })
-        .catch(TaskError, function (err) {
-          expect(err.data.task).to.equal('cluster-instance-delete');
-          expect(error.rejectAndReport.calledWith(err)).to.be.true();
-          expect(err.data.originalError).to.equal(updateError);
+          expect(Instance.markAsDeleted.calledOnce).to.be.true();
+          expect(Instance.markAsDeleted.firstCall.args[0]).to.equal(job.instanceId);
           done();
         })
         .catch(done);
