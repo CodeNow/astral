@@ -32,32 +32,19 @@ describe('functional', function() {
       });
 
       beforeEach(function (done) {
-        sinon.spy(Instance, 'update');
+        sinon.spy(Instance, 'softDelete');
         done();
       })
 
       afterEach(function (done) {
-        Instance.update.restore();
+        Instance.softDelete.restore();
         done();
       });
 
-      it('should delete the instance from the database', function(done) {
-        clusterInstanceDelete({ instanceId: instanceId })
-          .then(function () {
-            return db('instances').select().where({ id: instanceId });
-          })
-          .then(function (rows) {
-            expect(rows.length).to.equal(1);
-            expect(rows[0].deleted).to.not.be.null();
-            done();
-          })
-          .catch(done);
-      });
-
-      it('should not delete an instance that does not exist', function(done) {
+      it('should always perform soft delete', function(done) {
         clusterInstanceDelete({ instanceId: 'not-there' })
           .then(function () {
-            expect(Instance.update.callCount).to.equal(0);
+            expect(Instance.softDelete.callCount).to.equal(1);
             done();
           })
           .catch(done);

@@ -29,9 +29,9 @@ describe('models', function() {
         done();
       });
     }); // end 'constructor'
-    describe('#markAsDeleted', function() {
+    describe('#softDelete', function() {
       it('should return a promise', function(done) {
-        expect(instance.markAsDeleted('1').then).to.be.a.function();
+        expect(instance.softDelete('1').then).to.be.a.function();
         done();
       });
       it('should set the `deleted` field', function(done) {
@@ -54,8 +54,8 @@ describe('models', function() {
             };
           }
         });
-        instance.markAsDeleted('1');
+        instance.softDelete('1');
       });
-    }); // end '#markAsDeleted'
+    }); // end '#softDelete'
   }); // end 'Instance'
 }); // end 'models'

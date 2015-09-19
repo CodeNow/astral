@@ -27,13 +27,13 @@ describe('tasks', function() {
 
     beforeEach(function (done) {
       sinon.spy(error, 'rejectAndReport');
-      sinon.stub(Instance, 'markAsDeleted').returns(Promise.resolve());
+      sinon.stub(Instance, 'softDelete').returns(Promise.resolve());
       done();
     });
 
     afterEach(function (done) {
       error.rejectAndReport.restore();
-      Instance.markAsDeleted.restore();
+      Instance.softDelete.restore();
       done();
     });
 
@@ -69,8 +69,8 @@ describe('tasks', function() {
       var job = { instanceId: 'i-woooo' };
       clusterInstanceDelete(job)
         .then(function () {
-          expect(Instance.markAsDeleted.calledOnce).to.be.true();
-          expect(Instance.markAsDeleted.firstCall.args[0]).to.equal(job.instanceId);
+          expect(Instance.softDelete.calledOnce).to.be.true();
+          expect(Instance.softDelete.firstCall.args[0]).to.equal(job.instanceId);
           done();
         })
         .catch(done);
