@@ -95,6 +95,6 @@ describe('integration', function() {
           InstanceIds: ids
         }).asCallback(done);
       });
-    }); // end 'providers'
-  }); // end 'aws'
+    }); // end 'aws'
+  }); // end 'providers'
 }); // end 'integration'
