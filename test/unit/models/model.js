@@ -190,7 +190,7 @@ describe('models', function () {
         done();
       });
 
-      it('should set the `updated_at` field when querying by id', function(done) {
+      it('should set the `updated_at` field', function(done) {
         sinon.stub(model, 'db').returns({
           where: function (query) {
             expect(query.id).to.equal('1');
@@ -206,23 +206,6 @@ describe('models', function () {
           }
         });
         model.update('1', { name: 'wow' });
-      });
-      it('should set the `updated_at` field when querying by full query', function(done) {
-        sinon.stub(model, 'db').returns({
-          where: function (query) {
-            expect(query.name).to.equal('wow');
-            expect(Object.keys(query).length).to.equal(1);
-            return {
-              update: function (data) {
-                expect(data.updated_at).to.exist();
-                expect(data.updated_at.sql).to.equal('now()');
-                model.db.restore();
-                done();
-              }
-            };
-          }
-        });
-        model.update({ name: 'wow' }, { quantity: 3 });
       });
     }); // end 'update'
   }); // end 'Model'
