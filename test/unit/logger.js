@@ -14,7 +14,6 @@ require('loadenv')('shiva:test');
 
 var bunyan = require('bunyan');
 var logger = require('logger');
-var Bunyan2Loggly = require('bunyan-loggly').Bunyan2Loggly;
 
 describe('logger', function() {
   describe('getStreams', function() {
@@ -32,8 +31,7 @@ describe('logger', function() {
       var oldLogglyToken = process.env.LOGGLY_TOKEN;
       process.env.LOGGLY_TOKEN = 'abcdefg';
       var streams = logger.getStreams();
-      expect(streams.length).to.equal(2);
-      expect(streams[1].stream).to.be.an.instanceof(Bunyan2Loggly);
+      expect(streams.length).to.equal(1);
       process.env.LOGGLY_TOKEN = oldLogglyToken;
       done();
     });
