@@ -278,6 +278,42 @@ describe('providers', function() {
           .to.equal(expectedVariable);
         done();
       });
+
+      it('should set the correct charon_version', function(done) {
+        var variableName = 'charon_version';
+        var expectedVariable = process.env.CHARON_VERSION;
+        aws.getUserDataScript(cluster);
+        expect(Mustache.render.firstCall.args[1][variableName])
+          .to.equal(expectedVariable);
+        done();
+      });
+
+      it('should set the correct api_host', function(done) {
+        var variableName = 'api_host';
+        var expectedVariable = process.env.API_HOST;
+        aws.getUserDataScript(cluster);
+        expect(Mustache.render.firstCall.args[1][variableName])
+          .to.equal(expectedVariable);
+        done();
+      });
+
+      it('should set the correct datadog_host', function(done) {
+        var variableName = 'datadog_host';
+        var expectedVariable = process.env.DATADOG_HOST;
+        aws.getUserDataScript(cluster);
+        expect(Mustache.render.firstCall.args[1][variableName])
+          .to.equal(expectedVariable);
+        done();
+      });
+
+      it('should set the correct datadog_port', function(done) {
+        var variableName = 'datadog_port';
+        var expectedVariable = process.env.DATADOG_PORT;
+        aws.getUserDataScript(cluster);
+        expect(Mustache.render.firstCall.args[1][variableName])
+          .to.equal(expectedVariable);
+        done();
+      });
     }); // end 'getUserDataScript'
 
     describe('waitFor', function() {

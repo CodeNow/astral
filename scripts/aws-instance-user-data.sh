@@ -11,6 +11,9 @@ RABBITMQ_PORT_PATH=/opt/runnable/rabbitmq_port
 RABBITMQ_USERNAME_PATH=/opt/runnable/rabbitmq_username
 RABBITMQ_PASSWORD_PATH=/opt/runnable/rabbitmq_password
 REGISTRY_HOST_PATH=/opt/runnable/registry_host
+API_HOST_PATH=/opt/runnable/api_host
+DATADOG_HOST_PATH=/opt/runnable/datadog_host
+DATADOG_PORT_PATH=/opt/runnable/datadog_port
 
 # Set preferred versions of each of the dock services
 echo 'export FILIBUSTER_VERSION={{filibuster_version}}' >> $ENV_FILE
@@ -18,6 +21,7 @@ echo 'export KRAIN_VERSION={{krain_version}}' >> $ENV_FILE
 echo 'export SAURON_VERSION={{sauron_version}}' >> $ENV_FILE
 echo 'export IMAGE_BUILDER_VERSION={{image_builder_version}}' >> $ENV_FILE
 echo 'export DOCKER_LISTENER_VERSION={{docker_listener_version}}' >> $ENV_FILE
+echo 'export CHARON_VERSION={{charon_version}}' >> $ENV_FILE
 
 # Set the host tags file (used by upstart for docker-listener)
 echo '{{host_tags}}' > $HOST_TAGS_FILE
@@ -37,6 +41,13 @@ echo '{{rabbitmq_password}}' > $RABBITMQ_PASSWORD_PATH
 
 # Set the registry ip
 echo '{{registry_host}}' > $REGISTRY_HOST_PATH
+
+# Set the API Host
+echo '{{api_host}}' > $API_HOST_PATH
+
+# Set datadog variables
+echo '{{datadog_host}}' > $DATADOG_HOST_PATH
+echo '{{datadog_port}}' > $DATADOG_PORT_PATH
 
 # Initialize the dock
 bash $DOCK_INIT_SCRIPT
