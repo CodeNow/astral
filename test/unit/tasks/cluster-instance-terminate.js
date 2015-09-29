@@ -127,6 +127,24 @@ describe('tasks', function() {
         .catch(done);
     });
 
+    it('should correctly handle instance not found aws errors', function(done) {
+      var awsError = new Error('Instance not found');
+      awsError.code = 'InvalidInstanceID.NotFound';
+      aws.terminateInstances.returns(Promise.reject(awsError));
+      var job = { instanceId: 'instance-id' };
+      clusterInstanceTerminate(job)
+        .then(function () {
+          expect(queue.publish.calledOnce).to.be.true();
+          expect(queue.publish.firstCall.args[0])
+            .to.equal('cluster-instance-delete');
+          expect(queue.publish.firstCall.args[1]).to.deep.equal({
+            instanceId: job.instanceId
+          });
+          done();
+        })
+        .catch(done);
+    });
+
     it('should catch all other errors', function(done) {
       var queueError = new Error('just exploding cause whateves');
       queue.publish.throws(queueError);
