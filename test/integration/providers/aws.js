@@ -12,12 +12,17 @@ var Code = require('code');
 var expect = Code.expect;
 var sinon = require('sinon');
 
+// People may have legit keys in their default environment, they may not work
+// so hack them out before loading the environment.
+delete process.env.AWS_ACCESS_KEY_ID;
+delete process.env.AWS_SECRET_ACCESS_KEY;
 require('loadenv')('shiva:test');
 
 var exists = require('101/exists');
 var aws = require('providers/aws');
 
 describe('integration', function() {
+
   describe('providers', function() {
     describe('aws', function() {
       var cluster = {
