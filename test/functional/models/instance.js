@@ -32,13 +32,20 @@ describe('functional', function() {
 
       it('should require a valid cluster_id', function(done) {
         var invalidRow = {
+          id: 'some-instance-id',
           cluster_id: 'not-there',
-          type: 'build',
-          ami_id: 'some-ami-id',
-          ami_version: 'some-ami-version'
+          role: 'build',
+          aws_image_id: 'some-ami-id',
+          aws_instance_type: 'large',
+          aws_private_ip_address: '127.0.0.1'
         };
-        instance.create(invalidRow).asCallback(function (err) {
+        instance.create(invalidRow).asCallback(function(err) {
           expect(err).to.exist();
+          var expectedMsg = 'insert into "instances" ';
+          expectedMsg += '("aws_image_id", "aws_instance_type", "aws_private_ip_address", "cluster_id", "id", "role")';
+          expectedMsg += ' values ($1, $2, $3, $4, $5, $6)';
+          expectedMsg += ' - insert or update on table "instances" violates foreign key constraint "instances_to_clusters"'
+          expect(err.message).to.equal(expectedMsg);
           done();
         });
       });

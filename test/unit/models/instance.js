@@ -34,6 +34,7 @@ describe('models', function() {
         expect(instance.softDelete('1').then).to.be.a.function();
         done();
       });
+      
       it('should set the `deleted` field', function(done) {
         sinon.stub(instance, 'db').returns({
           where: function (query) {
