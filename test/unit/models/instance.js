@@ -29,7 +29,7 @@ describe('models', function() {
         done();
       });
     }); // end 'constructor'
-    describe('#softDelete', function() {
+    describe('softDelete', function() {
       it('should return a promise', function(done) {
         expect(instance.softDelete('1').then).to.be.a.function();
         done();
@@ -56,6 +56,6 @@ describe('models', function() {
         });
         instance.softDelete('1');
       });
-    }); // end '#softDelete'
+    }); // end 'softDelete'
   }); // end 'Instance'
 }); // end 'models'
