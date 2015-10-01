@@ -103,16 +103,6 @@ describe('providers', function() {
         }).catch(done);
       });
 
-      it('should use the given number of instances', function(done) {
-        var numInstances = 2034
-        aws.createInstances(cluster, numInstances).then(function () {
-          var params = aws.ec2.runInstances.firstCall.args[0];
-          expect(params.MinCount).to.equal(numInstances);
-          expect(params.MaxCount).to.equal(numInstances);
-          done();
-        }).catch(done);
-      });
-
       it('should resolve with aws response instances', function(done) {
         aws.createInstances(cluster).then(function (instances) {
           expect(instances).to.equal(instanceResponse.Instances);
@@ -127,6 +117,17 @@ describe('providers', function() {
           expect(err).to.equal(ec2Error);
           done();
         });
+      });
+
+      it('should use the given parameters', function(done) {
+        var params = { InstanceType: 'bogus-instance-type' };
+        aws.createInstances(cluster, params)
+          .then(function () {
+            expect(aws.ec2.runInstances.firstCall.args[0].InstanceType)
+              .to.equal(params.InstanceType);
+            done();
+          })
+          .catch(done);
       });
     }); // end 'createInstances'
 

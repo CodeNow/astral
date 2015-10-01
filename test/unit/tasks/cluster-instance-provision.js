@@ -126,6 +126,39 @@ describe('tasks', function() {
       }).catch(done);
     });
 
+    it('should fatally reject with non-string `instanceType`', function(done) {
+      var job = {
+        githubId: 'githurrbs',
+        instanceType: ['foop']
+      };
+      clusterInstanceProvision(job)
+        .then(function () {
+          done('Did not fatally reject');
+        })
+        .catch(TaskFatalError, function (err) {
+          expect(err.data.task).to.equal('cluster-instance-provision');
+          expect(error.rejectAndReport.calledWith(err)).to.be.true();
+          done();
+        })
+        .catch(done);
+    });
+
+    it('should set the aws `InstanceType` parameter', function(done) {
+      var job = {
+        githubId: 'poofkkfll',
+        instanceType: 'c3.2xlarge'
+      };
+      clusterInstanceProvision(job)
+        .then(function() {
+          expect(aws.createInstances.calledOnce).to.be.true();
+          expect(aws.createInstances.firstCall.args[1]).to.deep.equal({
+            InstanceType: job.instanceType
+          });
+          done();
+        })
+        .catch(done);
+    });
+
     it('should reject if AWS returns no instances', function(done) {
       var job = {
         githubId: 'some-id',

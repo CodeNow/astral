@@ -34,7 +34,7 @@ describe('integration', function() {
       var ids = null;
 
       it('should create instances', function(done) {
-        aws.createInstances(cluster, 'run', 1)
+        aws.createInstances(cluster)
           .then(function (instances) {
             ids = instances.map(function (instance) {
               expect(instance.InstanceId).to.exist();
