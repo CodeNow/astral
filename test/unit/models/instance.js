@@ -34,14 +34,14 @@ describe('models', function() {
         expect(instance.softDelete('1').then).to.be.a.function();
         done();
       });
-      
+
       it('should set the `deleted` field', function(done) {
         sinon.stub(instance, 'db').returns({
           where: function (query) {
             expect(query.id).to.equal('1');
             expect(Object.keys(query).length).to.equal(1);
             return {
-              whereNotNull: function (key) {
+              whereNull: function (key) {
                 expect(key).to.equal('deleted');
                 return {
                   update: function (data) {
