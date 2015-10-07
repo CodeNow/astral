@@ -29,5 +29,34 @@ describe('models', function() {
         done();
       });
     }); // end 'constructor'
+    describe('softDelete', function() {
+      it('should return a promise', function(done) {
+        expect(instance.softDelete('1').then).to.be.a.function();
+        done();
+      });
+
+      it('should set the `deleted` field', function(done) {
+        sinon.stub(instance, 'db').returns({
+          where: function (query) {
+            expect(query.id).to.equal('1');
+            expect(Object.keys(query).length).to.equal(1);
+            return {
+              whereNull: function (key) {
+                expect(key).to.equal('deleted');
+                return {
+                  update: function (data) {
+                    expect(data.deleted).to.exist();
+                    expect(data.deleted.sql).to.equal('now()');
+                    instance.db.restore();
+                    done();
+                  }
+                };
+              }
+            };
+          }
+        });
+        instance.softDelete('1');
+      });
+    }); // end 'softDelete'
   }); // end 'Instance'
 }); // end 'models'

@@ -192,7 +192,9 @@ describe('models', function () {
 
       it('should set the `updated_at` field', function(done) {
         sinon.stub(model, 'db').returns({
-          where: function () {
+          where: function (query) {
+            expect(query.id).to.equal('1');
+            expect(Object.keys(query).length).to.equal(1);
             return {
               update: function (data) {
                 expect(data.updated_at).to.exist();
