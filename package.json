@@ -1,6 +1,6 @@
 {
   "name": "shiva",
-  "version": "2.2.6",
+  "version": "2.2.7",
   "description": "The god of EC2 instance creation and destruction",
   "main": "index.js",
   "scripts": {
