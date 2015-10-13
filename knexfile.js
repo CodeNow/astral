@@ -1,6 +1,6 @@
 // Update with your config settings.
 
-require('loadenv')('shiva:env');
+require('loadenv')({ debugName: 'shiva:migration' });
 
 module.exports = {
   development: {

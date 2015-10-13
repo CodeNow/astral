@@ -4,13 +4,13 @@ machine:
 
 dependencies:
   override:
-    - nvm install 0.10.38
-    - nvm alias default 0.10.38
+    - nvm install 4.2.1
+    - nvm alias default 4.2.1
     - npm install -g npm@2.8.3
     - npm install
 
 database:
   pre:
-    - createuser shiva-test
-    - createdb shiva-test
+    - createuser astral-test
+    - createdb astral-test
     - npm run migrate-test
