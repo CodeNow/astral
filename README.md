@@ -4,6 +4,19 @@
 
 ## The realm of EC2 Auto-scaling and Provisioning
 
+Astral is the master project for all customer organization dock auto-scaling in
+EC2. The master project is split into three sub-components:
+
+1. **Metis** (`metis/`) - Collects and aggregates relevant statistical data concerning
+   cluster usage and historical dock load.
+2. **Magus** (`magus/`) - Predictive load analyzer and scaling scheduler.
+3. **Shiva** (`shiva/`) - Interface to EC2 for managing auto-scale groups, dock instances,
+   etc.
+
+Each of the sub-projects are implemented as independent worker servers that each
+handle their own responsibilities. They each use a common data model (posgresql
+database) and share common models and utility libraries (located at `common/`).
+
 ## Architecture
 TODO: Describe overall astral architecture and provide a diagram.
 
