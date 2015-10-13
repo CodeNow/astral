@@ -1,8 +1,8 @@
 'use strict';
 
-var server = require('./lib/server');
-var error = require('./lib/error');
-var log = require('./lib/logger');
+var server = require('./server');
+var error = require('./error');
+var log = require('./logger');
 
 /**
  * Entrypoint for the shiva provisioning manager.
