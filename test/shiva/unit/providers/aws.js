@@ -88,7 +88,7 @@ describe('providers', function() {
       });
 
       it('should return a promise', function(done) {
-        expect(aws.createInstances(cluster, 'run', 3).then).to.be.a.function();
+        expect(aws.createInstances(cluster).then).to.be.a.function();
         done();
       });
 
