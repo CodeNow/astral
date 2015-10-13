@@ -1,6 +1,6 @@
 # astral
 
-![astral](http://mat-mcloughlin.azurewebsites.net/content/images/2014/Apr/dark_matter_large.jpg)
+![astral](http://img07.deviantart.net/952a/i/2013/113/6/d/space_frontier__astral_winds_by_nathanblackwolf-d62ta2p.jpg)
 
 ## The realm of EC2 Auto-scaling and Provisioning
 
