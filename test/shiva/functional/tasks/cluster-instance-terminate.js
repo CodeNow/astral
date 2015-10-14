@@ -15,10 +15,10 @@ require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:test' });
 var dbFixture = require('../../fixtures/database');
 
 var Promise = require('bluebird');
-var queue = require('queue');
 var aws = require('aws');
-var TaskFatalError = require('errors/task-fatal-error');
+var TaskFatalError = require('ponos').TaskFatalError;
 var clusterInstanceTerminate = require('tasks/cluster-instance-terminate');
+var server = require('server');
 
 describe('functional', function() {
   describe('tasks', function() {
@@ -35,13 +35,13 @@ describe('functional', function() {
       });
 
       beforeEach(function (done) {
-        sinon.stub(queue, 'publish');
+        sinon.stub(server.hermes, 'publish');
         sinon.stub(aws, 'terminateInstances').returns(Promise.resolve());
         done();
       });
 
       afterEach(function (done) {
-        queue.publish.restore();
+        server.hermes.publish.restore();
         aws.terminateInstances.restore();
         done();
       });
@@ -50,7 +50,7 @@ describe('functional', function() {
         clusterInstanceTerminate({ instanceId: instanceId })
           .then(function () {
             expect(aws.terminateInstances.calledOnce).to.be.true();
-            expect(queue.publish.calledOnce).to.be.true();
+            expect(server.hermes.publish.calledOnce).to.be.true();
             done();
           })
           .catch(done);
@@ -60,9 +60,8 @@ describe('functional', function() {
         clusterInstanceTerminate({ instanceId: 'not-a-thing' })
           .then(function () { done('Did not throw an error.'); })
           .catch(TaskFatalError, function (err) {
-            expect(err.data.task).to.equal('cluster-instance-terminate');
             expect(aws.terminateInstances.callCount).to.equal(0);
-            expect(queue.publish.callCount).to.equal(0);
+            expect(server.hermes.publish.callCount).to.equal(0);
             done();
           })
           .catch(done);

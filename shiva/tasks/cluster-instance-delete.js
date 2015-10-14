@@ -1,11 +1,10 @@
 'use strict';
 
+var Instance = require('../models/instance');
 var isObject = require('101/is-object');
 var isString = require('101/is-string');
-
-var error = require('../error');
-var TaskFatalError = require('../errors/task-fatal-error');
-var Instance = require('../models/instance');
+var Promise = require('bluebird');
+var TaskFatalError = require('ponos').TaskFatalError;
 
 /**
  * Task handler for marking EC2 instances as deleted in the database.
@@ -22,29 +21,31 @@ module.exports = clusterInstanceDelete;
  *   marked as deleted.
  */
 function clusterInstanceDelete(job) {
-  if (!isObject(job)) {
-    return error.rejectAndReport(new TaskFatalError(
-      'cluster-instance-delete',
-      'Encountered non-object job',
-      { job: job }
-    ));
-  }
+  return Promise.try(function () {
+    if (!isObject(job)) {
+      throw new TaskFatalError(
+        'cluster-instance-delete',
+        'Encountered non-object job',
+        { job: job }
+      );
+    }
 
-  if (!isString(job.instanceId)) {
-    return error.rejectAndReport(new TaskFatalError(
-      'cluster-instance-delete',
-      'Job missing `id` field of type {string}',
-      { job: job }
-    ));
-  }
+    if (!isString(job.instanceId)) {
+      throw new TaskFatalError(
+        'cluster-instance-delete',
+        'Job missing `id` field of type {string}',
+        { job: job }
+      );
+    }
 
-  if (job.instanceId.length === 0) {
-    return error.rejectAndReport(new TaskFatalError(
-      'cluster-instance-delete',
-      'Job `id` field cannot be empty',
-      { job: job }
-    ));
-  }
+    if (job.instanceId.length === 0) {
+      throw new TaskFatalError(
+        'cluster-instance-delete',
+        'Job `id` field cannot be empty',
+        { job: job }
+      );
+    }
 
-  return Instance.softDelete(job.instanceId);
+    return Instance.softDelete(job.instanceId);
+  });
 }

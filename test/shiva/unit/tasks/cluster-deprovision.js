@@ -14,11 +14,9 @@ require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:test' });
 
 var Promise = require('bluebird');
 var Cluster = require('models/cluster');
-var queue = require('queue');
-var TaskError = require('errors/task-error');
-var TaskFatalError = require('errors/task-fatal-error');
-var error = require('error');
-
+var TaskError = require('ponos').TaskError;
+var TaskFatalError = require('ponos').TaskFatalError;
+var server = require('server');
 var clusterDeprovision = require('tasks/cluster-deprovision');
 
 describe('tasks', function() {
@@ -34,31 +32,28 @@ describe('tasks', function() {
     ];
 
     beforeEach(function (done) {
-      sinon.stub(queue, 'publish');
+      sinon.stub(server.hermes, 'publish');
       sinon.stub(Cluster, 'getByGithubId')
         .returns(Promise.resolve(mockCluster));
       sinon.stub(Cluster, 'getInstances')
         .returns(Promise.resolve(mockInstances));
-      sinon.spy(error, 'rejectAndReport');
       sinon.stub(Cluster, 'setDeprovisioning')
         .returns(Promise.resolve());
       done();
     });
 
     afterEach(function (done) {
-      queue.publish.restore();
+      server.hermes.publish.restore();
       Cluster.getByGithubId.restore();
       Cluster.getInstances.restore();
       Cluster.setDeprovisioning.restore();
-      error.rejectAndReport.restore();
       done();
     });
 
     it('should fatally reject if not given a job', function(done) {
       clusterDeprovision().asCallback(function (err) {
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-deprovision');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        expect(err.message).to.match(/non-object job/);
         done();
       });
     });
@@ -66,8 +61,7 @@ describe('tasks', function() {
     it('should fatally reject without a scalar `githubId`', function(done) {
       clusterDeprovision({ githubId: [12] }).asCallback(function (err) {
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-deprovision');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        expect(err.message).to.match(/githubId.*is not/);
         done();
       });
     });
@@ -97,8 +91,7 @@ describe('tasks', function() {
       Cluster.getByGithubId.returns(Promise.resolve(null));
       clusterDeprovision({ githubId: '12' }).asCallback(function (err) {
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-deprovision');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        expect(err.message).to.match(/No cluster exists/);
         done();
       });
     });
@@ -110,8 +103,7 @@ describe('tasks', function() {
       }));
       clusterDeprovision({ githubId: 'aabbdddxx' }).asCallback(function (err) {
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-deprovision');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        expect(err.message).to.match(/already.*deprovisioned/);
         done();
       });
     });
@@ -144,9 +136,9 @@ describe('tasks', function() {
       clusterDeprovision(job)
         .then(function () {
           for (var i = 0; i < 3; i++) {
-            expect(queue.publish.getCall(i).args[0])
+            expect(server.hermes.publish.getCall(i).args[0])
               .to.equal('cluster-instance-terminate');
-            expect(queue.publish.getCall(i).args[1])
+            expect(server.hermes.publish.getCall(i).args[1])
               .to.deep.equal({ instanceId: mockInstances[i].id })
           }
           done();
@@ -158,9 +150,9 @@ describe('tasks', function() {
       var job = { githubId: '12324' };
       clusterDeprovision(job)
         .then(function () {
-          expect(queue.publish.lastCall.args[0])
+          expect(server.hermes.publish.lastCall.args[0])
             .to.equal('cluster-delete');
-          expect(queue.publish.lastCall.args[1])
+          expect(server.hermes.publish.lastCall.args[1])
             .to.deep.equal({ clusterId: mockCluster.id });
           done();
         })

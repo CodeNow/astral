@@ -12,38 +12,28 @@ var sinon = require('sinon');
 
 require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:test' });
 
-var Promise = require('bluebird');
-var queue = require('queue');
-var TaskError = require('errors/task-error');
-var TaskFatalError = require('errors/task-fatal-error');
-var error = require('error');
 var aws = require('aws');
 var clusterInstanceTag = require('tasks/cluster-instance-tag');
+var Promise = require('bluebird');
+var TaskError = require('ponos').TaskError;
+var TaskFatalError = require('ponos').TaskFatalError;
 
 describe('tasks', function() {
   describe('cluster-instance-tag', function() {
     beforeEach(function (done) {
-      sinon.spy(error, 'rejectAndReport');
       sinon.stub(aws, 'createTags').returns(Promise.resolve());
-      sinon.stub(queue, 'publish');
-      sinon.stub(queue, 'subscribe');
       done();
     });
 
     afterEach(function (done) {
-      error.rejectAndReport.restore();
       aws.createTags.restore();
-      queue.publish.restore();
-      queue.subscribe.restore();
       done();
     });
 
     it('should fatally reject if not given a job', function(done) {
       clusterInstanceTag().asCallback(function (err) {
-        expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-instance-tag');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        expect(err.message).to.match(/non-object job/);
         done();
       });
     });
@@ -51,10 +41,8 @@ describe('tasks', function() {
     it('should fatally reject when given invalid `role`', function(done) {
       var job = { org: 'some-org', instanceIds: '1' };
       clusterInstanceTag(job).asCallback(function (err) {
-        expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-instance-tag');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        expect(err.message).to.match(/role.*string/);
         done();
       });
     });
@@ -62,10 +50,8 @@ describe('tasks', function() {
     it('should fatally reject when given invalid `org`', function(done) {
       var job = { role: 'dock', instanceIds: '1' };
       clusterInstanceTag(job).asCallback(function (err) {
-        expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-instance-tag');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        expect(err.message).to.match(/missing.*org/);
         done();
       });
     });
@@ -73,10 +59,8 @@ describe('tasks', function() {
     it('should fatally reject with a non-scalar `org`', function(done) {
       var job = { role: 'dock', instanceIds: '1', org: [1, 2, 3]};
       clusterInstanceTag(job).asCallback(function (err) {
-        expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-instance-tag');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        expect(err.message).to.match(/missing.*org/);
         done();
       });
     });
@@ -88,10 +72,8 @@ describe('tasks', function() {
         instanceId: {}
       };
       clusterInstanceTag(job).asCallback(function (err) {
-        expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-instance-tag');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        expect(err.message).to.match(/instanceId.*string/);
         done();
       });
     });

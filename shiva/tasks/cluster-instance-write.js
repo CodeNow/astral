@@ -3,13 +3,12 @@
 require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:env' });
 
 var exists = require('101/exists');
+var Instance = require('../models/instance');
 var isObject = require('101/is-object');
 var isString = require('101/is-string');
-
-var error = require('../error');
-var TaskError = require('../errors/task-error');
-var TaskFatalError = require('../errors/task-fatal-error');
-var Instance = require('../models/instance');
+var Promise = require('bluebird');
+var TaskError = require('ponos').TaskError;
+var TaskFatalError = require('ponos').TaskFatalError;
 
 /**
  * Task handler: writes information concerning recently started instances to the
@@ -29,99 +28,97 @@ module.exports = clusterInstanceWrite;
  * @param {array} job.instance The instance to write.
  */
 function clusterInstanceWrite(job) {
-  if (!isObject(job)) {
-    return error.rejectAndReport(new TaskFatalError(
-      'cluster-instance-write',
-      'Encountered non-object job',
-      { job: job }
-    ));
-  }
-
-  if (!isObject(job.cluster)) {
-    return error.rejectAndReport(new TaskFatalError(
-      'cluster-instance-write',
-      'Job missing `cluster` field of type {object}',
-      { job: job }
-    ));
-  }
-
-  if (!exists(job.cluster.id)) {
-    return error.rejectAndReport(new TaskFatalError(
-      'cluster-instance-write',
-      'Job missing `cluster.id` field',
-      { job: job }
-    ));
-  }
-
-  if (!isString(job.role)) {
-    return error.rejectAndReport(new TaskFatalError(
-      'cluster-instance-write',
-      'Job missing `role` field of type {string}',
-      { job: job }
-    ));
-  }
-
-  if (!isObject(job.instance)) {
-    return error.rejectAndReport(new TaskFatalError(
-      'cluster-instance-write',
-      'Job missing `instance` field of type {object}',
-      { job: job }
-    ));
-  }
-
-  if (!isString(job.instance.InstanceId)) {
-    return error.rejectAndReport(new TaskFatalError(
-      'cluster-instance-write',
-      'Job missing `instance.InstanceId` field of type {string}',
-      { job: job }
-    ));
-  }
-
-  if (!isString(job.instance.ImageId)) {
-    return error.rejectAndReport(new TaskFatalError(
-      'cluster-instance-write',
-      'Job missing `instance.ImageId` field of type {string}',
-      { job: job }
-    ));
-  }
-
-  if (!isString(job.instance.InstanceType)) {
-    return error.rejectAndReport(new TaskFatalError(
-      'cluster-instance-write',
-      'Job missing `instance.InstanceType` field of type {string}',
-      { job: job }
-    ));
-  }
-  if (!isString(job.instance.PrivateIpAddress)) {
-    return error.rejectAndReport(new TaskFatalError(
-      'cluster-instance-write',
-      'Job missing `instance.PrivateIpAddress` field of type {string}',
-      { job: job }
-    ));
-  }
-
-  var row = {
-    id: job.instance.InstanceId,
-    cluster_id: job.cluster.id,
-    role: job.role,
-    aws_image_id: job.instance.ImageId,
-    aws_instance_type: job.instance.InstanceType,
-    aws_private_ip_address: job.instance.PrivateIpAddress
-  };
-
-  return Instance.exists(row.id)
-    .then(function (instanceExists) {
-      if (instanceExists) {
-        // Stop processing, an instance with the given already exists.
-        return;
-      }
-      return Instance.insert(row);
-    })
-    .catch(function (err) {
-      return error.rejectAndReport(new TaskError(
+  return Promise.try(function () {
+    if (!isObject(job)) {
+      throw new TaskFatalError(
         'cluster-instance-write',
-        'Failed to write instances to database',
-        { job: job, originalError: err }
-      ));
-    });
+        'Encountered non-object job',
+        { job: job }
+      );
+    }
+
+    if (!isObject(job.cluster)) {
+      throw new TaskFatalError(
+        'cluster-instance-write',
+        'Job missing `cluster` field of type {object}',
+        { job: job }
+      );
+    }
+
+    if (!isString(job.cluster.id)) {
+      throw new TaskFatalError(
+        'cluster-instance-write',
+        'Job missing `cluster.id` field of type {string}',
+        { job: job }
+      );
+    }
+
+    if (!isString(job.role)) {
+      throw new TaskFatalError(
+        'cluster-instance-write',
+        'Job missing `role` field of type {string}',
+        { job: job }
+      );
+    }
+
+    if (!isObject(job.instance)) {
+      throw new TaskFatalError(
+        'cluster-instance-write',
+        'Job missing `instance` field of type {object}',
+        { job: job }
+      );
+    }
+
+    if (!isString(job.instance.InstanceId)) {
+      throw new TaskFatalError(
+        'cluster-instance-write',
+        'Job missing `instance.InstanceId` field of type {string}',
+        { job: job }
+      );
+    }
+
+    if (!isString(job.instance.ImageId)) {
+      throw new TaskFatalError(
+        'cluster-instance-write',
+        'Job missing `instance.ImageId` field of type {string}',
+        { job: job }
+      );
+    }
+
+    if (!isString(job.instance.InstanceType)) {
+      throw new TaskFatalError(
+        'cluster-instance-write',
+        'Job missing `instance.InstanceType` field of type {string}',
+        { job: job }
+      );
+    }
+    if (!isString(job.instance.PrivateIpAddress)) {
+      throw new TaskFatalError(
+        'cluster-instance-write',
+        'Job missing `instance.PrivateIpAddress` field of type {string}',
+        { job: job }
+      );
+    }
+
+    var row = {
+      id: job.instance.InstanceId,
+      cluster_id: job.cluster.id,
+      role: job.role,
+      aws_image_id: job.instance.ImageId,
+      aws_instance_type: job.instance.InstanceType,
+      aws_private_ip_address: job.instance.PrivateIpAddress
+    };
+
+    return Instance.exists(row.id)
+      .then(function (instanceExists) {
+        if (instanceExists) {
+          throw new TaskFatalError(
+            'cluster-instance-write',
+            'Instance with the given id already exists',
+            { job: job }
+          );
+        }
+        return Instance.insert(row);
+      });
+  });
 }

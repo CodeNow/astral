@@ -14,46 +14,41 @@ require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:test' });
 
 var Promise = require('bluebird');
 var Cluster = require('models/cluster');
-var queue = require('queue');
-var TaskError = require('errors/task-error');
-var TaskFatalError = require('errors/task-fatal-error');
+var TaskError = require('ponos').TaskError;
+var TaskFatalError = require('ponos').TaskFatalError;
 var clusterProvision = require('tasks/cluster-provision');
-var error = require('error');
+var server = require('server');
 
 describe('tasks', function() {
   describe('cluster-provision', function() {
     beforeEach(function (done) {
-      sinon.spy(error, 'rejectAndReport');
       sinon.stub(Cluster, 'githubOrgExists').returns(Promise.resolve(false));
       sinon.stub(Cluster, 'insert').returns(Promise.resolve());
-      sinon.stub(queue, 'publish');
-      sinon.stub(queue, 'subscribe');
+      sinon.stub(server.hermes, 'publish');
       done();
     });
 
     afterEach(function (done) {
-      error.rejectAndReport.restore();
       Cluster.githubOrgExists.restore();
       Cluster.insert.restore();
-      queue.publish.restore();
-      queue.subscribe.restore();
+      server.hermes.publish.restore();
       done();
     });
 
     it('should fatally reject if not given a job', function(done) {
-      clusterProvision().catch(TaskFatalError, function (err) {
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
-        expect(err.data.task).to.equal('cluster-provision');
+      clusterProvision().asCallback(function (err) {
+        expect(err).to.be.an.instanceof(TaskFatalError);
+        expect(err.message).to.match(/non-object job/);
         done();
-      }).catch(done);
+      });
     });
 
     it('should fatally reject without job `githubId`', function(done) {
-      clusterProvision({ bitbucket_id: 'no' }).catch(TaskFatalError, function (err) {
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
-        expect(err.data.task).to.equal('cluster-provision');
+      clusterProvision({ bitbucket_id: 'no' }).asCallback(function (err) {
+        expect(err).to.be.an.instanceof(TaskFatalError);
+        expect(err.message).to.match(/missing.*githubId/);
         done();
-      }).catch(done);
+      });
     });
 
     it('should check to see if a cluster already exists', function(done) {
@@ -87,39 +82,15 @@ describe('tasks', function() {
     it('should publish messages to provision dock instances', function(done) {
       var githubId = '5995992';
       clusterProvision({ githubId: githubId }).then(function (cluster) {
-        expect(queue.publish.callCount)
+        expect(server.hermes.publish.callCount)
           .to.equal(process.env.CLUSTER_INITIAL_DOCKS);
         for (var i = 0; i < process.env.CLUSTER_INITIAL_DOCKS; i++) {
-          expect(queue.publish.getCall(i).args[0])
+          expect(server.hermes.publish.getCall(i).args[0])
             .to.equal('cluster-instance-provision');
-          expect(queue.publish.getCall(i).args[1]).to.deep.equal({
+          expect(server.hermes.publish.getCall(i).args[1]).to.deep.equal({
             githubId: githubId
           });
         }
-        done();
-      }).catch(done);
-    });
-
-    it('should reject on `Cluster.githubOrgExists` errors', function(done) {
-      var dbError = new Error('some friggen db error');
-      var job = { githubId: '234ss5' };
-      Cluster.githubOrgExists.returns(Promise.reject(dbError));
-      clusterProvision(job).catch(TaskError, function (err) {
-        expect(err.data.task).to.equal('cluster-provision');
-        expect(err.data.job).to.equal(job);
-        expect(err.data.originalError).to.equal(dbError);
-        done();
-      }).catch(done);
-    });
-
-    it('should reject on `Cluster.insert` errors', function(done) {
-      var dbError = new Error('insert friggen failed');
-      var job = { githubId: 'dooopppp' };
-      Cluster.insert.returns(Promise.reject(dbError));
-      clusterProvision(job).catch(TaskError, function (err) {
-        expect(err.data.task).to.equal('cluster-provision');
-        expect(err.data.job).to.equal(job);
-        expect(err.data.originalError).to.equal(dbError);
         done();
       }).catch(done);
     });

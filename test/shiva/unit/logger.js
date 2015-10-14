@@ -17,22 +17,11 @@ var logger = require('logger');
 
 describe('logger', function() {
   describe('getStreams', function() {
-    it('should include loggly when `LOGGLY_TOKEN` exists', function(done) {
-      var oldLogglyToken = process.env.LOGGLY_TOKEN;
-      delete process.env.LOGGLY_TOKEN;
+    it('should use a single stdout stream', function(done) {
       var streams = logger.getStreams();
+      expect(streams).to.be.an.array();
       expect(streams.length).to.equal(1);
       expect(streams[0].stream).to.equal(process.stdout);
-      process.env.LOGGLY_TOKEN = oldLogglyToken;
-      done();
-    });
-
-    it('should not include loggly without `LOGGLY_TOKEN`', function(done) {
-      var oldLogglyToken = process.env.LOGGLY_TOKEN;
-      process.env.LOGGLY_TOKEN = 'abcdefg';
-      var streams = logger.getStreams();
-      expect(streams.length).to.equal(1);
-      process.env.LOGGLY_TOKEN = oldLogglyToken;
       done();
     });
   });
