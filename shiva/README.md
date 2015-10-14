@@ -187,6 +187,10 @@ echo 'export DOCKER_LISTENER_VERSION={{docker_listener_version}}' >> $ENV_FILE
 # Set the host tags file (used by upstart for docker-listener)
 echo '{{host_tags}}' > $HOST_TAGS_FILE
 
+# Set swarm environment vars
+echo 'export DOCKER_PORT={{docker_port}}' >> $ENV_FILE
+echo 'export SWARN_TOKEN={{swarm_token}}' >> $ENV_FILE
+
 # Initialize the dock
 bash $DOCK_INIT_SCRIPT
 ```

@@ -315,6 +315,24 @@ describe('providers', function() {
           .to.equal(expectedVariable);
         done();
       });
+
+      it('should set the correct docker_port', function(done) {
+        var variableName = 'docker_port';
+        var expectedVariable = process.env.DOCKER_PORT;
+        aws.getUserDataScript(cluster);
+        expect(Mustache.render.firstCall.args[1][variableName])
+          .to.equal(expectedVariable);
+        done();
+      });
+
+      it('should set the correct swarm_token', function(done) {
+        var variableName = 'swarm_token';
+        var expectedVariable = process.env.SWARM_TOKEN;
+        aws.getUserDataScript(cluster);
+        expect(Mustache.render.firstCall.args[1][variableName])
+          .to.equal(expectedVariable);
+        done();
+      });
     }); // end 'getUserDataScript'
 
     describe('waitFor', function() {
