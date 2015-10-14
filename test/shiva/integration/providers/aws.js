@@ -19,7 +19,7 @@ delete process.env.AWS_SECRET_ACCESS_KEY;
 require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:test' });
 
 var exists = require('101/exists');
-var aws = require('providers/aws');
+var aws = require('aws');
 
 describe('integration', function() {
 

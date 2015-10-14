@@ -17,7 +17,7 @@ var queue = require('queue');
 var TaskError = require('errors/task-error');
 var TaskFatalError = require('errors/task-fatal-error');
 var error = require('error');
-var aws = require('providers/aws');
+var aws = require('aws');
 var Instance = require('models/instance');
 var clusterInstanceTerminate = require('tasks/cluster-instance-terminate');
 

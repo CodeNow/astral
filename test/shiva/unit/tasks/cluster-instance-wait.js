@@ -14,7 +14,7 @@ require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:test' });
 
 var Promise = require('bluebird');
 var monitor = require('monitor-dog');
-var aws = require('providers/aws');
+var aws = require('aws');
 var queue = require('queue');
 var clusterInstanceWait = require('tasks/cluster-instance-wait');
 var TaskError = require('errors/task-error');

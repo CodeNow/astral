@@ -9,7 +9,7 @@ var monitor = require('monitor-dog');
 var error = require('../error');
 var TaskError = require('../errors/task-error');
 var TaskFatalError = require('../errors/task-fatal-error');
-var aws = require('../providers/aws');
+var aws = require('../aws');
 var queue = require('../queue');
 
 /**

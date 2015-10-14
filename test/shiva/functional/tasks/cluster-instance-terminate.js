@@ -16,7 +16,7 @@ var dbFixture = require('../../fixtures/database');
 
 var Promise = require('bluebird');
 var queue = require('queue');
-var aws = require('providers/aws');
+var aws = require('aws');
 var TaskFatalError = require('errors/task-fatal-error');
 var clusterInstanceTerminate = require('tasks/cluster-instance-terminate');
 

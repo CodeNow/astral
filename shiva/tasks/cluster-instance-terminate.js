@@ -4,7 +4,7 @@ var exists = require('101/exists');
 var isObject = require('101/is-object');
 var isString = require('101/is-string');
 
-var aws = require('../providers/aws');
+var aws = require('../aws');
 var queue = require('../queue');
 var error = require('../error');
 var TaskError = require('../errors/task-error');

@@ -17,7 +17,7 @@ var queue = require('queue');
 var TaskError = require('errors/task-error');
 var TaskFatalError = require('errors/task-fatal-error');
 var error = require('error');
-var aws = require('providers/aws');
+var aws = require('aws');
 var clusterInstanceTag = require('tasks/cluster-instance-tag');
 
 describe('tasks', function() {

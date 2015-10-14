@@ -7,7 +7,7 @@ var isNumber = require('101/is-number');
 var isString = require('101/is-string');
 var error = require('../error');
 var TaskFatalError = require('../errors/task-fatal-error');
-var aws = require('../providers/aws');
+var aws = require('../aws');
 
 /**
  * Sets tags for instances in a cluster.

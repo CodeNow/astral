@@ -10,7 +10,7 @@ var error = require('../error');
 var TaskError = require('../errors/task-error');
 var TaskFatalError = require('../errors/task-fatal-error');
 var Cluster = require('../models/cluster');
-var aws = require('../providers/aws');
+var aws = require('../aws');
 var queue = require('../queue');
 
 /**
