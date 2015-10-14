@@ -5,6 +5,13 @@ var ponos = require('ponos');
 var Promise = require('bluebird');
 
 /**
+ * Ponos worker server instance for shiva.
+ * @author Ryan Sandor Richards
+ * @module shiva
+ */
+module.exports = { getInstance: getInstance }
+
+/**
  * Names of the job queues that are consumed by shiva.
  * @type {array}
  */
@@ -21,19 +28,24 @@ var queues = [
 ];
 
 /**
- * Ponos worker server instance for shiva.
- * @author Ryan Sandor Richards
- * @module shiva
+ * Singelton instance of the worker server.
+ * @type {ponos.Server}
  */
-var server = module.exports = new ponos.Server({ queues: queues, log: log });
+var server;
 
-// Map the shiva task handlers to the given queue names
-Promise.resolve(queues)
-  .map(function(name) {
-    return server.setTask(name, require('./tasks/' + name));
-  })
-  .catch(function (err) {
-    log.fatal({ err: err }, 'Error setting task for queue.');
-    server.errorCat.report(err);
-    process.exit(1);
-  });
+/**
+ * @return An instance of the worker server.
+ */
+function getInstance() {
+  if (server) {
+    return server;
+  }
+  server = new ponos.Server({ queues: queues, log: log });
+
+  Promise.resolve(queues)
+    .map(function(name) {
+      return server.setTask(name, require('./tasks/' + name));
+    });
+
+  return server;
+}

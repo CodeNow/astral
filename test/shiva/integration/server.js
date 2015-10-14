@@ -16,7 +16,7 @@ require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:test' });
 
 var dbFixture = require('../fixtures/database.js');
 
-var server = require('server');
+var server = require('server').getInstance();;
 var queue = require('queue');
 var Cluster = require('models/cluster');
 var Instance = require('models/instance');

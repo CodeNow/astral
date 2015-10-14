@@ -15,7 +15,7 @@ require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:test' });
 var Cluster = require('models/cluster');
 var dbFixture = require('../../fixtures/database.js');
 var clusterDeprovision = require('tasks/cluster-deprovision');
-var server = require('server');
+var server = require('server').getInstance();;
 
 describe('functional', function() {
   describe('tasks', function() {

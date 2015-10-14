@@ -18,7 +18,7 @@ var Promise = require('bluebird');
 var aws = require('aws');
 var TaskFatalError = require('ponos').TaskFatalError;
 var clusterInstanceTerminate = require('tasks/cluster-instance-terminate');
-var server = require('server');
+var server = require('server').getInstance();;
 
 describe('functional', function() {
   describe('tasks', function() {

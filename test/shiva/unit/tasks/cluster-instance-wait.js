@@ -18,7 +18,7 @@ var aws = require('aws');
 var clusterInstanceWait = require('tasks/cluster-instance-wait');
 var TaskError = require('ponos').TaskError;
 var TaskFatalError = require('ponos').TaskFatalError;
-var server = require('server');
+var server = require('server').getInstance();;
 
 describe('tasks', function() {
   describe('cluster-instance-wait', function() {
