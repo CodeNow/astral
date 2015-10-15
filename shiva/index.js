@@ -1,8 +1,9 @@
 'use strict';
 
+require('loadenv')({ debugName: 'shiva:env' });
+
 var server = require('./server');
-var error = require('./error');
-var log = require('./logger');
+var log = require('./logger').child({ module: 'index' });
 
 /**
  * Entrypoint for the shiva provisioning manager.
@@ -10,4 +11,7 @@ var log = require('./logger');
  * @module shiva
  */
 
-server.start();
+server.start()
+  .then(function () {
+    log.info({ env: process.env }, 'Shiva Started');
+  });

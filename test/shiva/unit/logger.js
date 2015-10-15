@@ -106,5 +106,26 @@ describe('logger', function() {
         done();
       });
     }); // end 'job'
+
+    describe('env', function() {
+      it('should strip out `npm_*` environment variables', function(done) {
+        var env = {
+          'npm_a': '1',
+          'npm_b': '3',
+          'woot': 'snklank222'
+        };
+        expect(logger.serializers.env(env)).to.deep.equal({ 'woot': env.woot });
+        done();
+      });
+
+      it('should include `npm_package_gitHead` variable', function(done) {
+        var env = {
+          'npm_package_gitHead': 'totally',
+          'awesome': 'sauce'
+        };
+        expect(logger.serializers.env(env)).to.deep.equal(env);
+        done();
+      });
+    });
   }); // end 'serializers'
 }); // end 'logger'
