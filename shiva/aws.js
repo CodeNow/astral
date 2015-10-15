@@ -94,7 +94,9 @@ AWSProvider.prototype.getUserDataScript = function (cluster) {
     registry_host: process.env.REGISTRY_HOST,
     api_host: process.env.API_HOST,
     datadog_host: process.env.DATADOG_HOST,
-    datadog_port: process.env.DATADOG_PORT
+    datadog_port: process.env.DATADOG_PORT,
+    docker_port: process.env.DOCKER_PORT,
+    swarm_token: process.env.SWARM_TOKEN
   });
 };
 
