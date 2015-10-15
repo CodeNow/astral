@@ -49,5 +49,9 @@ echo '{{api_host}}' > $API_HOST_PATH
 echo '{{datadog_host}}' > $DATADOG_HOST_PATH
 echo '{{datadog_port}}' > $DATADOG_PORT_PATH
 
+# Set swarm variables
+echo 'export DOCKER_PORT={{docker_port}}' >> $ENV_FILE
+echo 'export SWARM_TOKEN={{swarm_token}}' >> $ENV_FILE
+
 # Initialize the dock
 bash $DOCK_INIT_SCRIPT
