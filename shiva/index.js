@@ -1,6 +1,6 @@
 'use strict';
 
-var server = require('./server').getInstance();;
+var server = require('./server');
 var error = require('./error');
 var log = require('./logger');
 
@@ -10,11 +10,4 @@ var log = require('./logger');
  * @module shiva
  */
 
-server.start(function (err) {
-  if (err) {
-    var message = 'Failed to start shiva worker server';
-    error.wrapAndReport(err, 500, message);
-    log.fatal({ err: err }, message);
-    return;
-  }
-});
+server.start();

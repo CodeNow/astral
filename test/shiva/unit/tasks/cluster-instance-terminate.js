@@ -18,7 +18,7 @@ var TaskFatalError = require('ponos').TaskFatalError;
 var aws = require('aws');
 var Instance = require('models/instance');
 var clusterInstanceTerminate = require('tasks/cluster-instance-terminate');
-var server = require('server').getInstance();;
+var server = require('server');
 
 describe('tasks', function() {
   describe('cluster-instance-terminate', function() {

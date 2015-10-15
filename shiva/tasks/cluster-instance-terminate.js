@@ -8,7 +8,7 @@ var aws = require('../aws');
 var Instance = require('../models/instance');
 var log = require('../logger');
 var Promise = require('bluebird');
-var server = require('../server').getInstance();;
+var server = require('../server');
 var TaskError = require('ponos').TaskError;
 var TaskFatalError = require('ponos').TaskFatalError;
 

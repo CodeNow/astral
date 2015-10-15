@@ -7,7 +7,7 @@ var isObject = require('101/is-object');
 var Cluster = require('../models/cluster');
 var TaskError = require('ponos').TaskError;
 var TaskFatalError = require('ponos').TaskFatalError;
-var server = require('../server').getInstance();;
+var server = require('../server');
 var Promise = require('bluebird');
 
 /**

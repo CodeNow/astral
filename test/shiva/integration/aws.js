@@ -91,15 +91,6 @@ describe('integration', function() {
           InstanceIds: ids
         }).asCallback(done);
       });
-
-      it('should wait for instances to be terminated', function(done) {
-        if (!exists(ids)) {
-          done(new Error('AWS integration tests must be run as a suite.'));
-        }
-        aws.waitFor('instanceTerminated', {
-          InstanceIds: ids
-        }).asCallback(done);
-      });
     }); // end 'aws'
   }); // end 'providers'
 }); // end 'integration'

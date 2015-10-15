@@ -16,7 +16,7 @@ var Promise = require('bluebird');
 var Cluster = require('models/cluster');
 var TaskError = require('ponos').TaskError;
 var TaskFatalError = require('ponos').TaskFatalError;
-var server = require('server').getInstance();;
+var server = require('server');
 
 var clusterDelete = require('tasks/cluster-delete');
 

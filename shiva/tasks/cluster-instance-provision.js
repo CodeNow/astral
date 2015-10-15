@@ -8,7 +8,7 @@ var exists = require('101/exists');
 var isObject = require('101/is-object');
 var isString = require('101/is-string');
 var Promise = require('bluebird');
-var server = require('../server').getInstance();;
+var server = require('../server');
 var TaskError = require('ponos').TaskError;
 var TaskFatalError = require('ponos').TaskFatalError;
 

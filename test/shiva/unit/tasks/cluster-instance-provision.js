@@ -18,7 +18,7 @@ var TaskFatalError = require('ponos').TaskFatalError;
 var aws = require('aws');
 var Cluster = require('models/cluster');
 var clusterInstanceProvision = require('tasks/cluster-instance-provision');
-var server = require('server').getInstance();;
+var server = require('server');
 
 describe('tasks', function() {
   describe('cluster-instance-provision', function() {
