@@ -12,10 +12,10 @@ var sinon = require('sinon');
 
 require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:test' });
 
-var queue = require('queue');
 var Cluster = require('models/cluster');
 var dbFixture = require('../../fixtures/database.js');
 var clusterDeprovision = require('tasks/cluster-deprovision');
+var server = require('server');
 
 describe('functional', function() {
   describe('tasks', function() {
@@ -31,12 +31,12 @@ describe('functional', function() {
       });
 
       beforeEach(function (done) {
-        sinon.stub(queue, 'publish');
+        sinon.stub(server.hermes, 'publish');
         done();
       });
 
       afterEach(function (done) {
-        queue.publish.restore();
+        server.hermes.publish.restore();
         done();
       });
 

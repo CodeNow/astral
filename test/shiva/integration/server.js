@@ -17,7 +17,6 @@ require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:test' });
 var dbFixture = require('../fixtures/database.js');
 
 var server = require('server');
-var queue = require('queue');
 var Cluster = require('models/cluster');
 var Instance = require('models/instance');
 
@@ -28,11 +27,11 @@ describe('integration', function() {
 
     before(dbFixture.terminateInstances);
     before(dbFixture.truncate);
-    before(server.start);
-    after(server.stop);
+    before(function (done) { server.start().asCallback(done); });
+    after(function (done) { server.stop().asCallback(done); });
 
     it('should provision a full cluster', function(done) {
-      queue.publish('cluster-provision', { githubId: githubId });
+      server.hermes.publish('cluster-provision', { githubId: githubId });
       var interval = setInterval(function() {
         Cluster.getByGithubId(githubId)
           .then(function (cluster) {
@@ -65,7 +64,7 @@ describe('integration', function() {
         done('Server tests must be run as a suite.');
       }
 
-      queue.publish('cluster-deprovision', { githubId: githubId });
+      server.hermes.publish('cluster-deprovision', { githubId: githubId });
 
       var interval = setInterval(function () {
         Cluster.getByGithubId(githubId)

@@ -13,13 +13,12 @@ var sinon = require('sinon');
 require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:test' });
 
 var Promise = require('bluebird');
-var queue = require('queue');
-var TaskError = require('errors/task-error');
-var TaskFatalError = require('errors/task-fatal-error');
-var error = require('error');
-var aws = require('providers/aws');
+var TaskError = require('ponos').TaskError;
+var TaskFatalError = require('ponos').TaskFatalError;
+var aws = require('aws');
 var Cluster = require('models/cluster');
 var clusterInstanceProvision = require('tasks/cluster-instance-provision');
+var server = require('server');
 
 describe('tasks', function() {
   describe('cluster-instance-provision', function() {
@@ -39,53 +38,49 @@ describe('tasks', function() {
     };
 
     beforeEach(function (done) {
-      sinon.spy(error, 'rejectAndReport');
       sinon.stub(aws, 'createInstances').returns(Promise.resolve(instances));
-      sinon.stub(queue, 'publish');
-      sinon.stub(queue, 'subscribe');
       sinon.stub(Cluster, 'getByGithubId')
         .returns(Promise.resolve(mockCluster));
       sinon.stub(Cluster, 'githubOrgExists').returns(Promise.resolve(true));
+      sinon.stub(server.hermes, 'publish');
       done();
     });
 
     afterEach(function (done) {
-      error.rejectAndReport.restore();
       aws.createInstances.restore();
-      queue.publish.restore();
-      queue.subscribe.restore();
+      server.hermes.publish.restore();
       Cluster.getByGithubId.restore();
       Cluster.githubOrgExists.restore();
       done();
     });
 
     it('should fatally reject if not given a job', function(done) {
-      clusterInstanceProvision().catch(TaskFatalError, function (err) {
-        expect(err.data.task).to.equal('cluster-instance-provision');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+      clusterInstanceProvision().asCallback(function (err) {
+        expect(err).to.be.an.instanceof(TaskFatalError);
+        expect(err.message).to.match(/non-object job/);
         done();
-      }).catch(done);
+      });
     });
 
-    it('should fatally reject without `githubId`', function(done) {
+    it('should fatally reject without a string `githubId`', function(done) {
       var job = { role: 'dock' };
-      clusterInstanceProvision(job).catch(TaskFatalError, function (err) {
-        expect(err.data.task).to.equal('cluster-instance-provision');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+      clusterInstanceProvision(job).asCallback(function (err) {
+        expect(err).to.be.an.instanceof(TaskFatalError);
+        expect(err.message).to.match(/githubId.*string/);
         done();
-      }).catch(done);
+      });
     });
 
-    it('should fatally reject when given an invalid `role`', function(done) {
+    it('should fatally reject with non-string `instanceType`', function(done) {
       var job = {
-        githubId: 'some-id',
-        role: 'not-valid'
+        githubId: 'githurrbs',
+        instanceType: ['foop']
       };
-      clusterInstanceProvision(job).catch(TaskFatalError, function (err) {
-        expect(err.data.task).to.equal('cluster-instance-provision');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+      clusterInstanceProvision(job).asCallback(function (err) {
+        expect(err).to.be.an.instanceof(TaskFatalError);
+        expect(err.message).to.match(/non-string.*instanceType/i);
         done();
-      }).catch(done);
+      });
     });
 
     it('should fatally reject if the cluster does not exist', function(done) {
@@ -94,11 +89,11 @@ describe('tasks', function() {
         role: 'dock'
       };
       Cluster.githubOrgExists.returns(Promise.resolve(false));
-      clusterInstanceProvision(job).catch(TaskFatalError, function (err) {
-        expect(err.data.task).to.equal('cluster-instance-provision');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+      clusterInstanceProvision(job).asCallback(function (err) {
+        expect(err).to.be.an.instanceof(TaskFatalError);
+        expect(err.message).to.match(/unable to find cluster/i);
         done();
-      }).catch(done);
+      });
     });
 
     it('should fatally reject if the cluster is deprovisioning', function(done) {
@@ -111,36 +106,11 @@ describe('tasks', function() {
         githubId: 'some-github-id',
         deprovisioning: true
       }));
-      clusterInstanceProvision(job).catch(TaskFatalError, function (err) {
-        expect(err.data.task).to.equal('cluster-instance-provision');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+      clusterInstanceProvision(job).asCallback(function (err) {
+        expect(err).to.be.an.instanceof(TaskFatalError);
+        expect(err.message).to.match(/deprovisioning cluster/i);
         done();
-      }).catch(done);
-    });
-
-    it('should default `role` to "dock"', function(done) {
-      var job = { githubId: 'some-id' };
-      clusterInstanceProvision(job).then(function () {
-        expect(job.role).to.equal('dock');
-        done();
-      }).catch(done);
-    });
-
-    it('should fatally reject with non-string `instanceType`', function(done) {
-      var job = {
-        githubId: 'githurrbs',
-        instanceType: ['foop']
-      };
-      clusterInstanceProvision(job)
-        .then(function () {
-          done('Did not fatally reject');
-        })
-        .catch(TaskFatalError, function (err) {
-          expect(err.data.task).to.equal('cluster-instance-provision');
-          expect(error.rejectAndReport.calledWith(err)).to.be.true();
-          done();
-        })
-        .catch(done);
+      });
     });
 
     it('should set the aws `InstanceType` parameter', function(done) {
@@ -165,11 +135,11 @@ describe('tasks', function() {
         role: 'dock'
       };
       aws.createInstances.returns(Promise.resolve([]));
-      clusterInstanceProvision(job).catch(TaskError, function (err) {
-        expect(err.data.task).to.equal('cluster-instance-provision');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+      clusterInstanceProvision(job).asCallback(function (err) {
+        expect(err).to.be.an.instanceof(TaskError);
+        expect(err.message).to.match(/valid instances/i);
         done();
-      }).catch(done);
+      });
     });
 
     it('should publish `cluster-instance-wait` on success', function(done) {
@@ -178,8 +148,8 @@ describe('tasks', function() {
         role: 'dock'
       };
       clusterInstanceProvision(job).then(function () {
-        expect(queue.publish.calledWith('cluster-instance-wait')).to.be.true();
-        expect(queue.publish.firstCall.args[1]).to.deep.equal({
+        expect(server.hermes.publish.calledWith('cluster-instance-wait')).to.be.true();
+        expect(server.hermes.publish.firstCall.args[1]).to.deep.equal({
           cluster: mockCluster,
           role: job.role,
           instance: instances[0]
@@ -194,8 +164,8 @@ describe('tasks', function() {
         role: 'dock'
       };
       clusterInstanceProvision(job).then(function () {
-        expect(queue.publish.calledWith('cluster-instance-tag')).to.be.true();
-        expect(queue.publish.secondCall.args[1]).to.deep.equal({
+        expect(server.hermes.publish.calledWith('cluster-instance-tag')).to.be.true();
+        expect(server.hermes.publish.secondCall.args[1]).to.deep.equal({
           org: job.githubId,
           role: job.role,
           instanceId: instanceIds[0]
@@ -215,11 +185,11 @@ describe('tasks', function() {
           Name: 'terminated'
         }
       }]));
-      clusterInstanceProvision(job).catch(TaskError, function (err) {
-        expect(err.data.task).to.equal('cluster-instance-provision');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+      clusterInstanceProvision(job).asCallback(function (err) {
+        expect(err).to.be.an.instanceof(TaskFatalError);
+        expect(err.message).to.match(/pending state/i);
         done();
-      }).catch(done);
+      });
     });
   }); // end 'cluster-instance-provision'
 }); // end 'tasks'

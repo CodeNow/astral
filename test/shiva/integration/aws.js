@@ -19,7 +19,7 @@ delete process.env.AWS_SECRET_ACCESS_KEY;
 require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:test' });
 
 var exists = require('101/exists');
-var aws = require('providers/aws');
+var aws = require('aws');
 
 describe('integration', function() {
 
@@ -88,15 +88,6 @@ describe('integration', function() {
           done(new Error('AWS integration tests must be run as a suite.'));
         }
         aws.terminateInstances({
-          InstanceIds: ids
-        }).asCallback(done);
-      });
-
-      it('should wait for instances to be terminated', function(done) {
-        if (!exists(ids)) {
-          done(new Error('AWS integration tests must be run as a suite.'));
-        }
-        aws.waitFor('instanceTerminated', {
           InstanceIds: ids
         }).asCallback(done);
       });

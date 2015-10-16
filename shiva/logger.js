@@ -2,10 +2,10 @@
 
 require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:env' });
 
+var bunyan = require('bunyan');
 var defaults = require('101/defaults');
 var exists = require('101/exists');
 var isObject = require('101/is-object');
-var bunyan = require('bunyan');
 
 /**
  * Serializers for shiva's bunyan logger.
@@ -13,7 +13,8 @@ var bunyan = require('bunyan');
  */
 var serializers = {
   err: errorSerializer,
-  job: jobSerializer
+  job: jobSerializer,
+  env: envSerializer
 };
 defaults(serializers, bunyan.stdSerializers);
 
@@ -38,7 +39,7 @@ logger.getStreams = getStreams;
 function getStreams() {
   return [
     {
-      level: process.env.STDOUT_LOG_LEVEL,
+      level: process.env.LOG_LEVEL,
       stream: process.stdout
     }
   ];
@@ -82,6 +83,29 @@ function jobSerializer(job) {
     else {
       obj[key] = value;
     }
+  });
+  return obj;
+}
+
+/**
+ * The node process environment often contains a lot of useless information
+ * this reduces the verbosity of a reported environment.
+ * @param {object} env The environment to report.
+ * @return {object} A stripped down version with only relevant environment
+ *   variables.
+ */
+function envSerializer(env) {
+  var obj = {};
+
+  // Keep the git head variable (it is actually useful)
+  if (exists(env.npm_package_gitHead)) {
+    obj['npm_package_gitHead'] = env['npm_package_gitHead'];
+  }
+
+  // Filter out the kinda useless and verbose `npm_*` variables
+  Object.keys(env).forEach(function (key) {
+    if (key.match(/^npm_/)) { return; }
+    obj[key] = env[key];
   });
   return obj;
 }

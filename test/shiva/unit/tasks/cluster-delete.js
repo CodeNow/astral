@@ -14,10 +14,9 @@ require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:test' });
 
 var Promise = require('bluebird');
 var Cluster = require('models/cluster');
-var queue = require('queue');
-var TaskError = require('errors/task-error');
-var TaskFatalError = require('errors/task-fatal-error');
-var error = require('error');
+var TaskError = require('ponos').TaskError;
+var TaskFatalError = require('ponos').TaskFatalError;
+var server = require('server');
 
 var clusterDelete = require('tasks/cluster-delete');
 
@@ -36,7 +35,6 @@ describe('tasks', function() {
 
     beforeEach(function (done) {
       sinon.stub(Cluster, 'get').returns(Promise.resolve(mockCluster));
-      sinon.spy(error, 'rejectAndReport');
       sinon.stub(Cluster, 'getInstances').returns(Promise.resolve(mockInstances));
       sinon.stub(Cluster, 'deleteInstances').returns(Promise.resolve());
       sinon.stub(Cluster, 'del').returns(Promise.resolve());
@@ -45,27 +43,24 @@ describe('tasks', function() {
 
     afterEach(function (done) {
       Cluster.get.restore();
-      error.rejectAndReport.restore();
       Cluster.getInstances.restore();
       Cluster.deleteInstances.restore();
       Cluster.del.restore();
       done();
     })
 
-    it('should fatally reject without a job', function(done) {
+    it('should reject without a job', function(done) {
       clusterDelete().asCallback(function (err) {
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-delete');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        expect(err.message).to.match(/non-object job/);
         done();
       });
     });
 
-    it('should fatally reject without a `clusterId` of type {string}', function(done) {
+    it('should reject without a `clusterId` of type {string}', function(done) {
       clusterDelete({ clusterId: [] }).asCallback(function (err) {
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-delete');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        expect(err.message).to.match(/clusterId.*string/);
         done();
       });
     });
@@ -80,25 +75,23 @@ describe('tasks', function() {
         .catch(done);
     });
 
-    it('should fatally reject if the cluster does not exist', function(done) {
+    it('should reject if the cluster does not exist', function(done) {
       Cluster.get.returns(Promise.resolve(null));
       clusterDelete({ clusterId: '12334' }).asCallback(function (err) {
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-delete');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        expect(err.message).to.match(/does not exist/);
         done();
       });
     });
 
-    it('should fatally reject if the cluster is not deprovisioning', function(done) {
+    it('should reject if the cluster is not deprovisioning', function(done) {
       Cluster.get.returns(Promise.resolve({
         id: '12334',
         deprovisioning: false
       }));
       clusterDelete({ clusterId: '12334' }).asCallback(function (err) {
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-delete');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        expect(err.message).to.match(/not being deprovisioned/);
         done();
       });
     });
@@ -111,8 +104,7 @@ describe('tasks', function() {
       ]));
       clusterDelete({ clusterId: '12334' }).asCallback(function (err) {
         expect(err).to.be.an.instanceof(TaskError);
-        expect(err.data.task).to.equal('cluster-delete');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        expect(err.message).to.match(/flagged as deleted/);
         done();
       });
     });

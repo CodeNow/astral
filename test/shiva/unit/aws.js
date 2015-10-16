@@ -17,7 +17,7 @@ var fs = require('fs');
 var path = require('path');
 var Mustache = require('mustache');
 var Promise = require('bluebird');
-var aws = require('providers/aws');
+var aws = require('aws');
 
 describe('providers', function() {
   describe('aws', function() {
@@ -59,7 +59,7 @@ describe('providers', function() {
       it('should fetch the correct user data script template', function(done) {
         var templatePath = path.resolve(
           __dirname,
-          '../../../../shiva/scripts/aws-instance-user-data.sh'
+          '../../../shiva/scripts/aws-instance-user-data.sh'
         );
         var expectedTemplate = fs.readFileSync(templatePath).toString();
         expect(aws.userDataTemplate).to.equal(expectedTemplate);

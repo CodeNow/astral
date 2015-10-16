@@ -8,7 +8,7 @@ var defaults = require('101/defaults');
 var AWS = require('aws-sdk');
 var EC2 = AWS.EC2;
 
-var log = require('../logger').child({ module: 'aws' });
+var log = require('./logger').child({ module: 'aws' });
 
 /**
  * AWS provider interface.
@@ -29,7 +29,7 @@ function AWSProvider() {
   });
   var templatePath = path.resolve(
     __dirname,
-    '../scripts/aws-instance-user-data.sh'
+    './scripts/aws-instance-user-data.sh'
   );
   this.userDataTemplate = fs.readFileSync(templatePath).toString();
 }

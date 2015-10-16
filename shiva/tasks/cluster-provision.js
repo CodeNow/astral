@@ -4,12 +4,11 @@ require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:env' });
 
 var exists = require('101/exists');
 var isObject = require('101/is-object');
-
 var Cluster = require('../models/cluster');
-var error = require('../error');
-var queue = require('../queue');
-var TaskError = require('../errors/task-error');
-var TaskFatalError = require('../errors/task-fatal-error');
+var TaskError = require('ponos').TaskError;
+var TaskFatalError = require('ponos').TaskFatalError;
+var server = require('../server');
+var Promise = require('bluebird');
 
 /**
  * Task handler for `cluster-provision` queue jobs.
@@ -27,45 +26,38 @@ module.exports = clusterProvision;
  *   rejects the job as failed.
  */
 function clusterProvision(job) {
-  if (!isObject(job)) {
-    return error.rejectAndReport(new TaskFatalError(
-      'cluster-provision',
-      'Encountered non-object job',
-      { job: job }
-    ));
-  }
-
-  if (!exists(job.githubId)) {
-    return error.rejectAndReport(new TaskFatalError(
-      'cluster-provision',
-      'Job missing `githubId` field',
-      { job: job }
-    ));
-  }
-
-  return Cluster.githubOrgExists(job.githubId)
-    .then(function (orgExists) {
-      if (orgExists) {
-        // If the cluster already exists in the data model, we are done and
-        // should not propagate further events.
-        return;
-      }
-
-      // Insert the cluster into the database
-      return Cluster.insert({ 'github_id': job.githubId })
-        .then(function () {
-          var jobData = { githubId: job.githubId };
-          for (var i = 0; i < process.env.CLUSTER_INITIAL_DOCKS; i++) {
-            queue.publish('cluster-instance-provision', jobData);
-          }
-        });
-    })
-    .catch(function (err) {
-      // Report the error that occurred and reject
-      return error.rejectAndReport(new TaskError(
+  return Promise.try(function () {
+    if (!isObject(job)) {
+      throw new TaskFatalError(
         'cluster-provision',
-        'unable to add cluster to the database',
-        { job: job, originalError: err }
-      ));
-    });
+        'Encountered non-object job',
+        { job: job }
+      );
+    }
+
+    if (!exists(job.githubId)) {
+      throw new TaskFatalError(
+        'cluster-provision',
+        'Job missing `githubId` field',
+        { job: job }
+      );
+    }
+
+    return Cluster.githubOrgExists(job.githubId);
+  })
+  .then(function (orgExists) {
+    // If the cluster already exists in the data model, we are done and
+    // should not propagate further events.
+    if (orgExists) { return; }
+
+    // Insert the cluster into the database
+    return Cluster.insert({ 'github_id': job.githubId });
+  })
+  .then(function () {
+    // Propagate the instance creation events
+    var jobData = { githubId: job.githubId };
+    for (var i = 0; i < process.env.CLUSTER_INITIAL_DOCKS; i++) {
+      server.hermes.publish('cluster-instance-provision', jobData);
+    }
+  });
 }

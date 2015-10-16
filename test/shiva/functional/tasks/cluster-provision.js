@@ -17,7 +17,7 @@ require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:test' });
 var db = require('database');
 var dbFixture = require('../../fixtures/database.js');
 var clusterProvision = require('tasks/cluster-provision');
-var queue = require('queue');
+var server = require('server');
 
 describe('functional', function() {
   describe('tasks', function() {
@@ -26,12 +26,12 @@ describe('functional', function() {
 
       beforeEach(dbFixture.truncate);
       beforeEach(function (done) {
-        sinon.stub(queue, 'publish');
+        sinon.stub(server.hermes, 'publish');
         dbFixture.createCluster('exists', { 'github_id': githubId })
           .asCallback(done);
       });
       afterEach(function (done) {
-        queue.publish.restore();
+        server.hermes.publish.restore();
         done();
       });
 

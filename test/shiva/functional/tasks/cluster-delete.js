@@ -49,8 +49,8 @@ describe('functional', function() {
         Cluster.setDeprovisioning(clusterId)
           .then(function () {
             return clusterDelete({ clusterId: clusterId })
-              .asCallback(function (err) {
-                expect(err).to.exist();
+              .then(function () { done('did not reject'); })
+              .catch(function (err) {
                 done();
               });
           });

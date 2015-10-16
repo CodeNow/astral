@@ -5,7 +5,7 @@ var isObject = require('101/is-object');
 var uuid = require('uuid');
 var debug = require('debug')('shiva:test:fixtures');
 var db = require('database');
-var aws = require('providers/aws');
+var aws = require('aws');
 var foreignKeys = require('./foreign-keys');
 
 /**

@@ -13,30 +13,25 @@ var sinon = require('sinon');
 require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:test' });
 
 var Promise = require('bluebird');
-var queue = require('queue');
-var TaskError = require('errors/task-error');
-var TaskFatalError = require('errors/task-fatal-error');
-var error = require('error');
-var aws = require('providers/aws');
+var TaskError = require('ponos').TaskError;
+var TaskFatalError = require('ponos').TaskFatalError;
+var aws = require('aws');
 var Instance = require('models/instance');
 var clusterInstanceTerminate = require('tasks/cluster-instance-terminate');
+var server = require('server');
 
 describe('tasks', function() {
   describe('cluster-instance-terminate', function() {
     beforeEach(function (done) {
-      sinon.spy(error, 'rejectAndReport');
       sinon.stub(aws, 'terminateInstances').returns(Promise.resolve());
-      sinon.stub(queue, 'publish');
-      sinon.stub(queue, 'subscribe');
+      sinon.stub(server.hermes, 'publish');
       sinon.stub(Instance, 'get').returns(Promise.resolve({ instanceId: 'some-id' }));
       done();
     });
 
     afterEach(function (done) {
-      error.rejectAndReport.restore();
       aws.terminateInstances.restore();
-      queue.publish.restore();
-      queue.subscribe.restore();
+      server.hermes.publish.restore();
       Instance.get.restore();
       done();
     });
@@ -44,8 +39,7 @@ describe('tasks', function() {
     it('should fatally reject if not given a job', function(done) {
       clusterInstanceTerminate().asCallback(function (err) {
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-instance-terminate');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        expect(err.message).to.match(/non-object job/);
         done();
       });
     });
@@ -54,8 +48,7 @@ describe('tasks', function() {
       var job = { instanceId: [1, 2, 3, 4] };
       clusterInstanceTerminate(job).asCallback(function (err) {
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-instance-terminate');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        expect(err.message).to.match(/id.*string/);
         done();
       });
     });
@@ -64,8 +57,7 @@ describe('tasks', function() {
       var job = { instanceId: '' };
       clusterInstanceTerminate(job).asCallback(function (err) {
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-instance-terminate');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        expect(err.message).to.match(/id.*empty/);
         done();
       });
     });
@@ -74,8 +66,7 @@ describe('tasks', function() {
       Instance.get.returns(Promise.resolve(null));
       clusterInstanceTerminate({ instanceId: '123' }).asCallback(function (err) {
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-instance-terminate');
-        expect(error.rejectAndReport.calledWith(err)).to.be.true();
+        expect(err.message).to.match(/instanceId.*instance.*database/);
         done();
       });
     });
@@ -84,7 +75,7 @@ describe('tasks', function() {
       var instanceError = new Error('I have misplaced the database...');
       Instance.get.returns(Promise.reject(instanceError));
       clusterInstanceTerminate({ instanceId: '234' }).asCallback(function (err) {
-        expect(err).to.exist();
+        expect(err).to.equal(instanceError);
         done();
       });
     });
@@ -105,10 +96,10 @@ describe('tasks', function() {
       var id = 'i-abc';
       var job = { instanceId: id };
       clusterInstanceTerminate(job).then(function () {
-        expect(queue.publish.calledOnce).to.be.true();
-        expect(queue.publish.firstCall.args[0])
+        expect(server.hermes.publish.calledOnce).to.be.true();
+        expect(server.hermes.publish.firstCall.args[0])
           .to.equal('cluster-instance-delete');
-        expect(queue.publish.firstCall.args[1]).to.deep.equal({ instanceId: id });
+        expect(server.hermes.publish.firstCall.args[1]).to.deep.equal({ instanceId: id });
         done();
       }).catch(done);
     });
@@ -116,15 +107,10 @@ describe('tasks', function() {
     it('should correctly catch AWS errors', function(done) {
       var awsError = new Error('instances be bad yo');
       aws.terminateInstances.returns(Promise.reject(awsError));
-      clusterInstanceTerminate({ instanceId: 'a' })
-        .then(function () { done('Did not reject with error')})
-        .catch(TaskError, function (err) {
-          expect(err).to.be.an.instanceof(TaskError);
-          expect(err.data.task).to.equal('cluster-instance-terminate');
-          expect(err.data.originalError).to.equal(awsError);
-          done();
-        })
-        .catch(done);
+      clusterInstanceTerminate({ instanceId: 'a' }).asCallback(function (err) {
+        expect(err).to.equal(awsError);
+        done();
+      });
     });
 
     it('should correctly handle instance not found aws errors', function(done) {
@@ -134,26 +120,12 @@ describe('tasks', function() {
       var job = { instanceId: 'instance-id' };
       clusterInstanceTerminate(job)
         .then(function () {
-          expect(queue.publish.calledOnce).to.be.true();
-          expect(queue.publish.firstCall.args[0])
+          expect(server.hermes.publish.calledOnce).to.be.true();
+          expect(server.hermes.publish.firstCall.args[0])
             .to.equal('cluster-instance-delete');
-          expect(queue.publish.firstCall.args[1]).to.deep.equal({
+          expect(server.hermes.publish.firstCall.args[1]).to.deep.equal({
             instanceId: job.instanceId
           });
-          done();
-        })
-        .catch(done);
-    });
-
-    it('should catch all other errors', function(done) {
-      var queueError = new Error('just exploding cause whateves');
-      queue.publish.throws(queueError);
-      clusterInstanceTerminate({ instanceId: 'b' })
-        .then(function () { done('Did not reject with error')})
-        .catch(TaskError, function (err) {
-          expect(err).to.be.an.instanceof(TaskError);
-          expect(err.data.task).to.equal('cluster-instance-terminate');
-          expect(err.data.originalError).to.equal(queueError);
           done();
         })
         .catch(done);

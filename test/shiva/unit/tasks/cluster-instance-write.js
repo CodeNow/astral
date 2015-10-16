@@ -13,8 +13,8 @@ var sinon = require('sinon');
 require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:test' });
 
 var Promise = require('bluebird');
-var TaskError = require('errors/task-error');
-var TaskFatalError = require('errors/task-fatal-error');
+var TaskError = require('ponos').TaskError;
+var TaskFatalError = require('ponos').TaskFatalError;
 var Instance = require('models/instance');
 var clusterInstanceWrite = require('tasks/cluster-instance-write');
 
@@ -59,9 +59,8 @@ describe('tasks', function() {
 
     it('should fatally reject if not given a job', function(done) {
       clusterInstanceWrite().asCallback(function (err) {
-        expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-instance-write');
+        expect(err.message).to.match(/non-object job/);
         done();
       });
     });
@@ -69,9 +68,8 @@ describe('tasks', function() {
     it('should fatally reject with a non-object `cluster`', function(done) {
       var job = { cluster: 42 };
       clusterInstanceWrite(job).asCallback(function (err) {
-        expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-instance-write');
+        expect(err.message).to.match(/cluster.*object/);
         done();
       });
     });
@@ -79,9 +77,8 @@ describe('tasks', function() {
     it('should fatally reject without `cluster.id`', function(done) {
       var job = { cluster: {} };
       clusterInstanceWrite(job).asCallback(function (err) {
-        expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-instance-write');
+        expect(err.message).to.match(/cluster\.id.*string/);
         done();
       });
     });
@@ -92,9 +89,8 @@ describe('tasks', function() {
         role: { foo: 'bar' }
       };
       clusterInstanceWrite(job).asCallback(function (err) {
-        expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-instance-write');
+        expect(err.message).to.match(/role.*string/);
         done();
       });
     });
@@ -106,9 +102,8 @@ describe('tasks', function() {
         instance: 890123
       };
       clusterInstanceWrite(job).asCallback(function (err) {
-        expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-instance-write');
+        expect(err.message).to.match(/instance.*object/);
         done();
       });
     });
@@ -120,9 +115,8 @@ describe('tasks', function() {
         instance: { InstanceId: [1, 1, 2, 3, 5, 8, 13] }
       };
       clusterInstanceWrite(job).asCallback(function (err) {
-        expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-instance-write');
+        expect(err.message).to.match(/InstanceId.*string/);
         done();
       });
     });
@@ -134,9 +128,8 @@ describe('tasks', function() {
         instance: { InstanceId: '4582', ImageId: [1, 2, 4, 8] }
       };
       clusterInstanceWrite(job).asCallback(function (err) {
-        expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-instance-write');
+        expect(err.message).to.match(/ImageId.*string/);
         done();
       });
     });
@@ -152,9 +145,8 @@ describe('tasks', function() {
         }
       };
       clusterInstanceWrite(job).asCallback(function (err) {
-        expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-instance-write');
+        expect(err.message).to.match(/InstanceType.*string/);
         done();
       });
     });
@@ -171,9 +163,8 @@ describe('tasks', function() {
         }
       };
       clusterInstanceWrite(job).asCallback(function (err) {
-        expect(err).to.exist();
         expect(err).to.be.an.instanceof(TaskFatalError);
-        expect(err.data.task).to.equal('cluster-instance-write');
+        expect(err.message).to.match(/PrivateIpAddress.*string/);
         done();
       });
     });
@@ -190,12 +181,13 @@ describe('tasks', function() {
       }).catch(done);
     });
 
-    it('should not attempt to insert rows if the instance exists', function(done) {
+    it('should fatally reject if the instance exists', function(done) {
       Instance.exists.returns(Promise.resolve(true));
-      clusterInstanceWrite(job).then(function () {
-        expect(Instance.insert.callCount).to.equal(0);
+      clusterInstanceWrite(job).asCallback(function (err) {
+        expect(err).to.be.an.instanceof(TaskFatalError);
+        expect(err.message).to.match(/id.*exists/);
         done();
-      }).catch(done);
+      });
     });
 
     it('should insert the instances into the database', function(done) {
@@ -204,18 +196,6 @@ describe('tasks', function() {
         expect(Instance.insert.firstCall.args[0]).to.deep.equal(instanceRow);
         done();
       }).catch(done);
-    });
-
-    it('should correctly handle database insert failures', function(done) {
-      var dbError = new Error('Postgresql is being naughty');
-      Instance.insert.returns(Promise.reject(dbError));
-      clusterInstanceWrite(job).asCallback(function (err) {
-        expect(err).to.exist();
-        expect(err).to.be.an.instanceof(TaskError);
-        expect(err.data.task).to.equal('cluster-instance-write');
-        expect(err.data.originalError).to.equal(dbError);
-        done();
-      });
     });
   }); // end 'cluster-instance-write'
 }); // end 'tasks'
