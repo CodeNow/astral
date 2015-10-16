@@ -1,6 +1,6 @@
 {
   "name": "astral",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "The god of EC2 instance creation and destruction",
   "main": "index.js",
   "scripts": {
