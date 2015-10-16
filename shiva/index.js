@@ -1,6 +1,6 @@
 'use strict';
 
-require('loadenv')({ debugName: 'shiva:env' });
+require('loadenv')({ debugName: 'shiva:env', project: 'shiva' });
 
 var server = require('./server');
 var log = require('./logger').child({ module: 'index' });
