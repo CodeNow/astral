@@ -1,11 +1,13 @@
 'use strict';
 
+require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:test' });
+
 var defaults = require('101/defaults');
 var isObject = require('101/is-object');
 var uuid = require('uuid');
 var debug = require('debug')('shiva:test:fixtures');
-var db = require('database');
-var aws = require('aws');
+var db = require(process.env.ASTRAL_ROOT + 'common/database');
+var aws = require(process.env.ASTRAL_ROOT + 'shiva/aws');
 var foreignKeys = require('./foreign-keys');
 
 /**

@@ -19,11 +19,10 @@ delete process.env.AWS_SECRET_ACCESS_KEY;
 require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:test' });
 
 var exists = require('101/exists');
-var aws = require('aws');
+var aws = require(process.env.ASTRAL_ROOT + 'shiva/aws');
 
-describe('integration', function() {
-
-  describe('providers', function() {
+describe('shiva', function() {
+  describe('integration', function() {
     describe('aws', function() {
       var cluster = {
         id: 'some-id',
@@ -92,5 +91,5 @@ describe('integration', function() {
         }).asCallback(done);
       });
     }); // end 'aws'
-  }); // end 'providers'
-}); // end 'integration'
+  }); // end 'integration'
+}); // end 'shiva'
