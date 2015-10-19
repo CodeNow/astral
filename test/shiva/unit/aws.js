@@ -10,16 +10,19 @@ var Code = require('code');
 var expect = Code.expect;
 var sinon = require('sinon');
 
-require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:test' });
+var loadenv = require('loadenv');
+loadenv.restore();
+loadenv({ project: 'shiva', debugName: 'astral:shiva:test' });
 
 var isObject = require('101/is-object');
 var fs = require('fs');
 var path = require('path');
 var Mustache = require('mustache');
 var Promise = require('bluebird');
-var aws = require('aws');
 
-describe('providers', function() {
+var aws = require(process.env.ASTRAL_ROOT + 'shiva/aws');
+
+describe('shiva', function() {
   describe('aws', function() {
     var instanceResponse = {
       Instances: [
@@ -59,7 +62,7 @@ describe('providers', function() {
       it('should fetch the correct user data script template', function(done) {
         var templatePath = path.resolve(
           __dirname,
-          '../../../shiva/scripts/aws-instance-user-data.sh'
+          '../../../lib/shiva/scripts/aws-instance-user-data.sh'
         );
         var expectedTemplate = fs.readFileSync(templatePath).toString();
         expect(aws.userDataTemplate).to.equal(expectedTemplate);
@@ -603,4 +606,4 @@ describe('providers', function() {
       });
     }); // end 'getDefaultInstanceParams'
   }); // end 'aws'
-}); // end 'providers'
+}); // end 'shiva'

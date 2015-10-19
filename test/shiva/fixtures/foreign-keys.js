@@ -1,7 +1,9 @@
 'use strict';
 
+require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:test' });
+
 var debug = require('debug')('shiva:test:fixtures');
-var db = require('database');
+var db = require(process.env.ASTRAL_ROOT + 'common/database');
 
 /**
  * Helpers for managing foreign keys when performing test databases batch
