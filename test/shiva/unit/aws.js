@@ -537,10 +537,7 @@ describe('shiva', function() {
 
       it('should set the correct `SecurityGroupIds` param', function(done) {
         var key = 'SecurityGroupIds';
-        var values = [
-          process.env.AWS_BASTION_SECURITY_GROUP,
-          process.env.AWS_CLUSTER_SECURITY_GROUP_ID
-        ];
+        var values = ['sg-78b0011c', 'sg-a0b91fc4'];
         var params = aws.getDefaultInstanceParams();
         expect(params[key]).to.deep.equal(values);
         done();
