@@ -98,6 +98,22 @@ describe('shiva', function() {
           done();
         }).catch(done);
       });
+
+      it('should cast a given integer githubId to a string', function(done) {
+        var githubId = 1234;
+        clusterProvision({ githubId: githubId }).then(function (cluster) {
+          expect(server.hermes.publish.callCount)
+            .to.equal(process.env.CLUSTER_INITIAL_DOCKS);
+          for (var i = 0; i < process.env.CLUSTER_INITIAL_DOCKS; i++) {
+            expect(server.hermes.publish.getCall(i).args[0])
+              .to.equal('cluster-instance-provision');
+            expect(server.hermes.publish.getCall(i).args[1]).to.deep.equal({
+              githubId: githubId.toString()
+            });
+          }
+          done();
+        }).catch(done);
+      });
     }); // end 'cluster-provision'
   }); // end 'tasks'
 }); // end 'shiva'
