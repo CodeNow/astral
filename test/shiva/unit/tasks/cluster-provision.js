@@ -55,6 +55,14 @@ describe('shiva', function() {
         });
       });
 
+      it('should fatally reject if the `githubId` is not an integer nor a string', function(done) {
+        clusterProvision({ githubId: {} }).asCallback(function (err) {
+          expect(err).to.be.an.instanceof(TaskFatalError);
+          expect(err.message).to.match(/missing.*githubId/);
+          done();
+        })
+      });
+
       it('should check to see if a cluster already exists', function(done) {
         var githubId = '1234';
         Cluster.githubOrgExists.returns(Promise.resolve(true));
