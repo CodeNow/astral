@@ -14,7 +14,7 @@ var sinon = require('sinon');
 
 require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:test' });
 
-var dbFixture = require('../../test/shiva/fixtures/database.js');
+var dbFixture = require('../../test/fixtures/database.js');
 
 var server = require(process.env.ASTRAL_ROOT + 'shiva/server');
 var Cluster = require(process.env.ASTRAL_ROOT + 'shiva/models/cluster');

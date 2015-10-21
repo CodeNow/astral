@@ -9,7 +9,7 @@ var afterEach = lab.afterEach;
 var Code = require('code');
 var expect = Code.expect;
 var sinon = require('sinon');
-var astralRequire = require(process.env.ASTRAL_ROOT + '../test/common/fixtures/astral-require');
+var astralRequire = require(process.env.ASTRAL_ROOT + '../test/fixtures/astral-require');
 
 require('loadenv')({ debugName: 'astral:test' });
 
