@@ -22,6 +22,7 @@ var githubWebhooks = require('github-webhook-fixtures');
 var metisGithubEvent = astralRequire('metis/tasks/metis-github-event');
 var GitHubEvent = astralRequire('common/models/github-event');
 var UniqueError = astralRequire('common/errors/unique-error');
+var NoGithubOrgError = astralRequire('common/errors/no-github-org-error');
 
 describe('metis', function() {
   describe('tasks', function() {
@@ -113,6 +114,21 @@ describe('metis', function() {
         metisGithubEvent(job).asCallback(function (err) {
           expect(err).to.be.an.instanceof(TaskFatalError);
           expect(err.message).to.match(/deliveryId.*already.*processed/);
+          done();
+        });
+      });
+
+      it('should fatally reject on NoGithubOrgError', function(done) {
+        var job = {
+          deliveryId: 'some-delivery-id',
+          eventType: 'push',
+          recordedAt: 9241983,
+          payload: githubWebhooks.push.body
+        };
+        GitHubEvent.insert.returns(Promise.reject(new NoGithubOrgError()));
+        metisGithubEvent(job).asCallback(function (err) {
+          expect(err).to.be.an.instanceof(TaskFatalError);
+          expect(err.message).to.match(/Could not associate github org id/);
           done();
         });
       });

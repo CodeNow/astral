@@ -13,14 +13,15 @@ var astralRequire = require(process.env.ASTRAL_ROOT + '../test/fixtures/astral-r
 
 require('loadenv')({ debugName: 'astral:test' });
 
+var AstralError = astralRequire('common/errors/astral-error');
 var DatabaseError = astralRequire('common/errors/database-error');
 
 describe('common', function() {
   describe('errors', function() {
     describe('DatabaseError', function() {
       describe('class', function() {
-        it('should extend Error', function(done) {
-          expect(DatabaseError.prototype).to.be.an.instanceof(Error);
+        it('should extend AstralError', function(done) {
+          expect(DatabaseError.prototype).to.be.an.instanceof(AstralError);
           done();
         });
       }); // end 'class'
