@@ -66,8 +66,9 @@ describe('common', function() {
       describe('insert', function() {
         it('should return a promise', function(done) {
           var row = { recorded_at: 1, payload: {} };
-          expect(GitHubEvent.insert(row).then).to.be.a.function();
-          done();
+          var promise = GitHubEvent.insert(row);
+          expect(promise.then).to.be.a.function();
+          promise.asCallback(function () { done(); });
         });
       }); // end 'insert'
     });
