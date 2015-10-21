@@ -40,6 +40,11 @@ function truncate(cb) {
       return truncateInstances;
     })
     .then(function () {
+      var truncateGitHubEvents = db('github_events').truncate();
+      debug(truncateGitHubEvents.toString());
+      return truncateGitHubEvents;
+    })
+    .then(function () {
       return foreignKeys.add();
     })
     .asCallback(cb);

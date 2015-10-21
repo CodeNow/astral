@@ -10,9 +10,7 @@ var Code = require('code');
 var expect = Code.expect;
 var sinon = require('sinon');
 
-
 var astralRequire = require(process.env.ASTRAL_ROOT + '../test/fixtures/astral-require');
-
 var loadenv = require('loadenv');
 loadenv.restore();
 loadenv({ project: 'metis', debugName: 'astral:metis:test' });
