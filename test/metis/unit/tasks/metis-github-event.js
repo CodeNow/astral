@@ -82,6 +82,21 @@ describe('metis', function() {
         });
       });
 
+      it('should not insert jobs with `status` event type', function(done) {
+        var job = {
+          deliveryId: 'some-status-delivery-id',
+          eventType: 'status',
+          recordedAt: 9241983,
+          payload: githubWebhooks.status.body
+        };
+        metisGithubEvent(job)
+          .then(function () {
+            expect(GitHubEvent.insert.callCount).to.equal(0);
+            done();
+          })
+          .catch(done);
+      });
+
       it('should insert the row via the GitHubEvent model', function(done) {
         var job = {
           deliveryId: 'some-delivery-id',
