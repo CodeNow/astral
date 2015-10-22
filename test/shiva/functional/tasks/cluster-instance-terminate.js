@@ -15,7 +15,7 @@ loadenv.restore();
 loadenv({ project: 'shiva', debugName: 'astral:shiva:test' });
 
 var Promise = require('bluebird');
-var dbFixture = require('../../fixtures/database');
+var dbFixture = require(process.env.ASTRAL_ROOT + '../test/fixtures/database');
 var TaskFatalError = require('ponos').TaskFatalError;
 
 var aws = require(process.env.ASTRAL_ROOT + 'shiva/aws');

@@ -18,7 +18,7 @@ loadenv({ project: 'shiva', debugName: 'astral:shiva:test' });
 
 var cluster = require(process.env.ASTRAL_ROOT + 'shiva/models/cluster');
 var instance = require(process.env.ASTRAL_ROOT + 'shiva/models/instance');
-var dbFixture = require('../../fixtures/database.js');
+var dbFixture = require(process.env.ASTRAL_ROOT + '../test/fixtures/database.js');
 
 describe('shiva', function () {
   describe('functional', function() {

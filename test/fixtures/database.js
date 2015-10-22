@@ -1,6 +1,6 @@
 'use strict';
 
-require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:test' });
+require('loadenv')({ debugName: 'astral:common:test' });
 
 var defaults = require('101/defaults');
 var isObject = require('101/is-object');
@@ -38,6 +38,11 @@ function truncate(cb) {
       var truncateInstances = db('instances').truncate();
       debug(truncateInstances.toString());
       return truncateInstances;
+    })
+    .then(function () {
+      var truncateGitHubEvents = db('github_events').truncate();
+      debug(truncateGitHubEvents.toString());
+      return truncateGitHubEvents;
     })
     .then(function () {
       return foreignKeys.add();
