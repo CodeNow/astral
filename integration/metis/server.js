@@ -12,7 +12,7 @@ var Code = require('code');
 var expect = Code.expect;
 var sinon = require('sinon');
 
-require('loadenv')({ project: 'metis', debugName: 'astral:shiva:test' });
+require('loadenv')({ project: 'metis', debugName: 'astral:metis:test' });
 var astralRequire = require(process.env.ASTRAL_ROOT + '../test/fixtures/astral-require');
 var dbFixture = require('../../test/fixtures/database.js');
 var githubWebhooks = require('github-webhook-fixtures');
