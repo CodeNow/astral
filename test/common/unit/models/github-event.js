@@ -47,7 +47,7 @@ describe('common', function() {
 
       describe('_filterPayloadFields', function() {
         it('should apply the filter function recursively on all fields', function(done) {
-          var filterFn = sinon.spy(function () { return true; });
+          var filterFn = sinon.stub().returns(true);
           GitHubEvent._filterPayloadFields({
             foo: 'bar',
             baz: {
