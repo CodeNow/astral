@@ -29,7 +29,8 @@
     "metis-start": "node lib/metis/index.js",
     "metis-eslint": "eslint lib/metis/",
     "metis-test": "npm run metis-eslint && ASTRAL_ROOT=\"$(pwd)/lib/\" NODE_ENV=test lab -m 1000 -v -c -a code test/metis",
-    "metis-unit": "npm run metis-eslint && ASTRAL_ROOT=\"$(pwd)/lib/\" NODE_ENV=test lab -m 1000 -v -c -a code test/metis/unit"
+    "metis-unit": "npm run metis-eslint && ASTRAL_ROOT=\"$(pwd)/lib/\" NODE_ENV=test lab -m 1000 -v -c -a code test/metis/unit",
+    "metis-integration": "ASTRAL_ROOT=\"$(pwd)/lib/\" NODE_ENV=test lab -m 900000 -v -a code integration/metis"
   },
   "repository": {
     "type": "git",
