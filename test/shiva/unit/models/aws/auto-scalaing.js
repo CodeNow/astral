@@ -16,12 +16,12 @@ var loadenv = require('loadenv');
 loadenv.restore();
 loadenv({ project: 'shiva', debugName: 'astral:shiva:test' });
 
-var aws = require(process.env.ASTRAL_ROOT + 'shiva/models/aws');
+var AutoScaling = require(process.env.ASTRAL_ROOT + 'shiva/models/aws/auto-scaling');
 
 describe('shiva', function () {
   describe('models', function () {
     describe('aws', function() {
-      var sdk = aws.AutoScaling.getSDK();
+      var sdk = AutoScaling.getSDK();
 
       beforeEach(function (done) {
         sinon.stub(sdk, 'createLaunchConfiguration');
@@ -42,7 +42,7 @@ describe('shiva', function () {
           it('should resolve on success', function(done) {
             var response = 'wowie';
             sdk.createLaunchConfiguration.yieldsAsync(null, response);
-            aws.AutoScaling.createLaunchConfigurationAsync({})
+            AutoScaling.createLaunchConfigurationAsync({})
               .then(function (data) {
                 expect(data).to.equal(response);
                 done();
@@ -53,7 +53,7 @@ describe('shiva', function () {
           it('should reject on error', function(done) {
             var awsError = new Error('Oh DAMN');
             sdk.createLaunchConfiguration.yieldsAsync(awsError);
-            aws.AutoScaling.createLaunchConfigurationAsync({})
+            AutoScaling.createLaunchConfigurationAsync({})
               .asCallback(function (err) {
                 expect(err).to.equal(awsError);
                 done();
@@ -65,7 +65,7 @@ describe('shiva', function () {
           it('should resolve on success', function(done) {
             var response = 'wowie';
             sdk.describeLaunchConfigurations.yieldsAsync(null, response);
-            aws.AutoScaling.describeLaunchConfigurationsAsync({})
+            AutoScaling.describeLaunchConfigurationsAsync({})
               .then(function (data) {
                 expect(data).to.equal(response);
                 done();
@@ -76,7 +76,7 @@ describe('shiva', function () {
           it('should reject on error', function(done) {
             var awsError = new Error('Oh DAMN');
             sdk.describeLaunchConfigurations.yieldsAsync(awsError);
-            aws.AutoScaling.describeLaunchConfigurationsAsync({})
+            AutoScaling.describeLaunchConfigurationsAsync({})
               .asCallback(function (err) {
                 expect(err).to.equal(awsError);
                 done();
@@ -88,7 +88,7 @@ describe('shiva', function () {
           it('should resolve on success', function(done) {
             var response = 'wowie';
             sdk.deleteLaunchConfiguration.yieldsAsync(null, response);
-            aws.AutoScaling.deleteLaunchConfigurationAsync({})
+            AutoScaling.deleteLaunchConfigurationAsync({})
               .then(function (data) {
                 expect(data).to.equal(response);
                 done();
@@ -99,7 +99,7 @@ describe('shiva', function () {
           it('should reject on error', function(done) {
             var awsError = new Error('Oh DAMN');
             sdk.deleteLaunchConfiguration.yieldsAsync(awsError);
-            aws.AutoScaling.deleteLaunchConfigurationAsync({})
+            AutoScaling.deleteLaunchConfigurationAsync({})
               .asCallback(function (err) {
                 expect(err).to.equal(awsError);
                 done();

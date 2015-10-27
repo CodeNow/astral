@@ -22,7 +22,7 @@ var fs = require('fs');
 var path = require('path');
 var Promise = require('bluebird');
 
-var aws = astralRequire('shiva/models/aws');
+var AutoScaling = astralRequire('shiva/models/aws/auto-scaling');
 var LaunchConfiguration = astralRequire('shiva/models/launch-configuration');
 var LaunchConfigurationConfig = astralRequire('shiva/config/launch-configuration.js');
 var InvalidArgumentError = astralRequire('common/errors/invalid-argument-error');
@@ -33,20 +33,20 @@ describe('shiva', function () {
     describe('LaunchConfiguration', function() {
       beforeEach(function (done) {
         sinon.spy(Util, 'castAWSError');
-        sinon.stub(aws.AutoScaling, 'createLaunchConfigurationAsync')
+        sinon.stub(AutoScaling, 'createLaunchConfigurationAsync')
           .returns(Promise.resolve());
-        sinon.stub(aws.AutoScaling, 'deleteLaunchConfigurationAsync')
+        sinon.stub(AutoScaling, 'deleteLaunchConfigurationAsync')
           .returns(Promise.resolve());
-        sinon.stub(aws.AutoScaling, 'describeLaunchConfigurationsAsync')
+        sinon.stub(AutoScaling, 'describeLaunchConfigurationsAsync')
           .returns(Promise.resolve());
         done();
       });
 
       afterEach(function (done) {
         Util.castAWSError.restore();
-        aws.AutoScaling.createLaunchConfigurationAsync.restore();
-        aws.AutoScaling.deleteLaunchConfigurationAsync.restore();
-        aws.AutoScaling.describeLaunchConfigurationsAsync.restore();
+        AutoScaling.createLaunchConfigurationAsync.restore();
+        AutoScaling.deleteLaunchConfigurationAsync.restore();
+        AutoScaling.describeLaunchConfigurationsAsync.restore();
         done();
       });
 
@@ -163,11 +163,11 @@ describe('shiva', function () {
             LaunchConfiguration.create(name)
               .then(function () {
                 expect(
-                  aws.AutoScaling.createLaunchConfigurationAsync
+                  AutoScaling.createLaunchConfigurationAsync
                     .calledOnce
                 ).to.be.true();
                 expect(
-                  aws.AutoScaling.createLaunchConfigurationAsync
+                  AutoScaling.createLaunchConfigurationAsync
                     .firstCall.args[0]
                 ).to.deep.equal(expectedOptions);
                 done();
@@ -180,11 +180,11 @@ describe('shiva', function () {
             LaunchConfiguration.create(name)
               .then(function () {
                 expect(
-                  aws.AutoScaling.createLaunchConfigurationAsync
+                  AutoScaling.createLaunchConfigurationAsync
                     .calledOnce
                 ).to.be.true();
                 expect(
-                  aws.AutoScaling.createLaunchConfigurationAsync.firstCall
+                  AutoScaling.createLaunchConfigurationAsync.firstCall
                     .args[0].LaunchConfigurationName
                   ).to.equal(name);
                 done();
@@ -196,11 +196,11 @@ describe('shiva', function () {
             LaunchConfiguration.create('helloooo')
               .then(function () {
                 expect(
-                  aws.AutoScaling.createLaunchConfigurationAsync
+                  AutoScaling.createLaunchConfigurationAsync
                     .calledOnce
                 ).to.be.true();
                 expect(
-                  aws.AutoScaling.createLaunchConfigurationAsync.firstCall
+                  AutoScaling.createLaunchConfigurationAsync.firstCall
                     .args[0].UserData
                   ).to.equal(userDataScript);
                 done();
@@ -213,11 +213,11 @@ describe('shiva', function () {
             LaunchConfiguration.create('helloooo', override)
               .then(function () {
                 expect(
-                  aws.AutoScaling.createLaunchConfigurationAsync
+                  AutoScaling.createLaunchConfigurationAsync
                     .calledOnce
                 ).to.be.true();
                 expect(
-                  aws.AutoScaling.createLaunchConfigurationAsync.firstCall
+                  AutoScaling.createLaunchConfigurationAsync.firstCall
                     .args[0].UserData
                   ).to.equal(override.UserData);
                 done();
@@ -228,7 +228,7 @@ describe('shiva', function () {
 
         it('should cast AWS errors', function(done) {
           var awsErr = new Error('ohnoes');
-          aws.AutoScaling.createLaunchConfigurationAsync
+          AutoScaling.createLaunchConfigurationAsync
             .returns(Promise.reject(awsErr));
           LaunchConfiguration.create('wowienowizzz')
             .then(function () {
@@ -269,10 +269,10 @@ describe('shiva', function () {
           var expectedOptions = { LaunchConfigurationName: name };
           LaunchConfiguration.remove(name)
             .then(function () {
-              expect(aws.AutoScaling.deleteLaunchConfigurationAsync.calledOnce)
+              expect(AutoScaling.deleteLaunchConfigurationAsync.calledOnce)
                 .to.be.true();
               expect(
-                aws.AutoScaling.deleteLaunchConfigurationAsync.firstCall.args[0]
+                AutoScaling.deleteLaunchConfigurationAsync.firstCall.args[0]
               ).to.deep.equal(expectedOptions);
               done();
             })
@@ -281,7 +281,7 @@ describe('shiva', function () {
 
         it('should cast AWS errors', function(done) {
           var awsErr = new Error('ohnoes');
-          aws.AutoScaling.deleteLaunchConfigurationAsync
+          AutoScaling.deleteLaunchConfigurationAsync
             .returns(Promise.reject(awsErr));
           LaunchConfiguration.remove('asssssssskyourmom')
             .then(function () {
@@ -335,10 +335,10 @@ describe('shiva', function () {
             LaunchConfiguration.get(names)
               .then(function () {
                 expect(
-                  aws.AutoScaling.describeLaunchConfigurationsAsync.calledOnce
+                  AutoScaling.describeLaunchConfigurationsAsync.calledOnce
                 ).to.be.true();
                 expect(
-                  aws.AutoScaling.describeLaunchConfigurationsAsync.firstCall
+                  AutoScaling.describeLaunchConfigurationsAsync.firstCall
                     .args[0]
                 ).to.deep.equal(expectedOptions);
                 done();
@@ -352,10 +352,10 @@ describe('shiva', function () {
             LaunchConfiguration.get(name)
               .then(function () {
                 expect(
-                  aws.AutoScaling.describeLaunchConfigurationsAsync.calledOnce
+                  AutoScaling.describeLaunchConfigurationsAsync.calledOnce
                 ).to.be.true();
                 expect(
-                  aws.AutoScaling.describeLaunchConfigurationsAsync.firstCall
+                  AutoScaling.describeLaunchConfigurationsAsync.firstCall
                     .args[0]
                 ).to.deep.equal(expectedOptions);
                 done();
@@ -368,10 +368,10 @@ describe('shiva', function () {
             LaunchConfiguration.get('what?', overrides)
               .then(function () {
                 expect(
-                  aws.AutoScaling.describeLaunchConfigurationsAsync.calledOnce
+                  AutoScaling.describeLaunchConfigurationsAsync.calledOnce
                 ).to.be.true();
                 expect(
-                  aws.AutoScaling.describeLaunchConfigurationsAsync.firstCall
+                  AutoScaling.describeLaunchConfigurationsAsync.firstCall
                     .args[0].PityTheFool
                 ).to.deep.equal(overrides.PityTheFool);
                 done();
@@ -382,7 +382,7 @@ describe('shiva', function () {
 
         it('should cast AWS errors', function(done) {
           var awsErr = new Error('ohnoes');
-          aws.AutoScaling.describeLaunchConfigurationsAsync
+          AutoScaling.describeLaunchConfigurationsAsync
             .returns(Promise.reject(awsErr));
           LaunchConfiguration.get('asssssssskyourmom')
             .then(function () {
