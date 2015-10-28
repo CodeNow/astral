@@ -55,6 +55,14 @@ describe('shiva', function() {
         });
       });
 
+      it('should fatally reject if the `githubId` is not an integer nor a string', function(done) {
+        clusterProvision({ githubId: {} }).asCallback(function (err) {
+          expect(err).to.be.an.instanceof(TaskFatalError);
+          expect(err.message).to.match(/missing.*githubId/);
+          done();
+        })
+      });
+
       it('should check to see if a cluster already exists', function(done) {
         var githubId = '1234';
         Cluster.githubOrgExists.returns(Promise.resolve(true));
@@ -93,6 +101,22 @@ describe('shiva', function() {
               .to.equal('cluster-instance-provision');
             expect(server.hermes.publish.getCall(i).args[1]).to.deep.equal({
               githubId: githubId
+            });
+          }
+          done();
+        }).catch(done);
+      });
+
+      it('should cast a given integer githubId to a string', function(done) {
+        var githubId = 1234;
+        clusterProvision({ githubId: githubId }).then(function (cluster) {
+          expect(server.hermes.publish.callCount)
+            .to.equal(process.env.CLUSTER_INITIAL_DOCKS);
+          for (var i = 0; i < process.env.CLUSTER_INITIAL_DOCKS; i++) {
+            expect(server.hermes.publish.getCall(i).args[0])
+              .to.equal('cluster-instance-provision');
+            expect(server.hermes.publish.getCall(i).args[1]).to.deep.equal({
+              githubId: githubId.toString()
             });
           }
           done();

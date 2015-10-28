@@ -27,10 +27,10 @@ describe('metis', function() {
           done();
         });
 
-        it('should remove `githubEventData`', function(done) {
+        it('should remove `payload`', function(done) {
           var result = logger.serializers.job({
             type: 'neat',
-            githubEventData: 'wow'
+            payload: 'wow'
           });
           expect(result.githubEventData).to.not.exist();
           done();
