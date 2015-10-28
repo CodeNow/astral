@@ -99,7 +99,7 @@ describe('shiva', function() {
           var params = aws.ec2.runInstances.firstCall.args[0];
           expect(aws.getUserDataScript.calledOnce).to.be.true();
           expect(params.UserData).to.equal(new Buffer(
-            aws.getUserDataScript(cluster)
+            aws.getUserDataScript()
           ).toString('base64'));
           done();
         }).catch(done);
@@ -147,28 +147,21 @@ describe('shiva', function() {
       });
 
       it('should render the correct template', function(done) {
-        var result = aws.getUserDataScript(cluster);
+        aws.getUserDataScript();
         expect(Mustache.render.calledWith(aws.userDataTemplate)).to.be.true();
         done();
       });
 
       it('should return the rendered template', function(done) {
-        var result = aws.getUserDataScript(cluster);
+        var result = aws.getUserDataScript();
         expect(result).to.equal(Mustache.render.returnValues[0]);
-        done();
-      });
-
-      it('should set the correct tags', function(done) {
-        var tags = [cluster.github_id, 'run', 'build'].join(',');
-        aws.getUserDataScript(cluster);
-        expect(Mustache.render.firstCall.args[1].host_tags).to.equal(tags);
         done();
       });
 
       it('should set the correct consul_hostname', function(done) {
         var variableName = 'consul_hostname';
         var expectedVariable = process.env.CONSUL_HOSTNAME;
-        aws.getUserDataScript(cluster);
+        aws.getUserDataScript();
         expect(Mustache.render.firstCall.args[1][variableName])
           .to.equal(expectedVariable);
         done();
