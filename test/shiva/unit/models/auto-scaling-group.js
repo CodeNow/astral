@@ -106,88 +106,346 @@ describe('shiva', function () {
             .catch(done);
         });
 
-        it('should set the correct name', function(done) {
-          var name = 'some-name';
-          AutoScalingGroup.create(name)
-            .then(function () {
-              var options = AutoScaling.createAutoScalingGroupAsync.firstCall
-                .args[0];
-              expect(options.AutoScalingGroupName).to.equal(name);
-              done();
-            })
-            .catch(done);
-        });
-
-        it('should use the correct launch configuration name', function(done) {
-          AutoScalingGroup.create('weeee')
-            .then(function () {
-              expect(AutoScalingGroup._setLaunchConfigurationName.calledOnce)
-                .to.be.true();
-              var options = AutoScaling.createAutoScalingGroupAsync.firstCall
-                .args[0];
-              var lcName = AutoScalingGroup._setLaunchConfigurationName
-                .returnValues[0]._settledValue.LaunchConfigurationName;
-              expect(options.LaunchConfigurationName).to.equal(lcName);
-              done();
-            })
-            .catch(done);
-        });
-
-        it('should set and propogate the role tag as `dock`', function(done) {
-          AutoScalingGroup.create('weeee')
-            .then(function () {
-              var options = AutoScaling.createAutoScalingGroupAsync.firstCall
-                .args[0];
-              var tag = options.Tags.find(function (tag) {
-                return tag.PropagateAtLaunch === true && tag.Key === 'role';
+        describe('AWS createAutoScalingGroupAsync request', function() {
+          it('should set the correct name', function(done) {
+            var name = 'some-name';
+            AutoScalingGroup.create(name)
+              .then(function () {
+                var options = AutoScaling.createAutoScalingGroupAsync.firstCall
+                  .args[0];
+                expect(options.AutoScalingGroupName).to.equal(name);
+                done();
               })
-              expect(tag).to.exist();
-              expect(tag.Value).to.equal('dock');
-              done();
-            })
-            .catch(done);
-        });
-
-        it('should set the propogated org tag to the given name', function(done) {
-          var name = ' this is a nammmeezzz ';
-          AutoScalingGroup.create(name)
-            .then(function () {
-              var options = AutoScaling.createAutoScalingGroupAsync.firstCall
-                .args[0];
-              var tag = options.Tags.find(function (tag) {
-                return tag.PropagateAtLaunch === true && tag.Key === 'org';
-              });
-              expect(tag).to.exist();
-              expect(tag.Value).to.equal(name);
-              done();
-            })
-            .catch(done);
-        });
-
-        it('should cast aws errors', function(done) {
-          var awsErr = new Error('holy cowballs');
-          AutoScaling.createAutoScalingGroupAsync
-            .returns(Promise.reject(awsErr));
-          AutoScalingGroup.create('wowownns').asCallback(function (err) {
-            expect(err).to.exist();
-            expect(Util.castAWSError.calledWith(awsErr)).to.be.true();
-            done();
+              .catch(done);
           });
-        });
+
+          it('should set the correct launch configuration name', function(done) {
+            AutoScalingGroup.create('weeee')
+              .then(function () {
+                expect(AutoScalingGroup._setLaunchConfigurationName.calledOnce)
+                  .to.be.true();
+                var options = AutoScaling.createAutoScalingGroupAsync.firstCall
+                  .args[0];
+                var lcName = AutoScalingGroup._setLaunchConfigurationName
+                  .returnValues[0]._settledValue.LaunchConfigurationName;
+                expect(options.LaunchConfigurationName).to.equal(lcName);
+                done();
+              })
+              .catch(done);
+          });
+
+          it('should set and propogate the role tag', function(done) {
+            AutoScalingGroup.create('weeee')
+              .then(function () {
+                var options = AutoScaling.createAutoScalingGroupAsync.firstCall
+                  .args[0];
+                var tag = options.Tags.find(function (tag) {
+                  return tag.PropagateAtLaunch === true && tag.Key === 'role';
+                })
+                expect(tag).to.exist();
+                expect(tag.Value).to.equal('dock');
+                done();
+              })
+              .catch(done);
+          });
+
+          it('should set the propogated org tag', function(done) {
+            var name = ' this is a nammmeezzz ';
+            AutoScalingGroup.create(name)
+              .then(function () {
+                var options = AutoScaling.createAutoScalingGroupAsync.firstCall
+                  .args[0];
+                var tag = options.Tags.find(function (tag) {
+                  return tag.PropagateAtLaunch === true && tag.Key === 'org';
+                });
+                expect(tag).to.exist();
+                expect(tag.Value).to.equal(name);
+                done();
+              })
+              .catch(done);
+          });
+
+          it('should cast aws errors', function(done) {
+            var awsErr = new Error('holy cowballs');
+            AutoScaling.createAutoScalingGroupAsync
+              .returns(Promise.reject(awsErr));
+            AutoScalingGroup.create('wowownns').asCallback(function (err) {
+              expect(err).to.exist();
+              expect(Util.castAWSError.calledWith(awsErr)).to.be.true();
+              done();
+            });
+          });
+        }); // end 'AWS createAutoScalingGroupAsync request'
       }); // end 'create'
 
       describe('get', function() {
-        // body...
+        it('should throw if `names` is not an array or a string', function(done) {
+          AutoScalingGroup.get({}).asCallback(function (err) {
+            expect(err).to.be.an.instanceof(InvalidArgumentError);
+            expect(err.argumentName).to.equal('names');
+            expect(err.message).to.match(/names.*string.*or.*array/);
+            done();
+          });
+        });
+
+        it('should throw if `names` is empty', function(done) {
+          AutoScalingGroup.get([]).asCallback(function (err) {
+            expect(err).to.be.an.instanceof(InvalidArgumentError);
+            expect(err.argumentName).to.equal('names');
+            expect(err.message).to.match(/names.*empty/);
+            done();
+          });
+        });
+
+        it('should throw if `options` is not an object', function(done) {
+          AutoScalingGroup.get(['neat'], 'FOOL').asCallback(function (err) {
+            expect(err).to.be.an.instanceof(InvalidArgumentError);
+            expect(err.argumentName).to.equal('options');
+            expect(err.message).to.match(/options.*object/);
+            done();
+          });
+        });
+
+        it('should call `describeAutoScalingGroupsAsync`', function(done) {
+          AutoScalingGroup.get('wowie')
+            .then(function () {
+              expect(AutoScaling.describeAutoScalingGroupsAsync.calledOnce)
+                .to.be.true();
+              done();
+            })
+            .catch(done);
+        });
+
+        describe('AWS describeAutoScalingGroups request', function() {
+          it('should use the given names', function(done) {
+            var names = ['ok', 'computer'];
+            AutoScalingGroup.get(names)
+              .then(function () {
+                var options = AutoScaling.describeAutoScalingGroupsAsync
+                  .firstCall.args[0];
+                expect(options.AutoScalingGroupNames).to.equal(names);
+                done();
+              })
+              .catch(done);
+          });
+
+          it('should ensure the names paramter is an array', function(done) {
+            var names = 'hellllloooo';
+            AutoScalingGroup.get(names)
+              .then(function () {
+                var options = AutoScaling.describeAutoScalingGroupsAsync
+                  .firstCall.args[0];
+                expect(options.AutoScalingGroupNames).to.deep.equal([names]);
+                done();
+              })
+              .catch(done);
+          });
+
+          it('should use given override options', function(done) {
+            var maxRecords = 10;
+            AutoScalingGroup.get('awesomeeeee', { MaxRecords: 10 })
+              .then(function () {
+                var options = AutoScaling.describeAutoScalingGroupsAsync
+                  .firstCall.args[0];
+                expect(options.MaxRecords).to.equal(maxRecords);
+                done();
+              })
+              .catch(done);
+          });
+
+          it('should cast AWS errors', function(done) {
+            var awsErr = new Error('holy cowballs');
+            AutoScaling.describeAutoScalingGroupsAsync
+              .returns(Promise.reject(awsErr));
+            AutoScalingGroup.get('wowownns').asCallback(function (err) {
+              expect(err).to.exist();
+              expect(Util.castAWSError.calledWith(awsErr)).to.be.true();
+              done();
+            });
+          });
+        }); // end 'AWS describeAutoScalingGroups request'
       }); // end 'get'
 
       describe('remove', function() {
-        // body...
+        it('should throw with non-string `name`', function(done) {
+          AutoScalingGroup.remove({}).asCallback(function (err) {
+            expect(err).to.be.an.instanceof(InvalidArgumentError);
+            expect(err.argumentName).to.equal('name');
+            expect(err.message).to.match(/name.*string/);
+            done();
+          });
+        });
+
+        it('should throw with empty `name`', function(done) {
+          AutoScalingGroup.remove('').asCallback(function (err) {
+            expect(err).to.be.an.instanceof(InvalidArgumentError);
+            expect(err.argumentName).to.equal('name');
+            expect(err.message).to.match(/name.*empty/);
+            done();
+          });
+        });
+
+        it('should throw with non-object `options`', function(done) {
+          AutoScalingGroup.remove('foo', 'awesome').asCallback(function (err) {
+            expect(err).to.be.an.instanceof(InvalidArgumentError);
+            expect(err.argumentName).to.equal('options');
+            expect(err.message).to.match(/options.*object/);
+            done();
+          });
+        });
+
+        it('should call deleteAutoScalingGroupAsync', function(done) {
+          AutoScalingGroup.remove('happinessfadingwithyouth')
+            .then(function () {
+              expect(AutoScaling.deleteAutoScalingGroupAsync.calledOnce)
+                .to.be.true();
+              done();
+            })
+            .catch(done);
+        });
+
+        describe('AWS deleteAutoScalingGroupAsync request', function() {
+          it('should set the correct name', function(done) {
+            var name = 'everythingdies';
+            AutoScalingGroup.remove(name)
+              .then(function () {
+                var options = AutoScaling.deleteAutoScalingGroupAsync
+                  .firstCall.args[0];
+                expect(options.AutoScalingGroupName).to.deep.equal(name);
+                done();
+              })
+              .catch(done);
+          });
+
+          it('should use the default options', function(done) {
+            AutoScalingGroup.remove('thestrongoppresstheweak')
+              .then(function () {
+                var options = AutoScaling.deleteAutoScalingGroupAsync
+                  .firstCall.args[0];
+                expect(options.ForceDelete)
+                  .to.equal(AutoScalingGroupConfig.remove.ForceDelete);
+                done();
+              })
+              .catch(done);
+          });
+
+          it('should use the override options', function(done) {
+            var override = { neato: 'cool' };
+            AutoScalingGroup.remove('capitalismperpetuatesslavery', override)
+              .then(function () {
+                var options = AutoScaling.deleteAutoScalingGroupAsync
+                  .firstCall.args[0];
+                expect(options.neato).to.equal(override.neato);
+                done();
+              })
+              .catch(done);
+          });
+
+          it('should cast aws errors', function(done) {
+            var awsErr = new Error('lifeisshortandbrutal');
+            AutoScaling.deleteAutoScalingGroupAsync
+              .returns(Promise.reject(awsErr));
+            AutoScalingGroup.remove('theseaisrising').asCallback(function (err) {
+              expect(err).to.exist();
+              expect(Util.castAWSError.calledWith(awsErr)).to.be.true();
+              done();
+            });
+          });
+        }); // end 'AWS deleteAutoScalingGroupAsync request'
       }); // end 'remove'
 
       describe('update', function() {
-        // body...
-      }); // end 'update'
+        it('should throw with non-string `name`', function(done) {
+          AutoScalingGroup.update([]).asCallback(function (err) {
+            expect(err).to.be.an.instanceof(InvalidArgumentError);
+            expect(err.argumentName).to.equal('name');
+            expect(err.message).to.match(/name.*string/);
+            done();
+          });
+        });
 
+        it('should throw with empty `name`', function(done) {
+          AutoScalingGroup.update('').asCallback(function (err) {
+            expect(err).to.be.an.instanceof(InvalidArgumentError);
+            expect(err.argumentName).to.equal('name');
+            expect(err.message).to.match(/name.*empty/);
+            done();
+          });
+        });
+
+        it('should throw with non-object `options`', function(done) {
+          AutoScalingGroup.update('creativity', 'joy').asCallback(function (err) {
+            expect(err).to.be.an.instanceof(InvalidArgumentError);
+            expect(err.argumentName).to.equal('options');
+            expect(err.message).to.match(/options.*object/);
+            done();
+          });
+        });
+
+        it('should throw with empty `options`', function(done) {
+          AutoScalingGroup.update('connectedness', {}).asCallback(function (err) {
+            expect(err).to.be.an.instanceof(InvalidArgumentError);
+            expect(err.argumentName).to.equal('options');
+            expect(err.message).to.match(/options.*empty/);
+            done();
+          });
+        });
+
+        it('should call updateAutoScalingGroupAsync', function(done) {
+          AutoScalingGroup.update('youwillattainyourdreams', {good: 'work'})
+            .then(function () {
+              expect(AutoScaling.updateAutoScalingGroupAsync.calledOnce)
+                .to.be.true();
+              done();
+            })
+            .catch(done);
+        });
+
+        describe('AWS updateAutoScalingGroupAsync request', function() {
+          it('should set the correct name', function(done) {
+            var name = 'someonelovesyou';
+            AutoScalingGroup.update(name, {you: 'areawesome'})
+              .then(function () {
+                var requestOpts = AutoScaling.updateAutoScalingGroupAsync
+                  .firstCall.args[0];
+                expect(requestOpts.AutoScalingGroupName).to.equal(name);
+                done();
+              })
+              .catch(done);
+          });
+
+          it('should set given options', function(done) {
+            var opts = {
+              DefaultCooldown: 12000,
+              MaxSize: 120,
+              MinSize: 1,
+              DesiredCapacity: 50
+            };
+            AutoScalingGroup.update('everydayisablessing', opts)
+              .then(function () {
+                var requestOpts = AutoScaling.updateAutoScalingGroupAsync
+                  .firstCall.args[0];
+                Object.keys(opts).forEach(function (key) {
+                  expect(requestOpts[key]).to.equal(opts[key]);
+                });
+                done();
+              })
+              .catch(done);
+          });
+
+          it('should cast errors', function(done) {
+            var awsErr = new Error('lifeisbeautiful');
+            AutoScaling.updateAutoScalingGroupAsync
+              .returns(Promise.reject(awsErr));
+            AutoScalingGroup.update('warmth', {greatness: 'awaits'})
+              .asCallback(function (err) {
+                expect(err).to.exist();
+                expect(Util.castAWSError.calledWith(awsErr)).to.be.true();
+                done();
+              });
+          });
+        }); // end 'AWS updateAutoScalingGroupAsync request'
+      }); // end 'update'
     }); // end 'AutoScalingGroup'
   }); // end 'models'
 }); // end 'shiva'
