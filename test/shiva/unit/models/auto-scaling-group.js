@@ -179,26 +179,26 @@ describe('shiva', function () {
       }); // end 'create'
 
       describe('get', function() {
-        it('should throw if `names` is not an array or a string', function(done) {
+        it('should throw if `name` is not a string', function(done) {
           AutoScalingGroup.get({}).asCallback(function (err) {
             expect(err).to.be.an.instanceof(InvalidArgumentError);
-            expect(err.argumentName).to.equal('names');
-            expect(err.message).to.match(/names.*string.*or.*array/);
+            expect(err.argumentName).to.equal('name');
+            expect(err.message).to.match(/name.*string/);
             done();
           });
         });
 
-        it('should throw if `names` is empty', function(done) {
-          AutoScalingGroup.get([]).asCallback(function (err) {
+        it('should throw if `name` is empty', function(done) {
+          AutoScalingGroup.get('').asCallback(function (err) {
             expect(err).to.be.an.instanceof(InvalidArgumentError);
-            expect(err.argumentName).to.equal('names');
-            expect(err.message).to.match(/names.*empty/);
+            expect(err.argumentName).to.equal('name');
+            expect(err.message).to.match(/name.*empty/);
             done();
           });
         });
 
         it('should throw if `options` is not an object', function(done) {
-          AutoScalingGroup.get(['neat'], 'FOOL').asCallback(function (err) {
+          AutoScalingGroup.get('neat', 'FOOL').asCallback(function (err) {
             expect(err).to.be.an.instanceof(InvalidArgumentError);
             expect(err.argumentName).to.equal('options');
             expect(err.message).to.match(/options.*object/);
@@ -217,25 +217,13 @@ describe('shiva', function () {
         });
 
         describe('AWS describeAutoScalingGroups request', function() {
-          it('should use the given names', function(done) {
-            var names = ['ok', 'computer'];
-            AutoScalingGroup.get(names)
+          it('should use the given name', function(done) {
+            var name = 'ok-computer';
+            AutoScalingGroup.get(name)
               .then(function () {
                 var options = AutoScaling.describeAutoScalingGroupsAsync
                   .firstCall.args[0];
-                expect(options.AutoScalingGroupNames).to.equal(names);
-                done();
-              })
-              .catch(done);
-          });
-
-          it('should ensure the names paramter is an array', function(done) {
-            var names = 'hellllloooo';
-            AutoScalingGroup.get(names)
-              .then(function () {
-                var options = AutoScaling.describeAutoScalingGroupsAsync
-                  .firstCall.args[0];
-                expect(options.AutoScalingGroupNames).to.deep.equal([names]);
+                expect(options.AutoScalingGroupNames).to.deep.equal([name]);
                 done();
               })
               .catch(done);
