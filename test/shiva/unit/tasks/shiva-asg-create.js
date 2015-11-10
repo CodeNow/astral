@@ -18,11 +18,11 @@ loadenv({ project: 'shiva', debugName: 'astral:shiva:test' });
 var Promise = require('bluebird');
 var TaskFatalError = require('ponos').TaskFatalError;
 var AutoScalingGroup = astralRequire('shiva/models/auto-scaling-group');
-var shivaASGProvision = astralRequire('shiva/tasks/shiva-asg-provision');
+var shivaASGCreate = astralRequire('shiva/tasks/shiva-asg-create');
 
 describe('shiva', function() {
   describe('tasks', function() {
-    describe('shiva-asg-provision', function() {
+    describe('shiva-asg-create', function() {
       beforeEach(function (done) {
         sinon.stub(AutoScalingGroup, 'create').returns(Promise.resolve());
         done();
@@ -34,7 +34,7 @@ describe('shiva', function() {
       });
 
       it('should fatally reject with non-object job', function(done) {
-        shivaASGProvision('neat').asCallback(function (err) {
+        shivaASGCreate('neat').asCallback(function (err) {
           expect(err).to.be.an.instanceof(TaskFatalError);
           expect(err.message).to.match(/non-object.*job/);
           done();
@@ -42,7 +42,7 @@ describe('shiva', function() {
       });
 
       it('should fatally reject without string `githubId`', function(done) {
-        shivaASGProvision({}).asCallback(function (err) {
+        shivaASGCreate({}).asCallback(function (err) {
           expect(err).to.be.an.instanceof(TaskFatalError);
           expect(err.message).to.match(/githubId.*string/);
           done();
@@ -50,7 +50,7 @@ describe('shiva', function() {
       });
 
       it('should fatally reject with an empty `githubId`', function(done) {
-        shivaASGProvision({ githubId: '' }).asCallback(function (err) {
+        shivaASGCreate({ githubId: '' }).asCallback(function (err) {
           expect(err).to.be.an.instanceof(TaskFatalError);
           expect(err.message).to.match(/githubId.*empty/);
           done();
@@ -59,12 +59,12 @@ describe('shiva', function() {
 
       it('should call AutoScalingGroup.create', function(done) {
         var name = '12345';
-        shivaASGProvision({ githubId: name }).asCallback(function (err) {
+        shivaASGCreate({ githubId: name }).asCallback(function (err) {
           expect(err).to.not.exist();
           expect(AutoScalingGroup.create.calledWith(name)).to.be.true();
           done();
         });
       });
-    }); // end 'shiva-asg-provision'
+    }); // end 'shiva-asg-create'
   }); // end 'tasks'
 }); // end 'shiva'
