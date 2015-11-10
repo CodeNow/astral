@@ -27,6 +27,7 @@
     "shiva-integration-aws": "ASTRAL_ROOT=\"$(pwd)/lib/\" NODE_ENV=test lab -a code -v -m 300000 integration/shiva/aws.js",
     "shiva-integration-models": "ASTRAL_ROOT=\"$(pwd)/lib/\" NODE_ENV=test lab -a code -v -m 300000 integration/shiva/models",
     "shiva-integration-server": "ASTRAL_ROOT=\"$(pwd)/lib/\" LOG_LEVEL=trace NODE_ENV=test lab -a code -v -m 300000 integration/shiva/server.js | bunyan",
+    "shiva-integration-asg": "ASTRAL_ROOT=\"$(pwd)/lib/\" LOG_LEVEL=trace NODE_ENV=test lab -a code -v -m 300000 integration/shiva/auto-scaling-groups.js | bunyan",
     "metis-start": "node lib/metis/index.js",
     "metis-eslint": "eslint lib/metis/",
     "metis-test": "npm run metis-eslint && ASTRAL_ROOT=\"$(pwd)/lib/\" NODE_ENV=test lab -m 1000 -v -c -a code test/metis",
