@@ -7,4 +7,4 @@ CONSUL_HOSTNAME={{consul_hostname}}
 export CONSUL_HOSTNAME
 
 # Initialize the dock
-bash $DOCK_INIT_SCRIPT
+bash $DOCK_INIT_SCRIPT >> /var/log/user-script-dock-init.log
