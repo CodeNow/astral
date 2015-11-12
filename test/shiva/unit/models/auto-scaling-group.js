@@ -31,6 +31,17 @@ var Util = astralRequire('shiva/models/util');
 describe('shiva', function () {
   describe('models', function () {
     describe('AutoScalingGroup', function() {
+      var oldNodeEnv;
+      beforeEach(function (done) {
+        oldNodeEnv = process.env.NODE_ENV;
+        done();
+      });
+
+      afterEach(function (done) {
+        process.env.NODE_ENV = oldNodeEnv;
+        done();
+      });
+
       beforeEach(function (done) {
         sinon.spy(AutoScalingGroup, '_setLaunchConfigurationName');
         sinon.spy(Util, 'castAWSError');
@@ -55,6 +66,16 @@ describe('shiva', function () {
         done();
       });
 
+      describe('_getName', function() {
+        it('should return the name based on the environment', function(done) {
+          var env = process.env.NODE_ENV = 'boogiewoogie';
+          var org = '1234355';
+          var expected = 'asg-' + env + '-' + org;
+          expect(AutoScalingGroup._getName(org)).to.equal(expected);
+          done();
+        });
+      }); // end '_getName'
+
       describe('_setLaunchConfigurationName', function() {
         it('should set the launch configuration name from the environment', function(done) {
           expect(process.env.AWS_LAUNCH_CONFIGURATION_NAME).to.exist();
@@ -69,20 +90,20 @@ describe('shiva', function () {
       });
 
       describe('create', function() {
-        it('should throw with non-string `name`', function(done) {
+        it('should throw with non-string `org`', function(done) {
           AutoScalingGroup.create({}).asCallback(function (err) {
             expect(err).to.be.an.instanceof(InvalidArgumentError);
-            expect(err.argumentName).to.equal('name');
-            expect(err.message).to.match(/name.*string/);
+            expect(err.argumentName).to.equal('org');
+            expect(err.message).to.match(/org.*string/);
             done();
           });
         });
 
-        it('should throw with empty `name`', function(done) {
+        it('should throw with empty `org`', function(done) {
           AutoScalingGroup.create('').asCallback(function (err) {
             expect(err).to.be.an.instanceof(InvalidArgumentError);
-            expect(err.argumentName).to.equal('name');
-            expect(err.message).to.match(/name.*empty/);
+            expect(err.argumentName).to.equal('org');
+            expect(err.message).to.match(/org.*empty/);
             done();
           });
         });
@@ -108,12 +129,13 @@ describe('shiva', function () {
 
         describe('AWS createAutoScalingGroupAsync request', function() {
           it('should set the correct name', function(done) {
-            var name = 'some-name';
-            AutoScalingGroup.create(name)
+            var org = 'some-org';
+            AutoScalingGroup.create(org)
               .then(function () {
                 var options = AutoScaling.createAutoScalingGroupAsync.firstCall
                   .args[0];
-                expect(options.AutoScalingGroupName).to.equal(name);
+                expect(options.AutoScalingGroupName)
+                  .to.equal(AutoScalingGroup._getName(org));
                 done();
               })
               .catch(done);
@@ -165,6 +187,23 @@ describe('shiva', function () {
               .catch(done);
           });
 
+          it('should set the propogated env tag', function(done) {
+            var name = 'ssszzz';
+            process.env.NODE_ENV = 'so-cooool';
+            AutoScalingGroup.create(name)
+              .then(function () {
+                var options = AutoScaling.createAutoScalingGroupAsync.firstCall
+                  .args[0];
+                var tag = options.Tags.find(function (tag) {
+                  return tag.PropagateAtLaunch === true && tag.Key === 'env';
+                });
+                expect(tag).to.exist();
+                expect(tag.Value).to.equal(process.env.NODE_ENV);
+                done();
+              })
+              .catch(done);
+          });
+
           it('should cast aws errors', function(done) {
             var awsErr = new Error('holy cowballs');
             AutoScaling.createAutoScalingGroupAsync
@@ -179,20 +218,20 @@ describe('shiva', function () {
       }); // end 'create'
 
       describe('get', function() {
-        it('should throw if `name` is not a string', function(done) {
+        it('should throw if `org` is not a string', function(done) {
           AutoScalingGroup.get({}).asCallback(function (err) {
             expect(err).to.be.an.instanceof(InvalidArgumentError);
-            expect(err.argumentName).to.equal('name');
-            expect(err.message).to.match(/name.*string/);
+            expect(err.argumentName).to.equal('org');
+            expect(err.message).to.match(/org.*string/);
             done();
           });
         });
 
-        it('should throw if `name` is empty', function(done) {
+        it('should throw if `org` is empty', function(done) {
           AutoScalingGroup.get('').asCallback(function (err) {
             expect(err).to.be.an.instanceof(InvalidArgumentError);
-            expect(err.argumentName).to.equal('name');
-            expect(err.message).to.match(/name.*empty/);
+            expect(err.argumentName).to.equal('org');
+            expect(err.message).to.match(/org.*empty/);
             done();
           });
         });
@@ -218,12 +257,14 @@ describe('shiva', function () {
 
         describe('AWS describeAutoScalingGroups request', function() {
           it('should use the given name', function(done) {
-            var name = 'ok-computer';
-            AutoScalingGroup.get(name)
+            var org = 'ok-computer';
+            AutoScalingGroup.get(org)
               .then(function () {
                 var options = AutoScaling.describeAutoScalingGroupsAsync
                   .firstCall.args[0];
-                expect(options.AutoScalingGroupNames).to.deep.equal([name]);
+                expect(options.AutoScalingGroupNames).to.deep.equal([
+                  AutoScalingGroup._getName(org)
+                ]);
                 done();
               })
               .catch(done);
@@ -265,20 +306,20 @@ describe('shiva', function () {
           done();
         });
 
-        it('should throw with non-string `name`', function(done) {
+        it('should throw with non-string `org`', function(done) {
           AutoScalingGroup.remove({}).asCallback(function (err) {
             expect(err).to.be.an.instanceof(InvalidArgumentError);
-            expect(err.argumentName).to.equal('name');
-            expect(err.message).to.match(/name.*string/);
+            expect(err.argumentName).to.equal('org');
+            expect(err.message).to.match(/org.*string/);
             done();
           });
         });
 
-        it('should throw with empty `name`', function(done) {
+        it('should throw with empty `org`', function(done) {
           AutoScalingGroup.remove('').asCallback(function (err) {
             expect(err).to.be.an.instanceof(InvalidArgumentError);
-            expect(err.argumentName).to.equal('name');
-            expect(err.message).to.match(/name.*empty/);
+            expect(err.argumentName).to.equal('org');
+            expect(err.message).to.match(/org.*empty/);
             done();
           });
         });
@@ -293,9 +334,11 @@ describe('shiva', function () {
         });
 
         it('should completely scale down the group', function(done) {
-          AutoScalingGroup.remove('foo')
+          var org = 'foo';
+          AutoScalingGroup.remove(org)
             .then(function () {
               expect(AutoScalingGroup.update.calledOnce).to.be.true();
+              expect(AutoScalingGroup.update.calledWith(org)).to.be.true();
               expect(AutoScalingGroup.update.firstCall.args[1]).to.deep.equal({
                 DesiredCapacity: 0,
                 MinSize: 0,
@@ -318,12 +361,14 @@ describe('shiva', function () {
 
         describe('AWS deleteAutoScalingGroupAsync request', function() {
           it('should set the correct name', function(done) {
-            var name = 'everythingdies';
-            AutoScalingGroup.remove(name)
+            var org = 'everythingdies';
+            AutoScalingGroup.remove(org)
               .then(function () {
                 var options = AutoScaling.deleteAutoScalingGroupAsync
                   .firstCall.args[0];
-                expect(options.AutoScalingGroupName).to.deep.equal(name);
+                expect(options.AutoScalingGroupName).to.deep.equal(
+                  AutoScalingGroup._getName(org)
+                );
                 done();
               })
               .catch(done);
@@ -367,20 +412,20 @@ describe('shiva', function () {
       }); // end 'remove'
 
       describe('update', function() {
-        it('should throw with non-string `name`', function(done) {
+        it('should throw with non-string `org`', function(done) {
           AutoScalingGroup.update([]).asCallback(function (err) {
             expect(err).to.be.an.instanceof(InvalidArgumentError);
-            expect(err.argumentName).to.equal('name');
-            expect(err.message).to.match(/name.*string/);
+            expect(err.argumentName).to.equal('org');
+            expect(err.message).to.match(/org.*string/);
             done();
           });
         });
 
-        it('should throw with empty `name`', function(done) {
+        it('should throw with empty `org`', function(done) {
           AutoScalingGroup.update('').asCallback(function (err) {
             expect(err).to.be.an.instanceof(InvalidArgumentError);
-            expect(err.argumentName).to.equal('name');
-            expect(err.message).to.match(/name.*empty/);
+            expect(err.argumentName).to.equal('org');
+            expect(err.message).to.match(/org.*empty/);
             done();
           });
         });
@@ -415,8 +460,9 @@ describe('shiva', function () {
 
         describe('AWS updateAutoScalingGroupAsync request', function() {
           it('should set the correct name', function(done) {
-            var name = 'someonelovesyou';
-            AutoScalingGroup.update(name, {you: 'areawesome'})
+            var org = 'someonelovesyou';
+            var name = AutoScalingGroup._getName(org);
+            AutoScalingGroup.update(org, {you: 'areawesome'})
               .then(function () {
                 var requestOpts = AutoScaling.updateAutoScalingGroupAsync
                   .firstCall.args[0];
