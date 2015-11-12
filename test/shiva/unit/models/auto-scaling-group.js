@@ -255,6 +255,16 @@ describe('shiva', function () {
       }); // end 'get'
 
       describe('remove', function() {
+        beforeEach(function (done) {
+          sinon.spy(AutoScalingGroup, 'update');
+          done();
+        });
+
+        afterEach(function (done) {
+          AutoScalingGroup.update.restore();
+          done();
+        });
+
         it('should throw with non-string `name`', function(done) {
           AutoScalingGroup.remove({}).asCallback(function (err) {
             expect(err).to.be.an.instanceof(InvalidArgumentError);
@@ -280,6 +290,20 @@ describe('shiva', function () {
             expect(err.message).to.match(/options.*object/);
             done();
           });
+        });
+
+        it('should completely scale down the group', function(done) {
+          AutoScalingGroup.remove('foo')
+            .then(function () {
+              expect(AutoScalingGroup.update.calledOnce).to.be.true();
+              expect(AutoScalingGroup.update.firstCall.args[1]).to.deep.equal({
+                DesiredCapacity: 0,
+                MinSize: 0,
+                MaxSize: 0
+              });
+              done();
+            })
+            .catch(done);
         });
 
         it('should call deleteAutoScalingGroupAsync', function(done) {
