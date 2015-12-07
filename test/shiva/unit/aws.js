@@ -381,11 +381,9 @@ describe('shiva', function() {
         done();
       });
 
-      it('should set the BlockDeviceMappings to an empty array', function(done) {
+      it('should not set the BlockDeviceMappings', function(done) {
         var params = aws.getDefaultInstanceParams();
-        var mappings = params.BlockDeviceMappings;
-        expect(mappings).to.be.an.array();
-        expect(mappings.length).to.equal(0);
+        expect(params.BlockDeviceMappings).to.not.exist();
         done();
       });
     }); // end 'getDefaultInstanceParams'
