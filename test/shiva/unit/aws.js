@@ -381,54 +381,9 @@ describe('shiva', function() {
         done();
       });
 
-      it('should set the BlockDeviceMappings', function(done) {
+      it('should not set the BlockDeviceMappings', function(done) {
         var params = aws.getDefaultInstanceParams();
-        var mappings = params.BlockDeviceMappings;
-        expect(mappings).to.be.an.array();
-        expect(mappings.every(isObject)).to.be.true();
-        expect(mappings.length).to.equal(3);
-        done();
-      });
-
-      it('should set the correct /dev/sdb device mapping', function(done) {
-        var params = aws.getDefaultInstanceParams();
-        var mappings = params.BlockDeviceMappings;
-        var sdb = mappings[0];
-        expect(sdb).to.be.an.object();
-        expect(sdb.DeviceName).to.equal('/dev/sdb');
-        expect(sdb.Ebs).to.be.an.object();
-        expect(sdb.Ebs.DeleteOnTermination).to.be.true();
-        expect(sdb.Ebs.SnapshotId).to.equal(process.env.AWS_SDB_SNAPSHOT_ID);
-        expect(sdb.Ebs.VolumeSize).to.equal(process.env.AWS_SDB_VOLUME_SIZE);
-        expect(sdb.Ebs.VolumeType).to.equal('gp2');
-        done();
-      });
-
-      it('should set the correct /dev/sdc device mapping', function(done) {
-        var params = aws.getDefaultInstanceParams();
-        var mappings = params.BlockDeviceMappings;
-        var sdc = mappings[1];
-        expect(sdc).to.be.an.object();
-        expect(sdc.DeviceName).to.equal('/dev/sdc');
-        expect(sdc.Ebs).to.be.an.object();
-        expect(sdc.Ebs.DeleteOnTermination).to.be.true();
-        expect(sdc.Ebs.SnapshotId).to.equal(process.env.AWS_SDC_SNAPSHOT_ID);
-        expect(sdc.Ebs.VolumeSize).to.equal(process.env.AWS_SDC_VOLUME_SIZE);
-        expect(sdc.Ebs.VolumeType).to.equal('gp2');
-        done();
-      });
-
-      it('should set the correct /dev/sdd device mapping', function(done) {
-        var params = aws.getDefaultInstanceParams();
-        var mappings = params.BlockDeviceMappings;
-        var sdd = mappings[2];
-        expect(sdd).to.be.an.object();
-        expect(sdd.DeviceName).to.equal('/dev/sdd');
-        expect(sdd.Ebs).to.be.an.object();
-        expect(sdd.Ebs.DeleteOnTermination).to.be.true();
-        expect(sdd.Ebs.SnapshotId).to.equal(process.env.AWS_SDD_SNAPSHOT_ID);
-        expect(sdd.Ebs.VolumeSize).to.equal(process.env.AWS_SDD_VOLUME_SIZE);
-        expect(sdd.Ebs.VolumeType).to.equal('gp2');
+        expect(params.BlockDeviceMappings).to.not.exist();
         done();
       });
     }); // end 'getDefaultInstanceParams'
