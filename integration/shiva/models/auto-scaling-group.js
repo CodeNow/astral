@@ -19,57 +19,64 @@ delete process.env.AWS_SECRET_ACCESS_KEY;
 require('loadenv')({ project: 'shiva', debugName: 'astral:shiva:test' });
 
 var exists = require('101/exists');
-var LaunchConfiguration = require(process.env.ASTRAL_ROOT + 'shiva/models/launch-configuration');
-var AutoScalingGroup = require(process.env.ASTRAL_ROOT + 'shiva/models/auto-scaling-group');
+var LaunchConfiguration = require(
+  process.env.ASTRAL_ROOT + 'shiva/models/launch-configuration');
+var AutoScalingGroup = require(
+  process.env.ASTRAL_ROOT + 'shiva/models/auto-scaling-group');
 
 describe('shiva', function() {
   describe('integration', function() {
-    var asgName = 'test-asg';
+    describe('models', function () {
+      describe('auto-scaling-group', function () {
+        var orgName = 'testorg';
+        var asgName = AutoScalingGroup._getName(orgName);
 
-    before(function (done) {
-      LaunchConfiguration.create(
-        process.env.AWS_LAUNCH_CONFIGURATION_NAME
-      ).asCallback(done);
-    });
+        before(function (done) {
+          LaunchConfiguration.create(
+            process.env.AWS_LAUNCH_CONFIGURATION_NAME
+          ).asCallback(done);
+        });
 
-    after(function (done) {
-      LaunchConfiguration.remove(
-        process.env.AWS_LAUNCH_CONFIGURATION_NAME
-      ).asCallback(done);
-    });
+        after(function (done) {
+          LaunchConfiguration.remove(
+            process.env.AWS_LAUNCH_CONFIGURATION_NAME
+          ).asCallback(done);
+        });
 
-    it('should create a new auto-scaling group', function(done) {
-      AutoScalingGroup.create(asgName).asCallback(done);
-    });
+        it('should create a new auto-scaling group', function(done) {
+          AutoScalingGroup.create(orgName).asCallback(done);
+        });
 
-    it('should describe an auto-scaling group', function(done) {
-      AutoScalingGroup.get(asgName)
-        .then(function (data) {
-          var groups = data.AutoScalingGroups;
-          expect(groups.length).to.equal(1);
-          expect(groups[0].AutoScalingGroupName).to.equal(asgName);
-          done();
-        })
-        .catch(done);
-    });
+        it('should describe an auto-scaling group', function(done) {
+          AutoScalingGroup.get(orgName)
+            .then(function (data) {
+              var groups = data.AutoScalingGroups;
+              expect(groups.length).to.equal(1);
+              expect(groups[0].AutoScalingGroupName).to.equal(asgName);
+              done();
+            })
+            .catch(done);
+        });
 
-    it('should update an auto-scaling group', function(done) {
-      var cooldown = 14000;
-      AutoScalingGroup.update(asgName, { DefaultCooldown: cooldown })
-        .then(function () {
-          return AutoScalingGroup.get(asgName);
-        })
-        .then(function (data) {
-          var groups = data.AutoScalingGroups;
-          expect(groups.length).to.equal(1);
-          expect(groups[0].DefaultCooldown).to.equal(cooldown);
-          done();
-        })
-        .catch(done);
-    });
+        it('should update an auto-scaling group', function(done) {
+          var cooldown = 14000;
+          AutoScalingGroup.update(orgName, { DefaultCooldown: cooldown })
+            .then(function () {
+              return AutoScalingGroup.get(orgName);
+            })
+            .then(function (data) {
+              var groups = data.AutoScalingGroups;
+              expect(groups.length).to.equal(1);
+              expect(groups[0].DefaultCooldown).to.equal(cooldown);
+              done();
+            })
+            .catch(done);
+        });
 
-    it('should remove an auto-scaling group', function(done) {
-      AutoScalingGroup.remove(asgName).asCallback(done);
-    });
+        it('should remove an auto-scaling group', function(done) {
+          AutoScalingGroup.remove(orgName).asCallback(done);
+        });
+      }) // end 'auto-scaling-group'
+    }); // end 'integration'
   }); // end 'integration'
 }); // end 'shiva'
