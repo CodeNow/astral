@@ -24,25 +24,80 @@ loadenv({ project: 'shiva', debugName: 'astral:shiva:test' });
 var dbFixture = require('../../test/fixtures/database.js');
 var server = astralRequire('shiva/server');
 var AutoScalingGroup = astralRequire('shiva/models/auto-scaling-group');
+var LaunchConfiguration = astralRequire('shiva/models/launch-configuration');
 
 describe('shiva', function() {
   describe('integration', function() {
     describe('auto-scaling groups', function() {
       var githubId = 'integration-testing-org';
+      var asgName = AutoScalingGroup._getName(githubId);
+      var maxCheckAttempts = 30;
+      var checkDelay = 1500;
 
       before(dbFixture.terminateInstances);
       before(dbFixture.truncate);
-      before(function (done) { server.start().asCallback(done); });
-      after(function (done) { server.stop().asCallback(done); });
+
+      before(function (done) {
+        server.start()
+          .then(function () {
+            return LaunchConfiguration.create(
+              process.env.AWS_LAUNCH_CONFIGURATION_NAME
+            );
+          })
+          .asCallback(done);
+      });
+
+      after(function (done) {
+        LaunchConfiguration.remove(process.env.AWS_LAUNCH_CONFIGURATION_NAME)
+          .then(function () {
+            return server.stop();
+          })
+          .asCallback(done);
+      });
 
       it('should create an auto-scaling group', function(done) {
         server.hermes.publish('shiva-asg-create', { githubId: githubId });
-        setTimeout(done, 1000);
+        var attempt = 0;
+        var checkInterval = setInterval(function () {
+          AutoScalingGroup.get(githubId)
+            .then(function (data) {
+              var groupCreated =  data.AutoScalingGroups.some(function (group) {
+                return group.AutoScalingGroupName === asgName;
+              });
+              if (groupCreated) {
+                clearInterval(checkInterval);
+                done();
+              }
+              if (++attempt === maxCheckAttempts) {
+                done(new Error(
+                  'Creation of the auto-scaling group failed after ' + attempt +
+                  ' checks.'
+                ));
+              }
+            })
+            .catch(done);
+        }, checkDelay);
       });
 
-      it('should deprovision the cluster', function(done) {
+      it('should remove an auto-scaling group', function (done) {
         server.hermes.publish('shiva-asg-delete', { githubId: githubId });
-        setTimeout(done, 1000);
+        var attempt = 0;
+        var checkInterval = setInterval(function () {
+          AutoScalingGroup.get(githubId)
+            .then(function (data) {
+              if (data.AutoScalingGroups.length === 0) {
+                clearInterval(checkInterval);
+                done();
+              }
+              if (++attempt === maxCheckAttempts) {
+                done(new Error(
+                  'Removal of the auto-scaling group failed after ' + attempt +
+                  ' checks.'
+                ));
+              }
+            })
+            .catch(done);
+        }, checkDelay);
       });
     }); // end 'auto-scaling groups'
   }); // end 'integration'
