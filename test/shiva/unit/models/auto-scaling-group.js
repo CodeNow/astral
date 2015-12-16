@@ -472,6 +472,20 @@ describe('shiva', function () {
               .catch(done);
           });
 
+          it('should override `AutoScalingGroupName` option', function (done) {
+            var org = 'right';
+            var name = AutoScalingGroup._getName(org);
+            var options = { AutoScalingGroupName: 'wrong' };
+            AutoScalingGroup.update(org, options)
+              .then(function () {
+                var requestOpts = AutoScaling.updateAutoScalingGroupAsync
+                  .firstCall.args[0];
+                expect(requestOpts.AutoScalingGroupName).to.equal(name);
+                done();
+              })
+              .catch(done);
+          });
+
           it('should set given options', function(done) {
             var opts = {
               DefaultCooldown: 12000,

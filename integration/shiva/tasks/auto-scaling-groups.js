@@ -81,6 +81,42 @@ describe('shiva', function() {
         });
       }); // end 'shiva-asg-create'
 
+      describe('shiva-asg-update', function () {
+        it('should update the auto-scaling group', function (done) {
+          var maxSize = 8;
+          var job = {
+            githubId: githubId,
+            data: {
+              MaxSize: maxSize
+            }
+          };
+
+          server.hermes.publish('shiva-asg-update', job);
+
+          var attempt = 0;
+          var checkInterval = setInterval(function () {
+            AutoScalingGroup.get(githubId)
+              .then(function (data) {
+                var group = data.AutoScalingGroups[0];
+                if (group && group.MaxSize === maxSize) {
+                  clearInterval(checkInterval);
+                  done();
+                }
+                else if (!group) {
+                  throw new Error('Group did not exist.');
+                }
+                else if (++attempt === maxCheckAttempts) {
+                  throw new Error(
+                    'Creation of the auto-scaling group failed after ' + attempt +
+                    ' checks.'
+                  );
+                }
+              })
+              .catch(done);
+          }, checkDelay);
+        });
+      }); // end 'shiva-asg-update'
+
       describe('shiva-asg-delete', function () {
         it('should remove an auto-scaling group', function (done) {
           server.hermes.publish('shiva-asg-delete', { githubId: githubId });
