@@ -22,7 +22,7 @@ var shivaASGDelete = astralRequire('shiva/tasks/shiva-asg-delete');
 
 describe('shiva', function() {
   describe('tasks', function() {
-    describe('shiva-asg-delete', function() {
+    describe('shiva.asg.delete', function() {
       beforeEach(function (done) {
         sinon.stub(AutoScalingGroup, 'remove').returns(Promise.resolve());
         done();
@@ -65,6 +65,6 @@ describe('shiva', function() {
           done();
         });
       });
-    }); // end 'shiva-asg-delete'
+    }); // end 'shiva.asg.delete'
   }); // end 'tasks'
 }); // end 'shiva'
