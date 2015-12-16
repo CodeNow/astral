@@ -56,7 +56,7 @@ describe('shiva', function () {
         before(function (done) {
           var userDataPath = path.resolve(
             process.env.ASTRAL_ROOT,
-            'shiva/scripts/aws-launch-configuration-user-data.sh'
+            'shiva/scripts/aws-instance-user-data.sh'
           );
           fs.readFile(userDataPath, function (err, contents) {
             if (err) { return done(err); }
