@@ -55,9 +55,9 @@ describe('shiva', function() {
           .asCallback(done);
       });
 
-      describe('shiva.asg.create', function() {
+      describe('asg.create', function() {
         it('should create an auto-scaling group', function(done) {
-          server.hermes.publish('shiva.asg.create', { githubId: githubId });
+          server.hermes.publish('asg.create', { githubId: githubId });
           var attempt = 0;
           var checkInterval = setInterval(function () {
             AutoScalingGroup.get(githubId)
@@ -79,9 +79,9 @@ describe('shiva', function() {
               .catch(done);
           }, checkDelay);
         });
-      }); // end 'shiva.asg.create'
+      }); // end 'asg.create'
 
-      describe('shiva.asg.update', function () {
+      describe('asg.update', function () {
         it('should update the auto-scaling group', function (done) {
           var maxSize = 8;
           var job = {
@@ -91,7 +91,7 @@ describe('shiva', function() {
             }
           };
 
-          server.hermes.publish('shiva.asg.update', job);
+          server.hermes.publish('asg.update', job);
 
           var attempt = 0;
           var checkInterval = setInterval(function () {
@@ -115,11 +115,11 @@ describe('shiva', function() {
               .catch(done);
           }, checkDelay);
         });
-      }); // end 'shiva.asg.update'
+      }); // end 'asg.update'
 
-      describe('shiva.asg.delete', function () {
+      describe('asg.delete', function () {
         it('should remove an auto-scaling group', function (done) {
-          server.hermes.publish('shiva.asg.delete', { githubId: githubId });
+          server.hermes.publish('asg.delete', { githubId: githubId });
           var attempt = 0;
           var checkInterval = setInterval(function () {
             AutoScalingGroup.get(githubId)
@@ -138,7 +138,7 @@ describe('shiva', function() {
               .catch(done);
           }, checkDelay);
         });
-      }); // end 'shiva.asg.delete'
+      }); // end 'asg.delete'
     }); // end 'tasks'
   }); // end 'integration'
 }); // end 'shiva'
