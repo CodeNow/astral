@@ -22,7 +22,7 @@ var shivaASGCreate = astralRequire('shiva/tasks/shiva-asg-create');
 
 describe('shiva', function() {
   describe('tasks', function() {
-    describe('shiva.asg.create', function() {
+    describe('asg.create', function() {
       beforeEach(function (done) {
         sinon.stub(AutoScalingGroup, 'create').returns(Promise.resolve());
         done();
@@ -65,6 +65,6 @@ describe('shiva', function() {
           done();
         });
       });
-    }); // end 'shiva.asg.create'
+    }); // end 'asg.create'
   }); // end 'tasks'
 }); // end 'shiva'

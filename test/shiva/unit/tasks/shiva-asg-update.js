@@ -23,7 +23,7 @@ var shivaASGUpdate = astralRequire('shiva/tasks/shiva-asg-update');
 
 describe('shiva', function() {
   describe('tasks', function() {
-    describe('shiva.asg.update', function() {
+    describe('asg.update', function() {
       beforeEach(function (done) {
         sinon.stub(AutoScalingGroup, 'update').returns(Promise.resolve());
         done();
@@ -79,6 +79,6 @@ describe('shiva', function() {
           done();
         });
       });
-    }); // end 'shiva.asg.update'
+    }); // end 'asg.update'
   }); // end 'tasks'
 }); // end 'shiva'
