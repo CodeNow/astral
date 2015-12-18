@@ -1,6 +1,6 @@
 {
   "name": "astral",
-  "version": "5.1.1",
+  "version": "5.1.2",
   "description": "The realm of EC2 Auto-scaling and Provisioning",
   "main": "index.js",
   "scripts": {
