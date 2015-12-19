@@ -10,7 +10,8 @@ var Code = require('code');
 var expect = Code.expect;
 var sinon = require('sinon');
 
-var astralRequire = require(process.env.ASTRAL_ROOT + '../test/fixtures/astral-require');
+var astralRequire = require(
+  process.env.ASTRAL_ROOT + '../test/fixtures/astral-require');
 var loadenv = require('loadenv');
 loadenv.restore();
 loadenv({ project: 'shiva', debugName: 'astral:shiva:test' });
@@ -18,23 +19,23 @@ loadenv({ project: 'shiva', debugName: 'astral:shiva:test' });
 var Promise = require('bluebird');
 var TaskFatalError = require('ponos').TaskFatalError;
 var AutoScalingGroup = astralRequire('shiva/models/auto-scaling-group');
-var shivaASGDelete = astralRequire('shiva/tasks/shiva-asg-delete');
+var shivaASGUpdate = astralRequire('shiva/tasks/asg.update');
 
 describe('shiva', function() {
   describe('tasks', function() {
-    describe('asg.delete', function() {
+    describe('asg.update', function() {
       beforeEach(function (done) {
-        sinon.stub(AutoScalingGroup, 'remove').returns(Promise.resolve());
+        sinon.stub(AutoScalingGroup, 'update').returns(Promise.resolve());
         done();
       });
 
       afterEach(function (done) {
-        AutoScalingGroup.remove.restore();
+        AutoScalingGroup.update.restore();
         done();
       });
 
       it('should fatally reject with non-object job', function(done) {
-        shivaASGDelete('neat').asCallback(function (err) {
+        shivaASGUpdate('neat').asCallback(function (err) {
           expect(err).to.be.an.instanceof(TaskFatalError);
           expect(err.message).to.match(/non-object.*job/);
           done();
@@ -42,7 +43,7 @@ describe('shiva', function() {
       });
 
       it('should fatally reject without string `githubId`', function(done) {
-        shivaASGDelete({}).asCallback(function (err) {
+        shivaASGUpdate({}).asCallback(function (err) {
           expect(err).to.be.an.instanceof(TaskFatalError);
           expect(err.message).to.match(/githubId.*string/);
           done();
@@ -50,21 +51,34 @@ describe('shiva', function() {
       });
 
       it('should fatally reject with an empty `githubId`', function(done) {
-        shivaASGDelete({ githubId: '' }).asCallback(function (err) {
+        shivaASGUpdate({ githubId: '' }).asCallback(function (err) {
           expect(err).to.be.an.instanceof(TaskFatalError);
           expect(err.message).to.match(/githubId.*empty/);
           done();
         });
       });
 
-      it('should call AutoScalingGroup.remove', function(done) {
-        var name = '62738729';
-        shivaASGDelete({ githubId: name }).asCallback(function (err) {
-          expect(err).to.not.exist();
-          expect(AutoScalingGroup.remove.calledWith(name)).to.be.true();
+      it('should fatally reject with non-object `data`', function (done) {
+        var job = { githubId: 'wow', data: 'neat' };
+        shivaASGUpdate(job).asCallback(function(err) {
+          expect(err).to.be.an.instanceof(TaskFatalError);
+          expect(err.message).to.match(/data.*object/);
           done();
         });
       });
-    }); // end 'asg.delete'
+
+      it('should call AutoScalingGroup.update', function(done) {
+        var githubId = 'agithubidwow';
+        var data = { MaxSize: 8, MinSize: 4, DesiredCapacity: 4 };
+        var job = { githubId: githubId, data: data };
+        shivaASGUpdate(job).asCallback(function (err) {
+          expect(err).to.not.exist();
+          expect(AutoScalingGroup.update.calledOnce).to.be.true();
+          expect(AutoScalingGroup.update.firstCall.args[0]).to.equal(githubId);
+          expect(AutoScalingGroup.update.firstCall.args[1]).to.deep.equal(data);
+          done();
+        });
+      });
+    }); // end 'asg.update'
   }); // end 'tasks'
 }); // end 'shiva'
