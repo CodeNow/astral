@@ -26,11 +26,15 @@ describe('shiva', function () {
       var sdk = EC2.getSDK();
       var sdkMethods = [
         'describeInstances',
-        'terminateInstances'
+        'terminateInstances',
+        'runInstances',
+        'waitFor'
       ];
 
       beforeEach(function (done) {
-        sdkMethods.forEach(function (method) { sinon.stub(sdk, method) });
+        sdkMethods.forEach(function (method) {
+          sinon.stub(sdk, method).yieldsAsync()
+        });
         done();
       });
 
@@ -104,6 +108,40 @@ describe('shiva', function () {
               done();
             });
           }); // end 'terminateInstancesAsync'
+
+          describe('runInstancesAsync', function() {
+            it('should call _request with the correct method', function(done) {
+              var options = { some: 'options', wow: 'neat' };
+              var method = 'runInstances';
+              EC2.runInstancesAsync(options);
+              expect(EC2._request.calledWith(method, options))
+                .to.be.true();
+              done();
+            });
+          }); // end 'runInstancesAsync'
+
+          describe('waitForAsync', function() {
+            it('should call waitFor with the correct args', function(done) {
+              var condition = 'some-aws-condition';
+              var options = { neat: 'cool' };
+              EC2.waitForAsync(condition, options).asCallback(function (err) {
+                expect(err).to.not.exist();
+                expect(sdk.waitFor.calledOnce).to.be.true();
+                expect(sdk.waitFor.firstCall.args[0]).to.equal(condition);
+                expect(sdk.waitFor.firstCall.args[1]).to.deep.equal(options);
+                done();
+              });
+            });
+
+            it('should reject with any errors', function (done) {
+              var error = new Error('omg cannot wait');
+              sdk.waitFor.yieldsAsync(error);
+              EC2.waitForAsync('yus', {}).asCallback(function (err) {
+                expect(err).to.equal(error);
+                done();
+              });
+            });
+          }); // end 'waitForAsync'
         }); // end 'async method'
       }); // end 'AutoScaling'
     }); // end 'aws'
