@@ -159,72 +159,41 @@ describe('shiva', function() {
 
       describe('asg.instance.terminate', function () {
         var instanceId = '';
+        var ipAddress = '';
 
-        describe('by `instanceId`', function () {
-          before(function (done) {
-            ec2.runInstancesAsync(INSTANCE_OPTIONS)
-              .then(function (data) {
-                instanceId = data.Instances[0].InstanceId;
-                return ec2.waitForAsync('instanceRunning', {
-                  InstanceIds: [ instanceId ]
-                });
-              })
-              .asCallback(done);
-          });
-
-          it('should terminate the instance', function (done) {
-            if (isEmpty(instanceId)) {
-              done(new Error('Failed to create an EC2 instance'));
-            }
-
-            server.hermes.publish('asg.instance.terminate', {
-              instanceId: instanceId
-            });
-
-            var options = { InstanceIds: [instanceId] };
-            ec2.waitForAsync('instanceTerminated', options).asCallback(done);
-          });
-        }); // end 'by `instanceId`'
-
-        describe('by `ipAddress`', function () {
-          var instanceId = '';
-          var ipAddress = '';
-
-
-          before(function (done) {
-            ec2.runInstancesAsync(INSTANCE_OPTIONS)
-              .then(function (data) {
-                instanceId = data.Instances[0].InstanceId;
-                var options = { InstanceIds: [ instanceId ] };
-                return ec2.waitForAsync('instanceRunning', options)
-                  .then(function () {
-                    return ec2.describeInstancesAsync(options)
-                  })
-                  .then(function (data) {
-                    var instances = [];
-                    data.Reservations.forEach(function (res) {
-                      instances = instances.concat(res.Instances);
-                    });
-                    ipAddress = instances[0].PrivateIpAddress;
+        before(function (done) {
+          ec2.runInstancesAsync(INSTANCE_OPTIONS)
+            .then(function (data) {
+              instanceId = data.Instances[0].InstanceId;
+              var options = { InstanceIds: [ instanceId ] };
+              return ec2.waitForAsync('instanceRunning', options)
+                .then(function () {
+                  return ec2.describeInstancesAsync(options)
+                })
+                .then(function (data) {
+                  var instances = [];
+                  data.Reservations.forEach(function (res) {
+                    instances = instances.concat(res.Instances);
                   });
-              })
-              .asCallback(done);
-          });
-
-          it('should terminate the instance', function (done) {
-            if (isEmpty(instanceId) || isEmpty(ipAddress)) {
-              done(new Error('Failed to create an EC2 instance'));
-            }
-
-            server.hermes.publish('asg.instance.terminate', {
-              ipAddress: ipAddress
-            });
-
-            var options = { InstanceIds: [instanceId] };
-            ec2.waitForAsync('instanceTerminated', options).asCallback(done);
-          });
+                  ipAddress = instances[0].PrivateIpAddress;
+                });
+            })
+            .asCallback(done);
         });
-      });
+
+        it('should terminate the instance', function (done) {
+          if (isEmpty(instanceId) || isEmpty(ipAddress)) {
+            done(new Error('Failed to create an EC2 instance'));
+          }
+
+          server.hermes.publish('asg.instance.terminate', {
+            ipAddress: ipAddress
+          });
+
+          var options = { InstanceIds: [instanceId] };
+          ec2.waitForAsync('instanceTerminated', options).asCallback(done);
+        });
+      }); // end 'asg.instance.terminate'
     }); // end 'tasks'
   }); // end 'integration'
 }); // end 'shiva'

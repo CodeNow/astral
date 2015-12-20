@@ -57,92 +57,49 @@ describe('shiva', function() {
         });
       });
 
-      it('should fatally reject without `instanceId` or `ipAddress`', function (done) {
+      it('should fatally reject without `ipAddress`', function (done) {
         var job = {};
         asgInstanceTerminate(job).asCallback(function (err) {
           expect(err).to.be.an.instanceof(TaskFatalError);
-          expect(err.message).to.match(/instanceId.*or.*ipAddress.*string/);
+          expect(err.message).to.match(/valid.*ipAddress.*string/);
           done();
         });
       });
 
-      describe('with `instanceId`', function () {
-        it('should fatally reject with empty `instanceId`', function (done) {
-          var job = { instanceId: '' };
-          asgInstanceTerminate(job).asCallback(function (err) {
-            expect(err).to.be.an.instanceof(TaskFatalError);
-            expect(err.message).to.match(/instanceId.*and.*ipAddress.*empty/);
-            done();
-          });
-        });
-
-        it('should not call `describeInstances`', function (done) {
-          var job = { instanceId: 'some-id' };
-          asgInstanceTerminate(job).asCallback(function (err) {
-            expect(err).to.not.exist();
-            expect(ec2.describeInstancesAsync.callCount).to.equal(0);
-            done();
-          });
-        });
-
-        it('should terminate the given `instanceId`', function (done) {
-          var instanceId = 'neato-elito';
-          var job = { instanceId: instanceId };
-          asgInstanceTerminate(job).asCallback(function (err) {
-            expect(err).to.not.exist();
-            expect(ec2.terminateInstancesAsync.firstCall.args[0]).to.deep.equal({
-              InstanceIds: [ instanceId ]
-            });
-            done();
-          });
+      it('should find the instance id via `describeInstances`', function (done) {
+        var ipAddress = '0.0.0.1';
+        var job = { ipAddress: ipAddress };
+        var expectedQuery = {
+          Filters: [{ Name: 'private-ip-address', Values: [ ipAddress ] }]
+        };
+        asgInstanceTerminate(job).asCallback(function (err) {
+          expect(err).to.not.exist();
+          expect(ec2.describeInstancesAsync.calledOnce).to.be.true();
+          expect(ec2.describeInstancesAsync.firstCall.args[0])
+            .to.deep.equal(expectedQuery);
+          done();
         });
       });
 
-      describe('with `ipAddress`', function () {
-        it('should fatally reject with empty `ipAddress`', function (done) {
-          var job = { ipAddress: '' };
-          asgInstanceTerminate(job).asCallback(function (err) {
-            expect(err).to.be.an.instanceof(TaskFatalError);
-            expect(err.message).to.match(/instanceId.*and.*ipAddress.*empty/);
-            done();
-          });
+      it('should fatally reject if no instance has the given `ipAddress`', function (done) {
+        ec2.describeInstancesAsync.returns(Promise.resolve({ Reservations: [] }));
+        var job = { ipAddress: '1.2.3.4' };
+        asgInstanceTerminate(job).asCallback(function (err) {
+          expect(err).to.be.an.instanceof(TaskFatalError);
+          expect(err.message).to.match(/not.*ip address/);
+          done();
         });
+      });
 
-        it('should find the instance id via `describeInstances`', function (done) {
-          var ipAddress = '0.0.0.1';
-          var job = { ipAddress: ipAddress };
-          var expectedQuery = {
-            Filters: [{ Name: 'private-ip-address', Values: [ ipAddress ] }]
-          };
-          asgInstanceTerminate(job).asCallback(function (err) {
-            expect(err).to.not.exist();
-            expect(ec2.describeInstancesAsync.calledOnce).to.be.true();
-            expect(ec2.describeInstancesAsync.firstCall.args[0])
-              .to.deep.equal(expectedQuery);
-            done();
+      it('should terminate the instance with the given `ipAddress`', function (done) {
+        var job = { ipAddress: '0.1.0.1' };
+        asgInstanceTerminate(job).asCallback(function (err) {
+          expect(err).to.not.exist();
+          expect(ec2.terminateInstancesAsync.calledOnce).to.be.true();
+          expect(ec2.terminateInstancesAsync.firstCall.args[0]).to.deep.equal({
+            InstanceIds: [ipInstanceId]
           });
-        });
-
-        it('should fatally reject if no instance has the given `ipAddress`', function (done) {
-          ec2.describeInstancesAsync.returns(Promise.resolve({ Reservations: [] }));
-          var job = { ipAddress: '1.2.3.4' };
-          asgInstanceTerminate(job).asCallback(function (err) {
-            expect(err).to.be.an.instanceof(TaskFatalError);
-            expect(err.message).to.match(/not.*ip address/);
-            done();
-          });
-        });
-
-        it('should terminate the instance with the given `ipAddress`', function (done) {
-          var job = { ipAddress: '0.1.0.1' };
-          asgInstanceTerminate(job).asCallback(function (err) {
-            expect(err).to.not.exist();
-            expect(ec2.terminateInstancesAsync.calledOnce).to.be.true();
-            expect(ec2.terminateInstancesAsync.firstCall.args[0]).to.deep.equal({
-              InstanceIds: [ipInstanceId]
-            });
-            done();
-          });
+          done();
         });
       });
 
@@ -150,10 +107,10 @@ describe('shiva', function() {
         var awsError = new Error('No instance found');
         awsError.code = 'InvalidInstanceID.NotFound';
         ec2.terminateInstancesAsync.returns(Promise.reject(awsError));
-        var job = { instanceId: '2345' };
+        var job = { ipAddress: '127.0.0.1' };
         asgInstanceTerminate(job).asCallback(function (err) {
           expect(err).to.be.an.instanceof(TaskFatalError);
-          expect(err.message).to.match(/Instance.*does not exist/);
+          expect(err.message).to.match(/Instance.*no longer exists/);
           done();
         });
       });
@@ -161,7 +118,7 @@ describe('shiva', function() {
       it('should re-throw unknown errors', function (done) {
         var randomError = new Error('What? I mean keewl!');
         ec2.terminateInstancesAsync.returns(Promise.reject(randomError));
-        var job = { instanceId: '123444' };
+        var job = { ipAddress: '127.0.0.1' };
         asgInstanceTerminate(job).asCallback(function (err) {
           expect(err).to.equal(randomError);
           done();
