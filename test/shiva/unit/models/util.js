@@ -19,6 +19,7 @@ loadenv({ project: 'shiva', debugName: 'astral:shiva:test' });
 
 var Util = astralRequire('shiva/models/util');
 var AWSAlreadyExistsError = astralRequire('shiva/errors/aws-already-exists-error');
+var AWSValidationError = astralRequire('shiva/errors/aws-validation-error');
 
 describe('shiva', function() {
   describe('models', function () {
@@ -36,6 +37,19 @@ describe('shiva', function() {
             done();
           }
         });
+
+        it('should cast AWSValidationError', function (done) {
+          var awsError = new Error();
+          awsError.code = 'ValidationError';
+          try {
+            Util.castAWSError(awsError);
+          }
+          catch (err) {
+            expect(err).to.be.an.instanceof(AWSValidationError);
+            expect(err.data.originalError).to.equal(awsError);
+            done();
+          }
+        })
       }); // end'castAWSError
     }); // end 'Util'
   }); // end 'models'
