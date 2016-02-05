@@ -118,18 +118,35 @@ describe('metis', function() {
           .catch(done);
       });
 
-      it('should fatally reject on a UniqueError', function(done) {
-        var job = {
-          deliveryId: 'some-delivery-id',
-          eventType: 'push',
-          recordedAt: 9241983,
-          payload: githubWebhooks.push.body
-        };
-        GitHubEvent.insert.returns(Promise.reject(new UniqueError()));
-        metisGithubEvent(job).asCallback(function (err) {
-          expect(err).to.be.an.instanceof(TaskFatalError);
-          expect(err.message).to.match(/deliveryId.*already.*processed/);
-          done();
+      describe('on UniqueError', function () {
+        it('should fatally reject', function (done) {
+          var job = {
+            deliveryId: 'some-delivery-id',
+            eventType: 'push',
+            recordedAt: 9241983,
+            payload: githubWebhooks.push.body
+          };
+          GitHubEvent.insert.returns(Promise.reject(new UniqueError()));
+          metisGithubEvent(job).asCallback(function (err) {
+            expect(err).to.be.an.instanceof(TaskFatalError);
+            expect(err.message).to.match(/deliveryId.*already.*processed/);
+            done();
+          });
+        });
+
+        it('should not report', function (done) {
+          var job = {
+            deliveryId: 'some-delivery-id',
+            eventType: 'push',
+            recordedAt: 9241983,
+            payload: githubWebhooks.push.body
+          };
+          GitHubEvent.insert.returns(Promise.reject(new UniqueError()));
+          metisGithubEvent(job).asCallback(function (err) {
+            expect(err).to.be.an.instanceof(TaskFatalError);
+            expect(err.report).to.be.false();
+            done();
+          });
         });
       });
 
