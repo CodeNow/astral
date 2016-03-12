@@ -9,6 +9,8 @@ var afterEach = lab.afterEach;
 var Code = require('code');
 var expect = Code.expect;
 var sinon = require('sinon');
+var fs = require('fs');
+var path = require('path');
 var astralRequire = require(process.env.ASTRAL_ROOT + '../test/fixtures/astral-require');
 
 require('loadenv')({ debugName: 'astral:test' });
@@ -31,6 +33,47 @@ describe('common', function() {
         AstralRedis.getClient().hgetAsync.restore();
         AstralRedis.getClient().hsetAsync.restore();
         done();
+      });
+
+      describe('with TLS', function() {
+        var prevCACert = process.env.REDIS_CACERT;
+
+        beforeEach(function(done) {
+          // set up env and stubs
+          process.env.REDIS_CACERT = 'foo';
+          var readFileSync = fs.readFileSync;
+          sinon.stub(fs, 'readFileSync', function (path, encoding) {
+            if (path === 'foo') { return 'bar'; }
+            return readFileSync(path, encoding);
+          })
+          // delete cached module
+          var module = path.resolve(__dirname, '../../../../lib/common/models/astral-redis.js');
+          delete require.cache[module];
+          // re-setup AstralRedis
+          AstralRedis = astralRequire('common/models/astral-redis');
+          sinon.stub(AstralRedis.getClient(), 'hgetAsync');
+          sinon.stub(AstralRedis.getClient(), 'hsetAsync');
+          done();
+        });
+
+        afterEach(function(done) {
+          fs.readFileSync.restore();
+          process.env.REDIS_CACERT = prevCACert;
+          done();
+        });
+
+        it('should have provided tls options', function(done) {
+          var c = AstralRedis.getClient();
+          sinon.assert.called(fs.readFileSync);
+          sinon.assert.calledWithExactly(
+            fs.readFileSync,
+            'foo',
+            'utf-8'
+          );
+          expect(c.connection_options.ca).to.deep.equal([ 'bar' ]);
+          expect(c.connection_options.rejectUnauthorized).to.be.true();
+          done();
+        });
       });
 
       describe('getClient', function() {
