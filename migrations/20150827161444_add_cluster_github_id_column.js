@@ -1,6 +1,6 @@
-'use strict';
+'use strict'
 
-var debug = require('debug')('shiva:migration');
+var debug = require('debug')('shiva:migration')
 
 /**
  * Adds a new field named `githubId` to the clusters table that holds the id
@@ -9,18 +9,18 @@ var debug = require('debug')('shiva:migration');
  * @author Ryan Sandor Richards
  */
 
-exports.up = function(knex, Promise) {
+exports.up = function (knex, Promise) {
   var updateTable = knex.schema.table('clusters', function (table) {
-    table.string('github_id', 36).unique().notNullable();
-  });
-  debug(updateTable.toString());
-  return updateTable;
-};
+    table.string('github_id', 36).unique().notNullable()
+  })
+  debug(updateTable.toString())
+  return updateTable
+}
 
-exports.down = function(knex, Promise) {
+exports.down = function (knex, Promise) {
   var updateTable = knex.schema.table('clusters', function (table) {
-    table.dropColumn('github_id');
-  });
-  debug(updateTable.toString());
-  return updateTable;
-};
+    table.dropColumn('github_id')
+  })
+  debug(updateTable.toString())
+  return updateTable
+}

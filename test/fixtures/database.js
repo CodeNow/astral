@@ -1,7 +1,7 @@
-'use strict';
+'use strict'
 
-require('loadenv')({ debugName: 'astral:common:test' });
-var db = require(process.env.ASTRAL_ROOT + 'common/database');
+require('loadenv')({ debugName: 'astral:common:test' })
+var db = require(process.env.ASTRAL_ROOT + 'common/database')
 
 /**
  * Helpers for setting up the database during functional tests.
@@ -13,7 +13,7 @@ module.exports = {
    * Truncates all tables in the database.
    * @param cb Callback to execute after each table has been truncated.
    */
-  truncate: function truncate(cb) {
-    db('github_events').truncate().asCallback(cb);
+  truncate: function truncate (cb) {
+    db('github_events').truncate().asCallback(cb)
   }
-};
+}
