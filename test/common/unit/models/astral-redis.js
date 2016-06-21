@@ -71,7 +71,7 @@ describe('common', function () {
             'utf-8'
           )
           expect(c.connection_options.ca).to.deep.equal([ 'bar' ])
-          expect(c.connection_options.rejectUnauthorized).to.be.true()
+          expect(c.connection_options.reject_unauthorized).to.be.true()
           done()
         })
       })
