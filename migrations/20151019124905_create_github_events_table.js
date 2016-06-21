@@ -1,6 +1,6 @@
-'use strict';
+'use strict'
 
-var debug = require('debug')('shiva:migration');
+var debug = require('debug')('shiva:migration')
 
 /**
  * Creates the `github_events` table. This table is records all incoming github
@@ -9,27 +9,27 @@ var debug = require('debug')('shiva:migration');
  * @author Ryan Sandor Richards
  */
 
-var tableName = 'github_events';
+var tableName = 'github_events'
 
-exports.up = function(knex, Promise) {
+exports.up = function (knex, Promise) {
   var createTable = knex.schema.createTable(tableName, function (table) {
     table.string('delivery_id', 64)
-      .primary();
+      .primary()
     table.string('type', 64)
-      .notNullable().index();
+      .notNullable().index()
     table.bigInteger('github_org_id')
-      .notNullable().index();
+      .notNullable().index()
     table.timestamp('recorded_at')
-      .notNullable().index();
+      .notNullable().index()
     table.json('payload', true)
-      .notNullable();
-  });
-  debug(createTable.toString());
-  return createTable;
-};
+      .notNullable()
+  })
+  debug(createTable.toString())
+  return createTable
+}
 
-exports.down = function(knex, Promise) {
-  var dropTable = knex.schema.dropTable(tableName);
-  debug(dropTable.toString());
-  return dropTable;
-};
+exports.down = function (knex, Promise) {
+  var dropTable = knex.schema.dropTable(tableName)
+  debug(dropTable.toString())
+  return dropTable
+}

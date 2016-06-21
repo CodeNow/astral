@@ -1,6 +1,6 @@
 // Update with your config settings.
 
-require('loadenv')({ debugName: 'shiva:migration' });
+require('loadenv')({ debugName: 'shiva:migration' })
 
 module.exports = {
   development: {
@@ -30,4 +30,4 @@ module.exports = {
       max: 10
     }
   }
-};
+}

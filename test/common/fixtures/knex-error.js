@@ -1,6 +1,6 @@
-'use strict';
+'use strict'
 
-var defaults = require('101/defaults');
+var defaults = require('101/defaults')
 
 /**
  * Example fields expected on a knex error.
@@ -25,7 +25,7 @@ const ERROR_FIELDS = {
   file: 'nbtinsert.c',
   line: '406',
   routine: '_bt_check_unique'
-};
+}
 
 /**
  * Creates a new knex error fixture with the given code.
@@ -33,11 +33,11 @@ const ERROR_FIELDS = {
  * @return {Error} a vanilla knex error with the given code.
  * @module astral:test:common:fixtures
  */
-module.exports = function createKnexError(code) {
-  var knexError = new Error();
-  defaults(knexError, ERROR_FIELDS);
+module.exports = function createKnexError (code) {
+  var knexError = new Error()
+  defaults(knexError, ERROR_FIELDS)
   if (code) {
-    knexError.code = code;
+    knexError.code = code
   }
-  return knexError;
+  return knexError
 }
