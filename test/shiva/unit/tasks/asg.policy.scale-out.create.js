@@ -69,11 +69,11 @@ describe('shiva', function () {
         })
       })
 
-      it('should fatally reject without string `githubId`', function (done) {
-        var job = { githubId: 1.0 }
+      it('should fatally reject without `githubId`', function (done) {
+        var job = { githubId: '' }
         asgPolicyScaleOut(job).asCallback(function (err) {
           expect(err).to.be.an.instanceof(WorkerStopError)
-          expect(err.message).to.match(/githubId.*string/)
+          expect(err.message).to.match(/githubId.*empty/)
           done()
         })
       })
