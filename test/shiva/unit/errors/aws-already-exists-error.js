@@ -14,15 +14,16 @@ var loadenv = require('loadenv')
 loadenv.restore()
 loadenv({ project: 'shiva', debugName: 'astral:shiva:test' })
 
-var TaskFatalError = require('ponos').TaskFatalError
+var WorkerStopError = require('error-cat/errors/worker-stop-error')
+
 var AWSAlreadyExistsError = astralRequire('shiva/errors/aws-already-exists-error')
 
 describe('shiva', function () {
   describe('errors', function () {
     describe('AWSAlreadyExistsError', function () {
-      it('should extend TaskFatalError', function (done) {
+      it('should extend WorkerStopError', function (done) {
         var err = new AWSAlreadyExistsError(new Error('WOW'))
-        expect(err).to.be.an.instanceof(TaskFatalError)
+        expect(err).to.be.an.instanceof(WorkerStopError)
         done()
       })
 

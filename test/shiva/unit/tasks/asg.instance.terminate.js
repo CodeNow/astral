@@ -15,7 +15,7 @@ loadenv.restore()
 loadenv({ project: 'shiva', debugName: 'astral:shiva:test' })
 
 var Promise = require('bluebird')
-var TaskFatalError = require('ponos').TaskFatalError
+var WorkerStopError = require('error-cat/errors/worker-stop-error')
 
 var ec2 = require(process.env.ASTRAL_ROOT + 'shiva/models/aws/ec2')
 var asgInstanceTerminate = require(
@@ -50,7 +50,7 @@ describe('shiva', function () {
 
       it('should fatally reject if not given a job', function (done) {
         asgInstanceTerminate().asCallback(function (err) {
-          expect(err).to.be.an.instanceof(TaskFatalError)
+          expect(err).to.be.an.instanceof(WorkerStopError)
           expect(err.message).to.match(/non-object job/)
           done()
         })
@@ -59,7 +59,7 @@ describe('shiva', function () {
       it('should fatally reject without `ipAddress`', function (done) {
         var job = {}
         asgInstanceTerminate(job).asCallback(function (err) {
-          expect(err).to.be.an.instanceof(TaskFatalError)
+          expect(err).to.be.an.instanceof(WorkerStopError)
           expect(err.message).to.match(/valid.*ipAddress.*string/)
           done()
         })
@@ -84,7 +84,7 @@ describe('shiva', function () {
         ec2.describeInstancesAsync.returns(Promise.resolve({ Reservations: [] }))
         var job = { ipAddress: '1.2.3.4' }
         asgInstanceTerminate(job).asCallback(function (err) {
-          expect(err).to.be.an.instanceof(TaskFatalError)
+          expect(err).to.be.an.instanceof(WorkerStopError)
           expect(err.message).to.match(/not.*ip address/)
           done()
         })
@@ -108,7 +108,7 @@ describe('shiva', function () {
         ec2.terminateInstancesAsync.returns(Promise.reject(awsError))
         var job = { ipAddress: '127.0.0.1' }
         asgInstanceTerminate(job).asCallback(function (err) {
-          expect(err).to.be.an.instanceof(TaskFatalError)
+          expect(err).to.be.an.instanceof(WorkerStopError)
           expect(err.message).to.match(/Instance.*no longer exists/)
           done()
         })
