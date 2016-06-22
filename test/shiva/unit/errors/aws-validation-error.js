@@ -14,15 +14,16 @@ var loadenv = require('loadenv')
 loadenv.restore()
 loadenv({ project: 'shiva', debugName: 'astral:shiva:test' })
 
-var TaskFatalError = require('ponos').TaskFatalError
+var WorkerStopError = require('error-cat/errors/worker-stop-error')
+
 var AWSValidationError = astralRequire('shiva/errors/aws-validation-error')
 
 describe('shiva', function () {
   describe('errors', function () {
     describe('AWSValidationError', function () {
-      it('should extend TaskFatalError', function (done) {
+      it('should extend WorkerStopError', function (done) {
         var err = new AWSValidationError(new Error('WOW'))
-        expect(err).to.be.an.instanceof(TaskFatalError)
+        expect(err).to.be.an.instanceof(WorkerStopError)
         done()
       })
 

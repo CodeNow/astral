@@ -16,7 +16,8 @@ loadenv.restore()
 loadenv({ project: 'shiva', debugName: 'astral:shiva:test' })
 
 var Promise = require('bluebird')
-var TaskFatalError = require('ponos').TaskFatalError
+var WorkerStopError = require('error-cat/errors/worker-stop-error')
+
 var AutoScalingGroup = astralRequire('shiva/models/auto-scaling-group')
 var shivaASGDelete = astralRequire('shiva/tasks/asg.delete')
 
@@ -35,7 +36,7 @@ describe('shiva', function () {
 
       it('should fatally reject with non-object job', function (done) {
         shivaASGDelete('neat').asCallback(function (err) {
-          expect(err).to.be.an.instanceof(TaskFatalError)
+          expect(err).to.be.an.instanceof(WorkerStopError)
           expect(err.message).to.match(/non-object.*job/)
           done()
         })
@@ -43,7 +44,7 @@ describe('shiva', function () {
 
       it('should fatally reject without string `githubId`', function (done) {
         shivaASGDelete({}).asCallback(function (err) {
-          expect(err).to.be.an.instanceof(TaskFatalError)
+          expect(err).to.be.an.instanceof(WorkerStopError)
           expect(err.message).to.match(/githubId.*string/)
           done()
         })
@@ -51,7 +52,7 @@ describe('shiva', function () {
 
       it('should fatally reject with an empty `githubId`', function (done) {
         shivaASGDelete({ githubId: '' }).asCallback(function (err) {
-          expect(err).to.be.an.instanceof(TaskFatalError)
+          expect(err).to.be.an.instanceof(WorkerStopError)
           expect(err.message).to.match(/githubId.*empty/)
           done()
         })

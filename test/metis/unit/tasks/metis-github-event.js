@@ -15,14 +15,14 @@ var loadenv = require('loadenv')
 loadenv.restore()
 loadenv({ project: 'metis', debugName: 'astral:metis:test' })
 
-var Promise = require('bluebird')
-var TaskFatalError = require('ponos').TaskFatalError
 var githubWebhooks = require('github-webhook-fixtures')
+var Promise = require('bluebird')
+var WorkerStopError = require('error-cat/errors/worker-stop-error')
 
-var metisGithubEvent = astralRequire('metis/tasks/metis-github-event')
 var GitHubEvent = astralRequire('common/models/github-event')
-var UniqueError = astralRequire('common/errors/unique-error')
+var metisGithubEvent = astralRequire('metis/tasks/metis-github-event')
 var NoGithubOrgError = astralRequire('common/errors/no-github-org-error')
+var UniqueError = astralRequire('common/errors/unique-error')
 
 describe('metis', function () {
   describe('tasks', function () {
@@ -40,7 +40,7 @@ describe('metis', function () {
       it('should fatally reject without a job', function (done) {
         var job = null
         metisGithubEvent(job).asCallback(function (err) {
-          expect(err).to.be.an.instanceof(TaskFatalError)
+          expect(err).to.be.an.instanceof(WorkerStopError)
           expect(err.message).to.match(/non-object job/)
           done()
         })
@@ -49,7 +49,7 @@ describe('metis', function () {
       it('should fatally reject without string `deliveryId`', function (done) {
         var job = { deliveryId: [] }
         metisGithubEvent(job).asCallback(function (err) {
-          expect(err).to.be.an.instanceof(TaskFatalError)
+          expect(err).to.be.an.instanceof(WorkerStopError)
           expect(err.message).to.match(/deliveryId.*string/)
           done()
         })
@@ -58,7 +58,7 @@ describe('metis', function () {
       it('should fatally reject without string `eventType`', function (done) {
         var job = { deliveryId: '' }
         metisGithubEvent(job).asCallback(function (err) {
-          expect(err).to.be.an.instanceof(TaskFatalError)
+          expect(err).to.be.an.instanceof(WorkerStopError)
           expect(err.message).to.match(/eventType.*string/)
           done()
         })
@@ -67,7 +67,7 @@ describe('metis', function () {
       it('should fatally reject without integer `recordedAt`', function (done) {
         var job = { deliveryId: '', eventType: '' }
         metisGithubEvent(job).asCallback(function (err) {
-          expect(err).to.be.an.instanceof(TaskFatalError)
+          expect(err).to.be.an.instanceof(WorkerStopError)
           expect(err.message).to.match(/recordedAt.*integer/)
           done()
         })
@@ -76,7 +76,7 @@ describe('metis', function () {
       it('should fatally reject without object `payload`', function (done) {
         var job = { deliveryId: '', eventType: '', recordedAt: 0 }
         metisGithubEvent(job).asCallback(function (err) {
-          expect(err).to.be.an.instanceof(TaskFatalError)
+          expect(err).to.be.an.instanceof(WorkerStopError)
           expect(err.message).to.match(/payload.*object/)
           done()
         })
@@ -128,7 +128,7 @@ describe('metis', function () {
           }
           GitHubEvent.insert.returns(Promise.reject(new UniqueError()))
           metisGithubEvent(job).asCallback(function (err) {
-            expect(err).to.be.an.instanceof(TaskFatalError)
+            expect(err).to.be.an.instanceof(WorkerStopError)
             expect(err.message).to.match(/deliveryId.*already.*processed/)
             done()
           })
@@ -143,7 +143,7 @@ describe('metis', function () {
           }
           GitHubEvent.insert.returns(Promise.reject(new UniqueError()))
           metisGithubEvent(job).asCallback(function (err) {
-            expect(err).to.be.an.instanceof(TaskFatalError)
+            expect(err).to.be.an.instanceof(WorkerStopError)
             expect(err.report).to.be.false()
             done()
           })
@@ -159,7 +159,7 @@ describe('metis', function () {
         }
         GitHubEvent.insert.returns(Promise.reject(new NoGithubOrgError()))
         metisGithubEvent(job).asCallback(function (err) {
-          expect(err).to.be.an.instanceof(TaskFatalError)
+          expect(err).to.be.an.instanceof(WorkerStopError)
           expect(err.message).to.match(/Could not associate github org id/)
           done()
         })
