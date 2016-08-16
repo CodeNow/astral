@@ -56,6 +56,14 @@ describe('shiva', function () {
         })
       })
 
+      it('should fatally reject `githubId` when not a safe number', function (done) {
+        shivaASGCreate({ githubId: {} }).asCallback(function (err) {
+          expect(err).to.be.an.instanceof(WorkerStopError)
+          expect(err.message).to.match(/githubId.*string/)
+          done()
+        })
+      })
+
       it('should fatally reject with an empty `githubId`', function (done) {
         shivaASGCreate({ githubId: '' }).asCallback(function (err) {
           expect(err).to.be.an.instanceof(WorkerStopError)
@@ -83,6 +91,18 @@ describe('shiva', function () {
 
       it('should enqueue a job to create the scale-out policy', (done) => {
         shivaASGCreate({ githubId: '12345' }).asCallback(function (err) {
+          expect(err).to.not.exist()
+          sinon.assert.calledOnce(mockRabbit.publishTask)
+          sinon.assert.calledWithExactly(
+            mockRabbit.publishTask,
+            'asg.policy.scale-out.create',
+            { githubId: '12345' }
+          )
+          done()
+        })
+      })
+      it('should enqueue a job to create the scale-out policy', (done) => {
+        shivaASGCreate({ githubId: 12345 }).asCallback(function (err) {
           expect(err).to.not.exist()
           sinon.assert.calledOnce(mockRabbit.publishTask)
           sinon.assert.calledWithExactly(
