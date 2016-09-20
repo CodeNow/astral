@@ -15,8 +15,8 @@ loadenv({ project: 'shiva', debugName: 'astral:shiva:test' })
 var Util = astralRequire('shiva/models/util')
 var AWSAlreadyExistsError = astralRequire('shiva/errors/aws-already-exists-error')
 var AWSInvalidParameterTypeError = astralRequire('shiva/errors/aws-invalid-parameter-type-error')
+var AWSRateLimitError = astralRequire('shiva/errors/aws-rate-limit-error')
 var AWSValidationError = astralRequire('shiva/errors/aws-validation-error')
-var AWSRateLimitError = require('shiva/errors/aws-rate-limit-error')
 
 describe('shiva', function () {
   describe('models', function () {
