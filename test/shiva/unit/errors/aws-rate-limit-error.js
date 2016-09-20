@@ -14,7 +14,7 @@ var loadenv = require('loadenv')
 loadenv.restore()
 loadenv({ project: 'shiva', debugName: 'astral:shiva:test' })
 
-var WorkerError = require('error-cat/errors/worker-stop-error')
+var WorkerError = require('error-cat/errors/worker-error')
 
 var AWSRateLimitError = astralRequire('shiva/errors/aws-already-exists-error')
 
