@@ -16,6 +16,7 @@ var Util = astralRequire('shiva/models/util')
 var AWSAlreadyExistsError = astralRequire('shiva/errors/aws-already-exists-error')
 var AWSInvalidParameterTypeError = astralRequire('shiva/errors/aws-invalid-parameter-type-error')
 var AWSValidationError = astralRequire('shiva/errors/aws-validation-error')
+var AWSRateLimitError = require('shiva/errors/aws-rate-limit-error')
 
 describe('shiva', function () {
   describe('models', function () {
@@ -40,6 +41,18 @@ describe('shiva', function () {
             Util.castAWSError(awsError)
           } catch (err) {
             expect(err).to.be.an.instanceof(AWSValidationError)
+            expect(err.data.originalError).to.equal(awsError)
+            done()
+          }
+        })
+
+        it('should cast AWSRateLimitError', function (done) {
+          var awsError = new Error('EC2 Request limit exceeded.')
+          awsError.code = 'ValidationError'
+          try {
+            Util.castAWSError(awsError)
+          } catch (err) {
+            expect(err).to.be.an.instanceof(AWSRateLimitError)
             expect(err.data.originalError).to.equal(awsError)
             done()
           }
