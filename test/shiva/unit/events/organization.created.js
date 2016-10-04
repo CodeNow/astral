@@ -53,7 +53,7 @@ describe('shiva', function () {
       })
 
       it('should fatally reject `githubId` when not a safe number', function (done) {
-        shivaOrganizationCreated({ organization: {githubId: {} }}).asCallback(function (err) {
+        shivaOrganizationCreated({ organization: { githubId: {} } }).asCallback(function (err) {
           expect(err).to.be.an.instanceof(WorkerStopError)
           expect(err.message).to.match(/githubId.*string/)
           done()
@@ -61,7 +61,7 @@ describe('shiva', function () {
       })
 
       it('should fatally reject with an empty `githubId`', function (done) {
-        shivaOrganizationCreated({ organization: {githubId: '' }}).asCallback(function (err) {
+        shivaOrganizationCreated({ organization: { githubId: '' } }).asCallback(function (err) {
           expect(err).to.be.an.instanceof(WorkerStopError)
           expect(err.message).to.match(/githubId.*empty/)
           done()
@@ -69,7 +69,7 @@ describe('shiva', function () {
       })
 
       it('should create a rabbitmq object', (done) => {
-        shivaOrganizationCreated({ organization: {githubId: '12345' }}).asCallback(function (err) {
+        shivaOrganizationCreated({ organization: { githubId: '12345' } }).asCallback(function (err) {
           expect(err).to.not.exist()
           sinon.assert.calledOnce(RabbitMQ.getClient)
           done()
@@ -77,7 +77,7 @@ describe('shiva', function () {
       })
 
       it('should enqueue a job to create the asg policy', (done) => {
-        shivaOrganizationCreated({ organization: {githubId: '12345' }}).asCallback(function (err) {
+        shivaOrganizationCreated({ organization: { githubId: '12345' } }).asCallback(function (err) {
           expect(err).to.not.exist()
           sinon.assert.calledOnce(mockRabbit.publishTask)
           sinon.assert.calledWithExactly(
