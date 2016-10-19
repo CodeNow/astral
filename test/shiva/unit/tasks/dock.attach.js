@@ -26,7 +26,7 @@ const dockAttachSchema = astralRequire('shiva/tasks/dock.attach').jobSchema
 
 describe('shiva', function () {
   describe('tasks', function () {
-    describe('org.instance.attach', function () {
+    describe('dock.attach', function () {
       beforeEach(function (done) {
         sinon.stub(AutoScalingGroup, 'attachInstance').returns(Promise.resolve())
 
@@ -67,15 +67,6 @@ describe('shiva', function () {
         joi.validate(job, dockAttachSchema, (err) => {
           expect(err).to.be.an.instanceof(Error)
           expect(err.name).to.match(/ValidationError/)
-          done()
-        })
-      })
-
-      it('should throw a non-validation error in a case', function (done) {
-        let job = {githubOrgId: 'wow', instanceId: 666}
-        AutoScalingGroup.attachInstance.throws(new Error())
-        dockAttach(job).asCallback(function (err) {
-          expect(err).to.be.an.instanceof(WorkerStopError)
           done()
         })
       })
