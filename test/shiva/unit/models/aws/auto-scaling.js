@@ -162,6 +162,17 @@ describe('shiva', function () {
               done()
             })
           }) // end 'deleteLaunchConfigurationAsync'
+
+          describe('detachInstancesAsync', function () {
+            it('should call _request with the correct method', function (done) {
+              var options = { some: 'options', wow: 'neat' }
+              var method = 'detachInstances'
+              AutoScaling.detachInstancesAsync(options)
+              expect(AutoScaling._request.calledWith(method, options))
+                .to.be.true()
+              done()
+            })
+          }) // end 'detachInstancesAsync'
         })
       }) // end 'AutoScaling'
     }) // end 'aws'
