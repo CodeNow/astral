@@ -4,11 +4,11 @@ const Lab = require('lab')
 const loadenv = require('loadenv')
 const Promise = require('bluebird')
 const sinon = require('sinon')
+const astralRequire = require('../../../../test/fixtures/astral-require')
 
-const astralRequire = require(process.env.ASTRAL_ROOT + '../test/fixtures/astral-require')
 const DockPool = astralRequire('shiva/models/dock-pool')
 const PoolDockDetach = astralRequire('shiva/tasks/pool.dock.detach')
-const RabbitMQ = astralRequire('common/models/astral-rabbitmq')
+const publisher = astralRequire('common/models/astral-rabbitmq')
 
 const lab = exports.lab = Lab.script()
 loadenv.restore()
@@ -25,18 +25,16 @@ describe('shiva pool.dock.detach unit test', () => {
   describe('task', () => {
     const testGithubOrgId = 12345
     const testInstanceId = '3487984739'
-    let mockRabbit
 
     beforeEach((done) => {
-      mockRabbit = { publishTask: sinon.stub().resolves() }
       sinon.stub(DockPool, 'detachRandomInstance').returns(Promise.resolve(testInstanceId))
-      sinon.stub(RabbitMQ, 'getClient').resolves(mockRabbit)
+      sinon.stub(publisher, 'publishTask').resolves()
       done()
     })
 
     afterEach((done) => {
       DockPool.detachRandomInstance.restore()
-      RabbitMQ.getClient.restore()
+      publisher.publishTask.restore()
       done()
     })
 
@@ -51,8 +49,8 @@ describe('shiva pool.dock.detach unit test', () => {
     it('should enqueue dock.attach task', (done) => {
       PoolDockDetach.task({ githubOrgId: testGithubOrgId }).asCallback((err) => {
         expect(err).to.not.exist()
-        sinon.assert.calledOnce(mockRabbit.publishTask)
-        sinon.assert.calledWithExactly(mockRabbit.publishTask, 'dock.attach', {
+        sinon.assert.calledOnce(publisher.publishTask)
+        sinon.assert.calledWithExactly(publisher.publishTask, 'dock.attach', {
           githubOrgId: testGithubOrgId,
           instanceId: testInstanceId
         })
