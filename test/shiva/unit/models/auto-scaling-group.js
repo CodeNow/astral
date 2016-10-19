@@ -517,33 +517,33 @@ describe('shiva', function () {
         }) // end 'AWS updateAutoScalingGroupAsync request'
       }) // end 'update'
 
-      describe('attachInstances', function () {
+      describe('attachInstance', function () {
         it('should throw with non-string `orgId`', function (done) {
-          AutoScalingGroup.attachInstances([]).asCallback(function (err) {
+          AutoScalingGroup.attachInstance([]).asCallback(function (err) {
             expect(err).to.be.an.instanceof(Error)
-            expect(err.message).to.match(/ValidationError/)
+            expect(err.name).to.match(/ValidationError/)
             done()
           })
         })
 
         it('should throw with empty `orgId`', function (done) {
-          AutoScalingGroup.attachInstances('').asCallback(function (err) {
+          AutoScalingGroup.attachInstance('').asCallback(function (err) {
             expect(err).to.be.an.instanceof(Error)
-            expect(err.message).to.match(/ValidationError/)
+            expect(err.name).to.match(/ValidationError/)
             done()
           })
         })
 
         it('should throw with non-array `instanceIds`', function (done) {
-          AutoScalingGroup.attachInstances('Andre 3000', 'Big Boi').asCallback(function (err) {
+          AutoScalingGroup.attachInstance('Andre 3000', 'Big Boi').asCallback(function (err) {
             expect(err).to.be.an.instanceof(Error)
-            expect(err.message).to.match(/ValidationError/)
+            expect(err.name).to.match(/ValidationError/)
             done()
           })
         })
 
         it('should call attachInstancesAsync', function (done) {
-          AutoScalingGroup.attachInstances('bob ya head', ['rag top'])
+          AutoScalingGroup.attachInstance('bob ya head', ['rag top'])
             .then(function () {
               expect(AutoScaling.attachInstancesAsync.calledOnce)
                 .to.be.true()
@@ -556,7 +556,7 @@ describe('shiva', function () {
           var awsErr = new Error('ain\'t it funky now?')
           AutoScaling.attachInstancesAsync
             .returns(Promise.reject(awsErr))
-          AutoScalingGroup.attachInstances('Power music', ['electric revival'])
+          AutoScalingGroup.attachInstance('Power music', ['electric revival'])
             .catch(function (err) {
               expect(err).to.exist()
               expect(Util.castAWSError.calledWith(awsErr)).to.be.true()
