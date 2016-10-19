@@ -18,7 +18,6 @@ loadenv.restore()
 loadenv({ project: 'shiva', debugName: 'astral:shiva:test' })
 
 var Promise = require('bluebird')
-var WorkerStopError = require('error-cat/errors/worker-stop-error')
 
 const AutoScalingGroup = astralRequire('shiva/models/auto-scaling-group')
 const dockAttach = astralRequire('shiva/tasks/dock.attach').task
