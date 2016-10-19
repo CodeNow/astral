@@ -55,7 +55,7 @@ describe('shiva dock-pool unit test', () => {
         if (err) { return done(err) }
         sinon.assert.calledOnce(AutoScaling.describeAutoScalingGroupsAsync)
         sinon.assert.calledWith(AutoScaling.describeAutoScalingGroupsAsync, {
-          AutoScalingGroupNames: process.env.DOCK_POOL_ASG_NAME
+          AutoScalingGroupNames: [ process.env.DOCK_POOL_ASG_NAME ]
         })
         done()
       })
