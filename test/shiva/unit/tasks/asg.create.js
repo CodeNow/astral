@@ -80,7 +80,7 @@ describe('shiva asg.create unit test', function () {
     it('should enqueue a job to create the scale-out policy', (done) => {
       shivaASGCreate({ githubId: '12345' }).asCallback(function (err) {
         expect(err).to.not.exist()
-        sinon.assert.calledOnce(publisher.publishTask)
+        sinon.assert.called(publisher.publishTask)
         sinon.assert.calledWithExactly(
           publisher.publishTask,
           'asg.policy.scale-out.create',
@@ -89,14 +89,28 @@ describe('shiva asg.create unit test', function () {
         done()
       })
     })
+
     it('should enqueue a job to create the scale-out policy', (done) => {
       shivaASGCreate({ githubId: 12345 }).asCallback(function (err) {
         expect(err).to.not.exist()
-        sinon.assert.calledOnce(publisher.publishTask)
+        sinon.assert.called(publisher.publishTask)
         sinon.assert.calledWithExactly(
           publisher.publishTask,
           'asg.policy.scale-out.create',
           { githubId: '12345' }
+        )
+        done()
+      })
+    })
+
+    it('should enqueue pool.dock.detach task', (done) => {
+      shivaASGCreate({ githubId: 12345 }).asCallback(function (err) {
+        expect(err).to.not.exist()
+        sinon.assert.called(publisher.publishTask)
+        sinon.assert.calledWithExactly(
+          publisher.publishTask,
+          'pool.dock.detach',
+          { githubOrgId: 12345 }
         )
         done()
       })
