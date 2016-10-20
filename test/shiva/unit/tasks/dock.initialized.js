@@ -16,34 +16,33 @@ var loadenv = require('loadenv')
 loadenv.restore()
 loadenv({ project: 'shiva', debugName: 'astral:shiva:test' })
 
-const dockInitialize = astralRequire('shiva/tasks/dock.initialize').task
-const SendCommand = astralRequire('shiva/models/send-command')
+const DockInitialized = astralRequire('shiva/tasks/dock.initialized')
 const publisher = astralRequire('common/models/astral-rabbitmq')
 
-var Promise = require('bluebird')
-
-describe('shiva.dock.initialize', function () {
+describe('shiva.dock.initialized', function () {
   describe('tasks', function () {
     beforeEach(function (done) {
-      sinon.stub(SendCommand, 'sendDockInitCommand').returns(Promise.resolve())
       sinon.stub(publisher, 'publishTask').resolves()
       done()
     })
 
     afterEach(function (done) {
-      SendCommand.sendDockInitCommand.restore()
       publisher.publishTask.restore()
       done()
     })
 
-    it('should call SendCommand.sendDockInitCommand', function (done) {
-      let AutoScalingGroupName = 'auto scale groupname'
-      let InstanceIds = ['instance Ids']
-      var job = { AutoScalingGroupName: AutoScalingGroupName, InstanceIds: InstanceIds }
-      dockInitialize(job).asCallback(function (err) {
+    it('should publish dock.initialized task', function (done) {
+      let autoScalingGroupName = 'auto scale groupname'
+      let instanceId = 'instance Id'
+      var job = { autoScalingGroupName: autoScalingGroupName, instanceId: instanceId }
+      DockInitialized.publishEvent(job).asCallback(function (err) {
         expect(err).to.not.exist()
-        expect(SendCommand.sendDockInitCommand.calledOnce).to.be.true()
-        expect(SendCommand.sendDockInitCommand.firstCall.args[0]).to.equal(InstanceIds)
+        expect(publisher.publishTask.calledOnce).to.be.true()
+        expect(publisher.publishTask.firstCall.args[0]).to.equal('dock.initialized')
+        expect(publisher.publishTask.firstCall.args[1]).to.deep.equal({
+          autoScalingGroupName: autoScalingGroupName,
+            instanceId: instanceId
+        })
         done()
       })
     }) // end 'SendCommand.sendDockInitCommand'
