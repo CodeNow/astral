@@ -41,7 +41,7 @@ describe('shiva.dock.initialized', function () {
         expect(publisher.publishTask.firstCall.args[0]).to.equal('dock.initialized')
         expect(publisher.publishTask.firstCall.args[1]).to.deep.equal({
           autoScalingGroupName: autoScalingGroupName,
-            instanceId: instanceId
+          instanceId: instanceId
         })
         done()
       })
