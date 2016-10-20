@@ -22,18 +22,25 @@ var Promise = require('bluebird')
 const AutoScalingGroup = astralRequire('shiva/models/auto-scaling-group')
 const dockAttach = astralRequire('shiva/tasks/dock.attach').task
 const dockAttachSchema = astralRequire('shiva/tasks/dock.attach').jobSchema
+const publisher = astralRequire('common/models/astral-rabbitmq')
+
+const attachInstanceResponse = {
+  AutoScalingGroupName: 'testing-1337',
+  InstanceIds: ['i-4f4nt45y']
+}
 
 describe('shiva', function () {
   describe('tasks', function () {
     describe('dock.attach', function () {
       beforeEach(function (done) {
-        sinon.stub(AutoScalingGroup, 'attachInstance').returns(Promise.resolve())
-
+        sinon.stub(AutoScalingGroup, 'attachInstance').returns(Promise.resolve(attachInstanceResponse))
+        sinon.stub(publisher, 'publishTask').resolves()
         done()
       })
 
       afterEach(function (done) {
         AutoScalingGroup.attachInstance.restore()
+        publisher.publishTask.restore()
         done()
       })
 
@@ -76,9 +83,9 @@ describe('shiva', function () {
         var job = { githubOrgId: githubOrgId, instanceId: instanceId }
         dockAttach(job).asCallback(function (err) {
           expect(err).to.not.exist()
-          expect(AutoScalingGroup.attachInstance.calledOnce).to.be.true()
-          expect(AutoScalingGroup.attachInstance.firstCall.args[0]).to.equal('testing-' + githubOrgId)
-          expect(AutoScalingGroup.attachInstance.firstCall.args[1]).to.deep.equal([instanceId])
+          expect(publisher.publishTask.calledOnce).to.be.true()
+          expect(publisher.publishTask.firstCall.args[0]).to.equal('dock.initialize')
+          expect(publisher.publishTask.firstCall.args[1]).to.deep.equal(attachInstanceResponse)
           done()
         })
       }) // end 'dock.attach'

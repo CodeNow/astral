@@ -148,7 +148,7 @@ describe('shiva', function () {
                   .args[0]
                 var lcName = AutoScalingGroup._setLaunchConfigurationName
                   .returnValues[0]._settledValue.LaunchConfigurationName
-                expect(options.LaunchConfigurationName).to.equal(lcName)
+                expect(options.LaunchConfigurationName).to.equal(process.env.AWS_LAUNCH_CONFIGURATION_NAME)
                 done()
               })
               .catch(done)
