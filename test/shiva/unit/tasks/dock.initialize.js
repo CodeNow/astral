@@ -1,18 +1,18 @@
 'use strict'
 
-var Lab = require('lab')
-var lab = exports.lab = Lab.script()
-var describe = lab.describe
-var it = lab.it
-var beforeEach = lab.beforeEach
-var afterEach = lab.afterEach
-var Code = require('code')
-var expect = Code.expect
-var sinon = require('sinon')
+const Lab = require('lab')
+const lab = exports.lab = Lab.script()
+const describe = lab.describe
+const it = lab.it
+const beforeEach = lab.beforeEach
+const afterEach = lab.afterEach
+const Code = require('code')
+const expect = Code.expect
+const sinon = require('sinon')
 
-var astralRequire = require(
+const astralRequire = require(
   process.env.ASTRAL_ROOT + '../test/fixtures/astral-require')
-var loadenv = require('loadenv')
+const loadenv = require('loadenv')
 loadenv.restore()
 loadenv({ project: 'shiva', debugName: 'astral:shiva:test' })
 
@@ -20,7 +20,7 @@ const dockInitialize = astralRequire('shiva/tasks/dock.initialize').task
 const SendCommand = astralRequire('shiva/models/send-command')
 const publisher = astralRequire('common/models/astral-rabbitmq')
 
-var Promise = require('bluebird')
+const Promise = require('bluebird')
 
 describe('shiva.dock.initialize', function () {
   describe('tasks', function () {

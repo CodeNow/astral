@@ -1,18 +1,18 @@
 'use strict'
 
-var Lab = require('lab')
-var lab = exports.lab = Lab.script()
-var describe = lab.describe
-var it = lab.it
-var beforeEach = lab.beforeEach
-var afterEach = lab.afterEach
-var Code = require('code')
-var expect = Code.expect
-var sinon = require('sinon')
+const Lab = require('lab')
+const lab = exports.lab = Lab.script()
+const describe = lab.describe
+const it = lab.it
+const beforeEach = lab.beforeEach
+const afterEach = lab.afterEach
+const Code = require('code')
+const expect = Code.expect
+const sinon = require('sinon')
 
-var astralRequire = require(
+const astralRequire = require(
   process.env.ASTRAL_ROOT + '../test/fixtures/astral-require')
-var loadenv = require('loadenv')
+const loadenv = require('loadenv')
 loadenv.restore()
 loadenv({ project: 'shiva', debugName: 'astral:shiva:test' })
 
@@ -32,7 +32,7 @@ describe('shiva.dock.initialized', function () {
     })
 
     it('should publish dock.initialized task', function (done) {
-      let autoScalingGroupName = 'auto scale groupname'
+      let autoScalingGroupName = 'auto-scale-groupname-1337'
       let instanceId = 'instance Id'
       var job = { autoScalingGroupName: autoScalingGroupName, instanceId: instanceId }
       DockInitialized.publishEvent(job).asCallback(function (err) {
@@ -41,6 +41,7 @@ describe('shiva.dock.initialized', function () {
         expect(publisher.publishTask.firstCall.args[0]).to.equal('dock.initialized')
         expect(publisher.publishTask.firstCall.args[1]).to.deep.equal({
           autoScalingGroupName: autoScalingGroupName,
+          githubOrgId: '1337',
           instanceId: instanceId
         })
         done()
