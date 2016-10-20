@@ -6,7 +6,7 @@ const loadenv = require('loadenv')
 require('sinon-as-promised')(require('bluebird'))
 
 const AWSAlreadyExistsError = astralRequire('shiva/errors/aws-already-exists-error')
-const AWSAlreadyPartOfASGError = require('shiva/errors/aws-already-part-of-asg-error')
+const AWSAlreadyPartOfASGError = astralRequire('shiva/errors/aws-already-part-of-asg-error')
 const AWSInvalidParameterTypeError = astralRequire('shiva/errors/aws-invalid-parameter-type-error')
 const AWSRateLimitError = astralRequire('shiva/errors/aws-rate-limit-error')
 const AWSValidationError = astralRequire('shiva/errors/aws-validation-error')
