@@ -38,7 +38,7 @@ describe('shiva dock-pool unit test', () => {
       InstanceIds: ['i-awsinstance'],
       Parameters: {
         commands: userDataScript,
-        executionTimeout: ['3600']
+        executionTimeout: [ process.env.DOCK_INIT_RUNTIME_TIMEOUT ]
       }
     }
     done()
