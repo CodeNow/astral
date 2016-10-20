@@ -9,7 +9,7 @@ const WorkerStopError = require('error-cat/errors/worker-stop-error')
 require('sinon-as-promised')(Promise)
 
 const AutoScalingGroup = astralRequire('shiva/models/auto-scaling-group')
-const AWSAlreadyPartOfASGError = require('shiva/errors/aws-already-part-of-asg-error')
+const AWSAlreadyPartOfASGError = astralRequire('shiva/errors/aws-already-part-of-asg-error')
 const dockAttach = astralRequire('shiva/tasks/dock.attach').task
 const dockAttachSchema = astralRequire('shiva/tasks/dock.attach').jobSchema
 const lab = exports.lab = Lab.script()
