@@ -37,15 +37,14 @@ describe('shiva', function () {
       it('should call SendCommand.sendDockInitCommand', function (done) {
         let AutoScalingGroupName = 'auto scale groupname'
         let InstanceIds = ['instance Ids']
-          var job = { AutoScalingGroupName: AutoScalingGroupName, InstanceIds: InstanceIds }
-          dockInitialize(job).asCallback(function (err) {
-            expect(err).to.not.exist()
-            expect(SendCommand.sendDockInitCommand.calledOnce).to.be.true()
-            expect(SendCommand.sendDockInitCommand.firstCall.args[0]).to.equal(InstanceIds)
-            done()
-          })
-        }) // end 'dock.attach'
-
+        var job = { AutoScalingGroupName: AutoScalingGroupName, InstanceIds: InstanceIds }
+        dockInitialize(job).asCallback(function (err) {
+          expect(err).to.not.exist()
+          expect(SendCommand.sendDockInitCommand.calledOnce).to.be.true()
+          expect(SendCommand.sendDockInitCommand.firstCall.args[0]).to.equal(InstanceIds)
+          done()
+        })
+      }) // end 'dock.attach'
     }) // end 'dock.initialize'
   }) // end 'tasks'
 }) // end 'shiva'

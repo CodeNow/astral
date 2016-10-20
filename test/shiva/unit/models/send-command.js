@@ -1,11 +1,7 @@
 'use strict'
-const Code = require('code')
 const Lab = require('lab')
 const loadenv = require('loadenv')
 const sinon = require('sinon')
-const WorkerError = require('error-cat/errors/worker-error')
-const awsSDK = require('aws-sdk')
-const ssm = new awsSDK.SSM()
 require('sinon-as-promised')(require('bluebird'))
 
 const astralRequire = require('../../../../test/fixtures/astral-require')
@@ -17,7 +13,6 @@ loadenv.restore()
 const afterEach = lab.afterEach
 const beforeEach = lab.beforeEach
 const describe = lab.describe
-const expect = Code.expect
 const it = lab.it
 loadenv({ project: 'shiva', debugName: 'astral:shiva:test' })
 
