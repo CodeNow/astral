@@ -38,7 +38,7 @@ describe('shiva dock-pool unit test', () => {
       InstanceIds: ['i-awsinstance'],
       Parameters: {
         commands: userDataScript,
-        executionTimeout: [ process.env.DOCK_INIT_RUNTIME_TIMEOUT ]
+        executionTimeout: [ `${process.env.DOCK_INIT_RUNTIME_TIMEOUT}` ]
       }
     }
     done()
@@ -57,7 +57,7 @@ describe('shiva dock-pool unit test', () => {
       })
 
       it('should call ssm.sendCommand correctly', (done) => {
-        SendCommand.sendDockInitCommand(['i-awsinstance']).asCallback((err) => {
+        SendCommand.sendDockInitCommand('i-awsinstance').asCallback((err) => {
           if (err) {
             return done(err)
           }
@@ -82,7 +82,7 @@ describe('shiva dock-pool unit test', () => {
       })
 
       it('should throw an error to the util aws error handler', (done) => {
-        SendCommand.sendDockInitCommand(['i-awsinstance']).asCallback((err) => {
+        SendCommand.sendDockInitCommand('i-awsinstance').asCallback((err) => {
           sinon.assert.calledOnce(ssm.sendCommand)
           sinon.assert.calledOnce(Util.castAWSError)
           Util.castAWSError.calledWithExactly(err)
