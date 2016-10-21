@@ -34,9 +34,9 @@ describe('shiva.dock.initialize', function () {
     })
 
     it('should call SendCommand.sendDockInitCommand', function (done) {
-      let autoScalingGroupName = 'auto scale groupname'
-      let instanceId = 'instance Ids'
-      var job = { autoScalingGroupName: autoScalingGroupName, instanceId: instanceId }
+      const autoScalingGroupName = 'auto scale groupname'
+      const instanceId = 'instance Ids'
+      const job = { autoScalingGroupName: autoScalingGroupName, instanceId: instanceId }
       dockInitialize.task(job).asCallback(function (err) {
         expect(err).to.not.exist()
         sinon.assert.calledOnce(SendCommand.sendDockInitCommand)
@@ -46,9 +46,9 @@ describe('shiva.dock.initialize', function () {
     })
 
     it('should publish dock.initialized', function (done) {
-      let autoScalingGroupName = 'auto scale groupname'
-      let instanceId = 'instance Ids'
-      var job = { autoScalingGroupName: autoScalingGroupName, instanceId: instanceId }
+      const autoScalingGroupName = 'auto scale groupname'
+      const instanceId = 'instance Ids'
+      const job = { autoScalingGroupName: autoScalingGroupName, instanceId: instanceId }
       dockInitialize.task(job).asCallback(function (err) {
         expect(err).to.not.exist()
         sinon.assert.calledOnce(publisher.publishEvent)
