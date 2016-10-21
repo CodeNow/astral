@@ -1,51 +1,64 @@
 'use strict'
-
-const Lab = require('lab')
-const lab = exports.lab = Lab.script()
-const describe = lab.describe
-const it = lab.it
-const beforeEach = lab.beforeEach
-const afterEach = lab.afterEach
+const astralRequire = require('../../../../test/fixtures/astral-require')
 const Code = require('code')
-const expect = Code.expect
-const sinon = require('sinon')
-
-const astralRequire = require(
-  process.env.ASTRAL_ROOT + '../test/fixtures/astral-require')
+const Lab = require('lab')
 const loadenv = require('loadenv')
-loadenv.restore()
-loadenv({ project: 'shiva', debugName: 'astral:shiva:test' })
+const sinon = require('sinon')
+require('sinon-as-promised')(Promise)
 
-const dockInitialize = astralRequire('shiva/tasks/dock.initialize').task
+const dockInitialize = astralRequire('shiva/tasks/dock.initialize')
 const SendCommand = astralRequire('shiva/models/send-command')
 const publisher = astralRequire('common/models/astral-rabbitmq')
+const lab = exports.lab = Lab.script()
+loadenv.restore()
 
-const Promise = require('bluebird')
+const afterEach = lab.afterEach
+const beforeEach = lab.beforeEach
+const describe = lab.describe
+const expect = Code.expect
+const it = lab.it
+loadenv({ project: 'shiva', debugName: 'astral:shiva:test' })
 
 describe('shiva.dock.initialize', function () {
   describe('tasks', function () {
     beforeEach(function (done) {
-      sinon.stub(SendCommand, 'sendDockInitCommand').returns(Promise.resolve())
-      sinon.stub(publisher, 'publishTask').resolves()
+      sinon.stub(SendCommand, 'sendDockInitCommand').resolves()
+      sinon.stub(publisher, 'publishEvent').resolves()
       done()
     })
 
     afterEach(function (done) {
       SendCommand.sendDockInitCommand.restore()
-      publisher.publishTask.restore()
+      publisher.publishEvent.restore()
       done()
     })
 
     it('should call SendCommand.sendDockInitCommand', function (done) {
-      let AutoScalingGroupName = 'auto scale groupname'
-      let InstanceIds = ['instance Ids']
-      var job = { AutoScalingGroupName: AutoScalingGroupName, InstanceIds: InstanceIds }
-      dockInitialize(job).asCallback(function (err) {
+      let autoScalingGroupName = 'auto scale groupname'
+      let instanceId = 'instance Ids'
+      var job = { autoScalingGroupName: autoScalingGroupName, instanceId: instanceId }
+      dockInitialize.task(job).asCallback(function (err) {
         expect(err).to.not.exist()
-        expect(SendCommand.sendDockInitCommand.calledOnce).to.be.true()
-        expect(SendCommand.sendDockInitCommand.firstCall.args[0]).to.equal(InstanceIds)
+        sinon.assert.calledOnce(SendCommand.sendDockInitCommand)
+        sinon.assert.calledWith(SendCommand.sendDockInitCommand, instanceId)
         done()
       })
-    }) // end 'SendCommand.sendDockInitCommand'
+    })
+
+    it('should publish dock.initialized', function (done) {
+      let autoScalingGroupName = 'auto scale groupname'
+      let instanceId = 'instance Ids'
+      var job = { autoScalingGroupName: autoScalingGroupName, instanceId: instanceId }
+      dockInitialize.task(job).asCallback(function (err) {
+        expect(err).to.not.exist()
+        sinon.assert.calledOnce(publisher.publishEvent)
+        sinon.assert.calledWith(publisher.publishEvent, 'dock.initialized', {
+          autoScalingGroupName: job.autoScalingGroupName,
+          instanceId: job.instanceId,
+          githubOrgId: job.githubOrgId
+        })
+        done()
+      })
+    })
   }) // end 'tasks'
 }) // end 'shiva.dock.initialize'
