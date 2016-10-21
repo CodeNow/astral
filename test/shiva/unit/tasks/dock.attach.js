@@ -90,9 +90,20 @@ describe('shiva dock.attach unit test', () => {
 
     it('should throw original error instance already attached', (done) => {
       const githubOrgId = 1337
-      const targetASGName = process.env.AWS_AUTO_SCALING_GROUP_PREFIX + githubOrgId
       const instanceId = 'i-4f4nt45y'
-      const testError = new Error(`The Instance: ${instanceId} is already part of AutoScalingGroup:${targetASGName}`)
+      const testError = new Error(`The Instance: ${instanceId} is already part of AutoScalingGroup:dock-pool`)
+      const job = { githubOrgId: githubOrgId, instanceId: instanceId }
+      AutoScalingGroup.attachInstance.rejects(new AWSAlreadyPartOfASGError(testError))
+      dockAttach(job).asCallback((err) => {
+        expect(err).to.not.be.an.instanceof(WorkerStopError)
+        done()
+      })
+    })
+
+    it('should throw original error', (done) => {
+      const githubOrgId = 1337
+      const instanceId = 'i-4f4nt45y'
+      const testError = new Error('bad things happen')
       const job = { githubOrgId: githubOrgId, instanceId: instanceId }
       AutoScalingGroup.attachInstance.rejects(testError)
       dockAttach(job).asCallback((err) => {

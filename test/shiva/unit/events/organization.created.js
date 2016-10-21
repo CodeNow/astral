@@ -76,5 +76,18 @@ describe('shiva organization.created unit test', function () {
         done()
       })
     })
+
+    it('should enqueue a job to create the asg policy', (done) => {
+      shivaOrganizationCreated({ organization: { githubId: 12345 } }).asCallback(function (err) {
+        expect(err).to.not.exist()
+        sinon.assert.calledOnce(publisher.publishTask)
+        sinon.assert.calledWithExactly(
+          publisher.publishTask,
+          'asg.create',
+          { githubId: '12345' }
+        )
+        done()
+      })
+    })
   }) // end 'organization.created'
 }) // end 'shiva'
