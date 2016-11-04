@@ -48,6 +48,8 @@ describe('shiva', function () {
           .returns(Promise.resolve())
         sinon.stub(AutoScaling, 'updateAutoScalingGroupAsync')
           .returns(Promise.resolve())
+        sinon.stub(AutoScaling, 'attachInstancesAsync')
+          .returns(Promise.resolve())
         done()
       })
 
@@ -58,6 +60,7 @@ describe('shiva', function () {
         AutoScaling.describeAutoScalingGroupsAsync.restore()
         AutoScaling.deleteAutoScalingGroupAsync.restore()
         AutoScaling.updateAutoScalingGroupAsync.restore()
+        AutoScaling.attachInstancesAsync.restore()
         done()
       })
 
@@ -143,9 +146,7 @@ describe('shiva', function () {
                   .to.be.true()
                 var options = AutoScaling.createAutoScalingGroupAsync.firstCall
                   .args[0]
-                var lcName = AutoScalingGroup._setLaunchConfigurationName
-                  .returnValues[0]._settledValue.LaunchConfigurationName
-                expect(options.LaunchConfigurationName).to.equal(lcName)
+                expect(options.LaunchConfigurationName).to.equal(process.env.AWS_LAUNCH_CONFIGURATION_NAME)
                 done()
               })
               .catch(done)
@@ -513,6 +514,54 @@ describe('shiva', function () {
           })
         }) // end 'AWS updateAutoScalingGroupAsync request'
       }) // end 'update'
+
+      describe('attachInstance', function () {
+        it('should throw with non-string `orgId`', function (done) {
+          AutoScalingGroup.attachInstance([]).asCallback(function (err) {
+            expect(err).to.be.an.instanceof(Error)
+            expect(err.name).to.match(/ValidationError/)
+            done()
+          })
+        })
+
+        it('should throw with empty `orgId`', function (done) {
+          AutoScalingGroup.attachInstance('').asCallback(function (err) {
+            expect(err).to.be.an.instanceof(Error)
+            expect(err.name).to.match(/ValidationError/)
+            done()
+          })
+        })
+
+        it('should throw with non-array `instanceIds`', function (done) {
+          AutoScalingGroup.attachInstance('Andre 3000', 'Big Boi').asCallback(function (err) {
+            expect(err).to.be.an.instanceof(Error)
+            expect(err.name).to.match(/ValidationError/)
+            done()
+          })
+        })
+
+        it('should call attachInstancesAsync', function (done) {
+          AutoScalingGroup.attachInstance('bob ya head', ['rag top'])
+            .then(function () {
+              expect(AutoScaling.attachInstancesAsync.calledOnce)
+                .to.be.true()
+              done()
+            })
+            .catch(done)
+        })
+
+        it('should cast errors', function (done) {
+          var awsErr = new Error('ain\'t it funky now?')
+          AutoScaling.attachInstancesAsync
+            .returns(Promise.reject(awsErr))
+          AutoScalingGroup.attachInstance('Power music', ['electric revival'])
+            .catch(function (err) {
+              expect(err).to.exist()
+              expect(Util.castAWSError.calledWith(awsErr)).to.be.true()
+              done()
+            })
+        })
+      })
     }) // end 'AutoScalingGroup'
   }) // end 'models'
 }) // end 'shiva'
