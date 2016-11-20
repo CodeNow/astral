@@ -29,8 +29,15 @@ describe('shiva', function () {
 
       it('should set the message of the given error', function (done) {
         var msg = 'This is an error message'
-        var err = new AWSAlreadyExistsError(new Error(msg))
+        var err = new AWSAlreadyExistsError(new Error(msg), {test: 'foo'})
         expect(err.message).to.equal(msg)
+        done()
+      })
+
+      it('should set the data of the given error', function (done) {
+        var msg = 'This is an error message'
+        var err = new AWSAlreadyExistsError(new Error('foo'), {test: msg})
+        expect(err.data.test).to.equal(msg)
         done()
       })
     }) // end 'AWSAlreadyExistsError'
