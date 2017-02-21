@@ -90,7 +90,7 @@ describe('shiva organization.created unit test', function () {
       })
     })
 
-    it('should not call publishTask if not a personal account', function (done) {
+    it('should not call publishTask if a personal account', function (done) {
       shivaOrganizationCreated({organization: {githubId: 1, isPersonalAccount: true}}).asCallback(function (err) {
         expect(err).to.not.exist()
         sinon.assert.notCalled(publisher.publishTask)
