@@ -21,7 +21,7 @@ const Promise = require('bluebird')
 require('sinon-as-promised')(Promise)
 
 const ec2 = astralRequire('shiva/models/aws/ec2')
-const oldestLaunchTime = astralRequire('shiva/tasks/iam.oldest.launch-time')
+const oldestLaunchTime = astralRequire('shiva/tasks/iam.oldest.launch-time.fetch')
 const publisher = astralRequire('common/models/astral-rabbitmq')
 const WorkerStopError = require('error-cat/errors/worker-stop-error')
 
