@@ -6,7 +6,6 @@ var describe = lab.describe
 var it = lab.it
 var beforeEach = lab.beforeEach
 var afterEach = lab.afterEach
-var Code = require('code')
 const moment = require('moment')
 var sinon = require('sinon')
 
@@ -59,7 +58,7 @@ describe('shiva', function () {
           Arn: 'arn:aws:iam::123:user/vault-token-342342-8081'
         }
         sinon.stub(iam, 'listUsersAsync').resolves({
-          Users: [ oldUser, currentUser, newUser, notS3User]
+          Users: [oldUser, currentUser, newUser, notS3User]
         })
         sinon.stub(iam, 'deleteUserAsync').resolves()
         done()
@@ -74,7 +73,7 @@ describe('shiva', function () {
         let removeBefore = moment(new Date()).subtract(3, 'months').toISOString()
         iamCleanup
           .task({ removeBefore })
-          .asCallback(err => {
+          .asCallback(() => {
             sinon.assert.calledWith(iam.listUsersAsync, { MaxItems: process.env.IAM_USER_FETCH })
             done()
           })
@@ -84,7 +83,7 @@ describe('shiva', function () {
         let removeBefore = moment(new Date()).subtract(2, 'months').toISOString()
         iamCleanup
           .task({ removeBefore })
-          .asCallback(err => {
+          .asCallback(() => {
             sinon.assert.callCount(iam.deleteUserAsync, 1)
             sinon.assert.calledWith(iam.deleteUserAsync, { UserName: oldUser.UserName })
             sinon.assert.neverCalledWith(iam.deleteUserAsync, { UserName: notS3User.UserName })
