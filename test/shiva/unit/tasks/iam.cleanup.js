@@ -60,6 +60,8 @@ describe('shiva', function () {
         sinon.stub(iam, 'listUsersAsync').resolves({
           Users: [oldUser, currentUser, newUser, notS3User]
         })
+        sinon.stub(iam, 'deleteAllUserPoliciesAsync').resolves()
+        sinon.stub(iam, 'deleteAllUserAccessKeysAsync').resolves()
         sinon.stub(iam, 'deleteUserAsync').resolves()
         done()
       })
@@ -67,6 +69,8 @@ describe('shiva', function () {
       afterEach(function (done) {
         iam.listUsersAsync.restore()
         iam.deleteUserAsync.restore()
+        iam.deleteAllUserPoliciesAsync.restore()
+        iam.deleteAllUserAccessKeysAsync.restore()
         done()
       })
       it('should fetch IAM_USER_FETCH users', function (done) {
@@ -79,7 +83,7 @@ describe('shiva', function () {
           })
       })
 
-      it('should filter out oldUser  user', function (done) {
+      it('should filter out oldUser', function (done) {
         let removeBefore = moment(new Date()).subtract(2, 'months').toISOString()
         iamCleanup
           .task({ removeBefore })
@@ -89,6 +93,33 @@ describe('shiva', function () {
             sinon.assert.neverCalledWith(iam.deleteUserAsync, { UserName: notS3User.UserName })
             sinon.assert.neverCalledWith(iam.deleteUserAsync, { UserName: currentUser.UserName })
             sinon.assert.neverCalledWith(iam.deleteUserAsync, { UserName: newUser.UserName })
+            done()
+          })
+      })
+
+      it('should call everything with the same input', function (done) {
+        let removeBefore = moment(new Date()).subtract(2, 'months').toISOString()
+        iamCleanup
+          .task({ removeBefore })
+          .asCallback(() => {
+            sinon.assert.callCount(iam.deleteUserAsync, 1)
+            sinon.assert.calledWith(iam.deleteAllUserPoliciesAsync, { UserName: oldUser.UserName })
+            sinon.assert.calledWith(iam.deleteAllUserAccessKeysAsync, { UserName: oldUser.UserName })
+            sinon.assert.calledWith(iam.deleteUserAsync, { UserName: oldUser.UserName })
+            done()
+          })
+      })
+
+      it('should call everything in order', function (done) {
+        let removeBefore = moment(new Date()).subtract(2, 'months').toISOString()
+        iamCleanup
+          .task({ removeBefore })
+          .asCallback(() => {
+            sinon.assert.callOrder(
+              iam.deleteAllUserPoliciesAsync,
+              iam.deleteAllUserAccessKeysAsync,
+              iam.deleteUserAsync
+            )
             done()
           })
       })
