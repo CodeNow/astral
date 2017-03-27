@@ -57,9 +57,7 @@ describe('shiva', function () {
           UserId: '1234',
           Arn: 'arn:aws:iam::123:user/vault-token-342342-8081'
         }
-        sinon.stub(iam, 'listUsersAsync').resolves({
-          Users: [oldUser, currentUser, newUser, notS3User]
-        })
+        sinon.stub(iam, 'listAllUsersAsync').resolves([oldUser, currentUser, newUser, notS3User])
         sinon.stub(iam, 'deleteAllUserPoliciesAsync').resolves()
         sinon.stub(iam, 'deleteAllUserAccessKeysAsync').resolves()
         sinon.stub(iam, 'deleteUserAsync').resolves()
@@ -67,7 +65,7 @@ describe('shiva', function () {
       })
 
       afterEach(function (done) {
-        iam.listUsersAsync.restore()
+        iam.listAllUsersAsync.restore()
         iam.deleteUserAsync.restore()
         iam.deleteAllUserPoliciesAsync.restore()
         iam.deleteAllUserAccessKeysAsync.restore()
@@ -78,7 +76,7 @@ describe('shiva', function () {
         iamCleanup
           .task({ removeBefore })
           .asCallback(() => {
-            sinon.assert.calledWith(iam.listUsersAsync, { MaxItems: process.env.IAM_USER_FETCH })
+            sinon.assert.calledWith(iam.listAllUsersAsync, { MaxItems: process.env.IAM_USER_FETCH })
             done()
           })
       })
