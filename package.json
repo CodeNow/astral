@@ -60,6 +60,7 @@
     "standard": "^7.1.0"
   },
   "dependencies": {
+    "@runnable/big-poppa-client": "^0.5.1",
     "101": "^1.0.0",
     "aws-sdk": "^2.1.43",
     "bluebird": "^3.0.6",
