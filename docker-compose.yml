@@ -1,0 +1,9 @@
+version: '2'
+services:
+  shiva:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=test
+    command: npm run shiva-unit
