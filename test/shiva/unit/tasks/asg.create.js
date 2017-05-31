@@ -44,8 +44,20 @@ describe('shiva asg.create unit test', function () {
       })
     })
 
+    it('should fatally reject if personal account', function (done) {
+      shivaASGCreate({
+        isPersonalAccount: true
+      }).asCallback(function (err) {
+        expect(err).to.be.an.instanceof(WorkerStopError)
+        expect(err.message).to.match(/personal.*accounts/)
+        done()
+      })
+    })
+
     it('should fatally reject without string `githubId`', function (done) {
-      shivaASGCreate({}).asCallback(function (err) {
+      shivaASGCreate({
+        isPersonalAccount: false
+      }).asCallback(function (err) {
         expect(err).to.be.an.instanceof(WorkerStopError)
         expect(err.message).to.match(/githubId.*string/)
         done()
@@ -53,7 +65,7 @@ describe('shiva asg.create unit test', function () {
     })
 
     it('should fatally reject `githubId` when not a safe number', function (done) {
-      shivaASGCreate({ githubId: {} }).asCallback(function (err) {
+      shivaASGCreate({ isPersonalAccount: false, githubId: {} }).asCallback(function (err) {
         expect(err).to.be.an.instanceof(WorkerStopError)
         expect(err.message).to.match(/githubId.*string/)
         done()
@@ -61,7 +73,7 @@ describe('shiva asg.create unit test', function () {
     })
 
     it('should fatally reject with an empty `githubId`', function (done) {
-      shivaASGCreate({ githubId: '' }).asCallback(function (err) {
+      shivaASGCreate({ isPersonalAccount: false, githubId: '' }).asCallback(function (err) {
         expect(err).to.be.an.instanceof(WorkerStopError)
         expect(err.message).to.match(/githubId.*empty/)
         done()
@@ -70,7 +82,7 @@ describe('shiva asg.create unit test', function () {
 
     it('should call AutoScalingGroup.create', function (done) {
       const name = '12345'
-      shivaASGCreate({ githubId: name }).asCallback(function (err) {
+      shivaASGCreate({ isPersonalAccount: false, githubId: name }).asCallback(function (err) {
         expect(err).to.not.exist()
         expect(AutoScalingGroup.create.calledWith(name)).to.be.true()
         done()
@@ -78,7 +90,7 @@ describe('shiva asg.create unit test', function () {
     })
 
     it('should enqueue a job to create the scale-out policy', (done) => {
-      shivaASGCreate({ githubId: '12345' }).asCallback(function (err) {
+      shivaASGCreate({ isPersonalAccount: false, githubId: '12345' }).asCallback(function (err) {
         expect(err).to.not.exist()
         sinon.assert.called(publisher.publishTask)
         sinon.assert.calledWithExactly(
@@ -91,7 +103,7 @@ describe('shiva asg.create unit test', function () {
     })
 
     it('should enqueue a job to create the scale-out policy', (done) => {
-      shivaASGCreate({ githubId: 12345 }).asCallback(function (err) {
+      shivaASGCreate({ isPersonalAccount: false, githubId: 12345 }).asCallback(function (err) {
         expect(err).to.not.exist()
         sinon.assert.called(publisher.publishTask)
         sinon.assert.calledWithExactly(
@@ -104,7 +116,7 @@ describe('shiva asg.create unit test', function () {
     })
 
     it('should enqueue pool.dock.detach task', (done) => {
-      shivaASGCreate({ githubId: 12345 }).asCallback(function (err) {
+      shivaASGCreate({ isPersonalAccount: false, githubId: 12345 }).asCallback(function (err) {
         expect(err).to.not.exist()
         sinon.assert.called(publisher.publishTask)
         sinon.assert.calledWithExactly(
