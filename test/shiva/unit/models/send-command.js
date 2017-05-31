@@ -18,15 +18,7 @@ loadenv({ project: 'shiva', debugName: 'astral:shiva:test' })
 
 let testParams
 let userDataScript = [ '#!/bin/bash',
-  '',
-  'DOCK_INIT_SCRIPT=/opt/runnable/dock-init/init.sh',
-  '',
-  '# Set the hostname for consul',
-  'CONSUL_HOSTNAME=localhost',
-  'export CONSUL_HOSTNAME',
-  '',
-  '# Initialize the dock',
-  'bash $DOCK_INIT_SCRIPT >> /var/log/user-script-dock-init.log 2>&1',
+  '/opt/runnable/dock-init.sh',
   ''
 ]
 
