@@ -64,27 +64,49 @@ describe('shiva organization.created unit test', function () {
       })
     })
 
-    it('should enqueue a job to create the asg policy', (done) => {
-      shivaOrganizationCreated({ organization: { githubId: '12345' } }).asCallback(function (err) {
+    it('should enqueue a job to create the asg policy with githubid as string', (done) => {
+      const testJob = {
+        organization: {
+          githubId: '1234',
+          id: 5678,
+          isPersonalAccount: false
+        }
+      }
+
+      shivaOrganizationCreated(testJob).asCallback(function (err) {
         expect(err).to.not.exist()
         sinon.assert.calledOnce(publisher.publishTask)
         sinon.assert.calledWithExactly(
           publisher.publishTask,
-          'asg.create',
-          { githubId: '12345' }
+          'asg.create', {
+            githubId: testJob.organization.githubId,
+            orgId: testJob.organization.id,
+            isPersonalAccount: testJob.organization.isPersonalAccount
+          }
         )
         done()
       })
     })
 
-    it('should enqueue a job to create the asg policy', (done) => {
-      shivaOrganizationCreated({ organization: { githubId: 12345 } }).asCallback(function (err) {
+    it('should enqueue a job to create the asg policy with github id as number', (done) => {
+      const testJob = {
+        organization: {
+          githubId: 1234,
+          id: 5678,
+          isPersonalAccount: false
+        }
+      }
+
+      shivaOrganizationCreated(testJob).asCallback(function (err) {
         expect(err).to.not.exist()
         sinon.assert.calledOnce(publisher.publishTask)
         sinon.assert.calledWithExactly(
           publisher.publishTask,
-          'asg.create',
-          { githubId: '12345' }
+          'asg.create', {
+            githubId: testJob.organization.githubId,
+            orgId: testJob.organization.id,
+            isPersonalAccount: testJob.organization.isPersonalAccount
+          }
         )
         done()
       })

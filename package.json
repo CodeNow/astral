@@ -53,6 +53,7 @@
   },
   "devDependencies": {
     "code": "^1.4.1",
+    "eslint": "^3.19.0",
     "github-webhook-fixtures": "^1.0.1",
     "lab": "^6.2.0",
     "sinon": "^1.15.4",
