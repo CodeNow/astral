@@ -1,39 +1,36 @@
 'use strict'
 
-const Lab = require('lab')
-const lab = exports.lab = Lab.script()
-const describe = lab.describe
-const it = lab.it
-const beforeEach = lab.beforeEach
-const afterEach = lab.afterEach
-const Code = require('code')
-const expect = Code.expect
-const sinon = require('sinon')
+var Lab = require('lab')
+var lab = exports.lab = Lab.script()
+var describe = lab.describe
+var it = lab.it
+var beforeEach = lab.beforeEach
+var afterEach = lab.afterEach
+var Code = require('code')
+var expect = Code.expect
+var sinon = require('sinon')
 
-const astralRequire = require(process.env.ASTRAL_ROOT + '../test/fixtures/astral-require')
-const loadenv = require('loadenv')
+var astralRequire = require(process.env.ASTRAL_ROOT + '../test/fixtures/astral-require')
+var loadenv = require('loadenv')
 loadenv.restore()
 loadenv({ project: 'shiva', debugName: 'astral:shiva:test' })
 
-const Promise = require('bluebird')
-const WorkerStopError = require('error-cat/errors/worker-stop-error')
+var Promise = require('bluebird')
+var WorkerStopError = require('error-cat/errors/worker-stop-error')
 
-const AutoScalingGroup = astralRequire('shiva/models/auto-scaling-group')
-const publisher = astralRequire('common/models/astral-rabbitmq')
-const shivaASGDelete = astralRequire('shiva/tasks/asg.delete')
+var AutoScalingGroup = astralRequire('shiva/models/auto-scaling-group')
+var shivaASGDelete = astralRequire('shiva/tasks/asg.delete')
 
 describe('shiva', function () {
   describe('tasks', function () {
     describe('asg.delete', function () {
       beforeEach(function (done) {
         sinon.stub(AutoScalingGroup, 'remove').returns(Promise.resolve())
-        sinon.stub(publisher, 'publishTask').returns(Promise.resolve())
         done()
       })
 
       afterEach(function (done) {
         AutoScalingGroup.remove.restore()
-        publisher.publishTask.restore()
         done()
       })
 
@@ -66,18 +63,6 @@ describe('shiva', function () {
         shivaASGDelete({ githubId: name }).asCallback(function (err) {
           expect(err).to.not.exist()
           expect(AutoScalingGroup.remove.calledWith(name)).to.be.true()
-          done()
-        })
-      })
-
-      it('should publish cleanup task', function (done) {
-        var name = '62738729'
-        shivaASGDelete({ githubId: name }).asCallback(function (err) {
-          expect(err).to.not.exist()
-          sinon.assert.calledOnce(publisher.publishTask)
-          sinon.assert.calledWith(publisher.publishTask, 'iam.cleanup', {
-            ownedBy: name
-          })
           done()
         })
       })
