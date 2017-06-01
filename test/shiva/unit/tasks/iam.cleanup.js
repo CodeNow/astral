@@ -71,7 +71,6 @@ describe('shiva', function () {
         iam.deleteAllUserAccessKeysAsync.restore()
         done()
       })
-
       it('should fetch IAM_USER_FETCH users', function (done) {
         let removeBefore = moment(new Date()).subtract(3, 'months').toISOString()
         iamCleanup
@@ -101,10 +100,24 @@ describe('shiva', function () {
         iamCleanup
           .task({ removeBefore })
           .asCallback(() => {
+            sinon.assert.callCount(iam.deleteUserAsync, 1)
             sinon.assert.calledWith(iam.deleteAllUserPoliciesAsync, { UserName: oldUser.UserName })
             sinon.assert.calledWith(iam.deleteAllUserAccessKeysAsync, { UserName: oldUser.UserName })
-            sinon.assert.callCount(iam.deleteUserAsync, 1)
             sinon.assert.calledWith(iam.deleteUserAsync, { UserName: oldUser.UserName })
+            done()
+          })
+      })
+
+      it('should call everything in order', function (done) {
+        let removeBefore = moment(new Date()).subtract(2, 'months').toISOString()
+        iamCleanup
+          .task({ removeBefore })
+          .asCallback(() => {
+            sinon.assert.callOrder(
+              iam.deleteAllUserPoliciesAsync,
+              iam.deleteAllUserAccessKeysAsync,
+              iam.deleteUserAsync
+            )
             done()
           })
       })
