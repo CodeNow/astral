@@ -24,12 +24,7 @@
     "shiva-unit": "ASTRAL_ROOT=\"$(pwd)/lib/\" NODE_ENV=test lab -v -c -a code test/shiva/unit",
     "shiva-integration": "ASTRAL_ROOT=\"$(pwd)/lib/\" LOG_LEVEL=trace NODE_ENV=test lab -a code -v -m 300000 integration/shiva/tasks integration/shiva/models",
     "shiva-integration-models": "ASTRAL_ROOT=\"$(pwd)/lib/\" NODE_ENV=test lab -a code -v -m 300000 integration/shiva/models",
-    "shiva-integration-tasks": "ASTRAL_ROOT=\"$(pwd)/lib/\" LOG_LEVEL=trace NODE_ENV=test lab -a code -v -m 300000 integration/shiva/tasks | bunyan",
-    "metis-start": "node lib/metis/index.js",
-    "metis-eslint": "eslint lib/metis/",
-    "metis-test": "npm run metis-eslint && ASTRAL_ROOT=\"$(pwd)/lib/\" NODE_ENV=test lab -m 1000 -v -c -a code test/metis",
-    "metis-unit": "npm run metis-eslint && ASTRAL_ROOT=\"$(pwd)/lib/\" NODE_ENV=test lab -m 1000 -v -c -a code test/metis/unit",
-    "metis-integration": "ASTRAL_ROOT=\"$(pwd)/lib/\" NODE_ENV=test lab -m 900000 -v -a code integration/metis"
+    "shiva-integration-tasks": "ASTRAL_ROOT=\"$(pwd)/lib/\" LOG_LEVEL=trace NODE_ENV=test lab -a code -v -m 300000 integration/shiva/tasks | bunyan"
   },
   "repository": {
     "type": "git",
