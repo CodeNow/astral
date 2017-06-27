@@ -106,17 +106,8 @@ describe('shiva', function () {
           })
         })
 
-        it('should throw with non-object `options`', function (done) {
-          AutoScalingGroup.create('foo', 'awesome').asCallback(function (err) {
-            expect(err).to.be.an.instanceof(InvalidArgumentError)
-            expect(err.argumentName).to.equal('options')
-            expect(err.message).to.match(/options.*object/)
-            done()
-          })
-        })
-
         it('should call aws createAutoScalingGroupAsync', function (done) {
-          AutoScalingGroup.create('yaynames')
+          AutoScalingGroup.create('yaynames', 'bpid')
             .then(function () {
               expect(AutoScaling.createAutoScalingGroupAsync.calledOnce)
                 .to.be.true()
@@ -128,7 +119,7 @@ describe('shiva', function () {
         describe('AWS createAutoScalingGroupAsync request', function () {
           it('should set the correct name', function (done) {
             var org = 'some-org'
-            AutoScalingGroup.create(org)
+            AutoScalingGroup.create(org, 'bp')
               .then(function () {
                 var options = AutoScaling.createAutoScalingGroupAsync.firstCall
                   .args[0]
@@ -140,7 +131,7 @@ describe('shiva', function () {
           })
 
           it('should set the correct launch configuration name', function (done) {
-            AutoScalingGroup.create('weeee')
+            AutoScalingGroup.create('weeee', 'near')
               .then(function () {
                 expect(AutoScalingGroup._setLaunchConfigurationName.calledOnce)
                   .to.be.true()
@@ -153,7 +144,7 @@ describe('shiva', function () {
           })
 
           it('should set and propogate the role tag', function (done) {
-            AutoScalingGroup.create('weeee')
+            AutoScalingGroup.create('weeee', 'near')
               .then(function () {
                 var options = AutoScaling.createAutoScalingGroupAsync.firstCall
                   .args[0]
@@ -169,7 +160,7 @@ describe('shiva', function () {
 
           it('should set the propogated org tag', function (done) {
             var name = ' this is a nammmeezzz '
-            AutoScalingGroup.create(name)
+            AutoScalingGroup.create(name, 'near')
               .then(function () {
                 var options = AutoScaling.createAutoScalingGroupAsync.firstCall
                   .args[0]
@@ -186,7 +177,7 @@ describe('shiva', function () {
           it('should set the propogated env tag', function (done) {
             var name = 'ssszzz'
             process.env.NODE_ENV = 'so-cooool'
-            AutoScalingGroup.create(name)
+            AutoScalingGroup.create(name, 'near')
               .then(function () {
                 var options = AutoScaling.createAutoScalingGroupAsync.firstCall
                   .args[0]
@@ -204,7 +195,7 @@ describe('shiva', function () {
             var awsErr = new Error('holy cowballs')
             AutoScaling.createAutoScalingGroupAsync
               .returns(Promise.reject(awsErr))
-            AutoScalingGroup.create('wowownns').asCallback(function (err) {
+            AutoScalingGroup.create('wowownns', 'near').asCallback(function (err) {
               expect(err).to.exist()
               expect(Util.castAWSError.calledWith(awsErr)).to.be.true()
               done()
