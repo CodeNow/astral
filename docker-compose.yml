@@ -3,7 +3,7 @@ services:
   shiva:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.test
     environment:
       - NODE_ENV=test
-    command: npm run shiva-unit
+    command: npm run shiva-test

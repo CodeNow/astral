@@ -20,9 +20,8 @@
     "common-functional": "ASTRAL_ROOT=\"$(pwd)/lib/\" NODE_ENV=test lab -v -c -a code test/common/functional",
     "shiva-start": "node lib/shiva/index.js",
     "shiva-eslint": "eslint lib/shiva/",
-    "shiva-test": "npm run shiva-eslint && ASTRAL_ROOT=\"$(pwd)/lib/\" NODE_ENV=test lab -m 1000 -v -c -a code test/shiva/unit test/shiva/functional",
+    "shiva-test": "npm run shiva-eslint && ASTRAL_ROOT=\"$(pwd)/lib/\" NODE_ENV=test lab -m 1000 -v -c -a code test/shiva/unit",
     "shiva-unit": "ASTRAL_ROOT=\"$(pwd)/lib/\" NODE_ENV=test lab -v -c -a code test/shiva/unit",
-    "shiva-functional": "ASTRAL_ROOT=\"$(pwd)/lib/\" NODE_ENV=test lab -v -a code test/shiva/functional",
     "shiva-integration": "ASTRAL_ROOT=\"$(pwd)/lib/\" LOG_LEVEL=trace NODE_ENV=test lab -a code -v -m 300000 integration/shiva/tasks integration/shiva/models",
     "shiva-integration-models": "ASTRAL_ROOT=\"$(pwd)/lib/\" NODE_ENV=test lab -a code -v -m 300000 integration/shiva/models",
     "shiva-integration-tasks": "ASTRAL_ROOT=\"$(pwd)/lib/\" LOG_LEVEL=trace NODE_ENV=test lab -a code -v -m 300000 integration/shiva/tasks | bunyan",
@@ -53,6 +52,7 @@
   },
   "devDependencies": {
     "code": "^1.4.1",
+    "eslint": "^4.1.1",
     "github-webhook-fixtures": "^1.0.1",
     "lab": "^6.2.0",
     "sinon": "^1.15.4",
