@@ -7,9 +7,8 @@
 Astral is the master project for all customer organization dock auto-scaling in
 EC2. The master project is split into three sub-components:
 
-1. **Metis** (`lib/metis/`) - Collects and aggregates relevant statistical data concerning
-   cluster usage and historical dock load.
-2. **Magus** (`lib/magus/`) - Predictive load analyzer and scaling scheduler.
+1. **Metis** (`lib/metis/`) - REMOVED.
+2. **Magus** (`lib/magus/`) - REMOVED.
 3. **Shiva** (`lib/shiva/`) - Interface to EC2 for managing auto-scale groups, dock instances,
    etc.
 
