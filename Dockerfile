@@ -7,7 +7,7 @@ ADD ./package.json /shiva/package.json
 
 # install, should will skip if no package.json change
 WORKDIR /shiva
-RUN npm install --production
+RUN npm install
 
 # move the current build context (`.` is the repo) to /shiva
 ADD . /shiva
